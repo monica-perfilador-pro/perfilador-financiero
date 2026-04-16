@@ -526,7 +526,10 @@ if submitted:
 
        st.subheader("💰 APARTADO")
        st.markdown("### 📊 Cotizador")
-       st.link_button("[Abrir cotizador](https://procotiza.losnrtelepro.com.mx/Procotiza/login.aspx?mns)")
+       st.link_button(
+           "📊 Abrir Cotizador",
+            "https://procotiza.losnrtelepro.com.mx/Procotiza/login.aspx?mns"
+       )    
 
        if r["plan"] == "DIRECTO":
          st.success("👉 Solicitar ENGANCHE COMPLETO")
