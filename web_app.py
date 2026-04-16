@@ -350,7 +350,7 @@ if submitted:
            mensaje = """👉 Mejora viable:
 
    ° Subir enganche mínimo 10 pts     
-   ° Validación de perfil NRFM     
+   ° Validación de perfil por financiera     
    """ 
        else:
           decision = "🟡 PRE APROBADO"
@@ -504,8 +504,7 @@ if submitted:
            ingreso_cot = st.number_input("Ingreso cotitular")
            buro_cot = st.selectbox("Historial", ["Malo","Regular","Bueno"])
 
-           if st.form_submit_button("Evaluar cotitular"):
-
+           if st.button("Evaluar cotitular"):
               capacidad_total = (ingreso + ingreso_cot) * 0.3
 
               if tipo_cot == "Conocido" and buro_cot != "Bueno":
@@ -526,6 +525,8 @@ if submitted:
         # =========================
 
        st.subheader("💰 APARTADO")
+       st.markdown("### 📊 Cotizador")
+       st.link_button("[Abrir cotizador](https://procotiza.losnrtelepro.com.mx/Procotiza/login.aspx?mns)")
 
        if r["plan"] == "DIRECTO":
          st.success("👉 Solicitar ENGANCHE COMPLETO")
@@ -537,14 +538,7 @@ if submitted:
          st.markdown("### 🏦 Cuenta BBVA")
          st.write("Cuenta DAOSA SA DE CV: 012320001250476847")
 
-       # =========================
-       # COTIZADOR
-       # =========================
-
-         st.markdown("### 📊 Cotizador")
-         st.markdown("[Abrir cotizador](https://procotiza.losnrtelepro.com.mx/Procotiza/login.aspx?mns)")
-    
-    
+                  
        # =========================
        # MENSAJE PARA PDF (INTELIGENTE)
        # =========================
@@ -686,3 +680,4 @@ if submitted:
             mime="application/pdf"
 
         )          
+ 
