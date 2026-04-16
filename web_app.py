@@ -453,11 +453,23 @@ if submitted:
 
        r = st.session_state.resultado
 
-       st.subheader("📊 RESULTADO")
+       # =========================
+       # 📊 RESULTADO GENERAL
+       # =========================
+       st.subheader("📊 RESULTADO") 
 
-       # 🔴 SOLO mensaje condicionado
+       # 🟢 DECISIÓN (PRINCIPAL)
+       if "APROBADO" in r["decision"]:
+           st.success(r["decision"])
+       elif "CONDICIONES" in r["decision"] or "AJUSTE" in r["decision"]:
+           st.warning(r["decision"])
+       else:  
+           st.error(r["decision"])      
+
+       # 🔴MENSAJE GUIA
        if "mensaje" in r and r["mensaje"]:
             st.warning(r["mensaje"])
+       st.divider()     
 
        # =========================
        # SCORE VISUAL
@@ -482,15 +494,46 @@ if submitted:
        st.subheader(score_label)
        st.write(score_desc)
        st.write(f"Probabilidad: {r['prob']}%")
-       st.markdown(f"### 💰 Tu mensualidad maxima es de: ${r[ 'capacidad_pago']:,.0f}")
-       st.write(r["temp"])
-       st.write(r["investigacion"])
-       st.subheader(r["decision"])
+       
+       st.divider()
 
-       # DOCUMENTOS
+       # =========================
+       # 💰 CAPACIDAD
+       # =========================
+       st.subheader("💰 Capacidad de pago")
+       st.markdown(f"### ${r['capacidad_pago']:,.0f}")
+
+       st.divider()
+
+       # =========================
+       # 🔥 TEMPERATURA
+       # =========================
+       st.subheader("🔥 Temperatura de venta")
+       if "CALIENTE" in r["temp"]:
+           st.success(r["temp"])
+       elif "TIBIO" in r["temp"]:
+           st.warning(r["temp"])
+       else:
+           st.info(r["temp"])
+       st.divider()    
+
+       # =========================
+       # 🔎 INVESTIGACIÓN
+       # =========================
+       st.subheader("🔎 Validaciones")
+       st.write(r["investigacion"])
+
+       st.divider()
+
+
+       # =========================
+       # 📄 DOCUMENTOS DOCUMENTOS
+       # =========================
        st.subheader("📄 Documentación")
        for d in r["documentos"]:
            st.write(f"• {d}")
+
+       st.divider()    
 
        # =========================
        # COTITULAR
@@ -520,26 +563,32 @@ if submitted:
           st.subheader("📊 RESULTADO FINAL")
           st.write(st.session_state.cotitular_resultado)
 
-        # =========================
-        # APARTADO
-        # =========================
+       st.divider()   
 
-       st.subheader("💰 APARTADO")
+        # =========================
+        # 💰 APARTADO + ACCIÓN
+        # =========================
+       st.subheader("💰 Siguiente paso")
+       if r["plan"] == "DIRECTO":
+           st.success("👉 Solicitar ENGANCHE COMPLETO")
+       else:
+           st.warning("👉 Solicitar APARTADO $5,000")
+       st.error("⚠️ Solicita anticipo para asegurar unidad")   
+       st.markdown("### 🏦 Cuenta BBVA")
+       st.write("Cuenta DAOSA SA DE CV: 012320001250476847")
+       
+       st.divider()
+       # =========================
+       # 📊 COTIZADOR
+       # =========================
+       
        st.markdown("### 📊 Cotizador")
        st.link_button(
-           "📊 Abrir Cotizador",
-            "https://procotiza.losnrtelepro.com.mx/Procotiza/login.aspx?mns"
-       )    
+        "📊 Cotizar ahora",
+         "https://procotiza.losnrtelepro.com.mx/Procotiza/login.aspx?mns"
+       )
 
-       if r["plan"] == "DIRECTO":
-         st.success("👉 Solicitar ENGANCHE COMPLETO")
-       else:
-         st.warning("👉 Solicitar APARTADO $5,000")
-
-         st.error("⚠️ solicita anticipo para asegurar unidad")
-
-         st.markdown("### 🏦 Cuenta BBVA")
-         st.write("Cuenta DAOSA SA DE CV: 012320001250476847")
+       
 
                   
        # =========================
@@ -683,4 +732,5 @@ if submitted:
             mime="application/pdf"
 
         )          
+         
  
