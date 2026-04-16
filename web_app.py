@@ -6,7 +6,7 @@ from io import BytesIO
 st.set_page_config(page_title="Perfilador PRO", layout="centered")
 
 st.markdown("""
-<h1 style='text-align: center; color
+<h1 style='text-align: center; color: #00E0FF; margin-borrom: 20px;'>
 🚗 AutoScore AI
 </h1>)
 """, unsafe_allow_html=True)
