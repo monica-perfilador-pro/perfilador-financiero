@@ -5,7 +5,11 @@ from io import BytesIO
 
 st.set_page_config(page_title="Perfilador PRO", layout="centered")
 
-st.title("🚗 PERFILADOR FINANCIERO PRO")
+st.maarkdown("""
+<h1 style='text-align: center; color
+🚗 AutoScore AI
+</h1>)
+""", unsafe_allow_html=True)
 
 # =========================
 # SESSION
@@ -20,11 +24,12 @@ if "cotitular_resultado" not in st.session_state:
     st.session_state.cotitular_resultado = None
 
 with st.form("formulario"):
-   
+  with st.container():  
     # =========================
     #  DATOS ASESOR
     # =========================
-    st.markdown("# 👤 Datos del asesor")    
+    st.markdown("# 👤 Datos del asesor")
+       
 
     asesor = st.text_input("Nombre asesor")
     telefono_asesor = st.text_input("Teléfono asesor")
