@@ -471,10 +471,6 @@ if submitted:
             st.warning(r["mensaje"])
        st.divider()     
 
-       # =========================
-       # SCORE VISUAL
-       # =========================
-
        if r["score_color"] == "AZUL":
            score_label = "🔵 SCORE AZUL"
            score_desc = "Perfil fuerte, alta probabilidad de aprobación"
