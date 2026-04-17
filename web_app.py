@@ -493,18 +493,14 @@ if submitted:
     
        st.subheader(score_label)
        st.write(score_desc)
-       st.write(f"Probabilidad: {r['prob']}%")
-       
-       st.divider()
 
-       # =========================
-       # 💰 CAPACIDAD
-       # =========================
+       st.write(f"Probabilidad: {r['prob']}%")
+       st.progress(r["prob"]/100)
+              
        st.subheader("💰 Capacidad de pago")
        st.markdown(f"### ${r['capacidad_pago']:,.0f}")
 
        st.divider()
-
        # =========================
        # 🔥 TEMPERATURA
        # =========================
@@ -522,10 +518,7 @@ if submitted:
        # =========================
        st.subheader("🔎 Validaciones")
        st.write(r["investigacion"])
-
-       st.divider()
-
-
+     
        # =========================
        # 📄 DOCUMENTOS DOCUMENTOS
        # =========================
@@ -563,8 +556,7 @@ if submitted:
           st.subheader("📊 RESULTADO FINAL")
           st.write(st.session_state.cotitular_resultado)
 
-       st.divider()   
-
+       
         # =========================
         # 💰 APARTADO + ACCIÓN
         # =========================
@@ -577,7 +569,6 @@ if submitted:
        st.markdown("### 🏦 Cuenta BBVA")
        st.write("Cuenta DAOSA SA DE CV: 012320001250476847")
        
-       st.divider()
        # =========================
        # 📊 COTIZADOR
        # =========================
@@ -587,10 +578,7 @@ if submitted:
         "📊 Cotizar ahora",
          "https://procotiza.losnrtelepro.com.mx/Procotiza/login.aspx?mns"
        )
-
-       
-
-                  
+                      
        # =========================
        # MENSAJE PARA PDF (INTELIGENTE)
        # =========================
@@ -732,5 +720,6 @@ if submitted:
             mime="application/pdf"
 
         )          
+       
          
  
