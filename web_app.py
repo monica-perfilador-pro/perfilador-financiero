@@ -278,110 +278,168 @@ if submitted:
    # =========================     
 
    mensaje = ""
+   mensaje_cliente = ""
+   mensaje_asesor = ""
    decision = "🟡 EN EVALUACIÓN"
    plan = "REVISION"
 
-   # 🔴 BLOQUEO TOTAL
+    # 🔴 BLOQUEO TOTAL
    if atrasos == 3:
-       decision = "🔴 RECHAZADO"
-       plan = "KUNA"
+        decision = "🟠 ESTRATEGIA ALTERNATIVA"
+        plan = "ALTERNATIVA"
+        
+        mensaje_cliente = """Tu perfil puede avanzar mediante una alternativa de financiamiento.
 
-     # 🔴 SCORE MUY BAJO
+        Esto no detiene tu proceso, solo cambia la estrategia.
+
+        Tu asesor te guiará para lograr la mejor opcion.""" 
+        mensaje_asesor = """ 
+        🔍 Estrategia recomendada:
+    ° Ofrecer financiera flexible
+    ° Buscar cotitular fuerte
+    ° Subir enganche
+    ° Evitar más consultas en buró
+    """
+
+        # 🔴 SCORE MUY BAJO
    elif score_color == "ROJO":
-        decision = "🔴 RECHAZADO"
-        plan = "KUNA"
+            decision = "🟠 ESTRATEGIA ALTERNATIVA"
+            plan = "FINANCIERA FLEXIBLE"
 
-        mensaje = """👉 Perfil no viable para crédito tradicional.
+            mensaje_cliente = """Tu perfil actualmente requiere una alternativa de financiamiento.
 
-    Opciones:
-   ° Plan KUNA (buró lastimado)
-   ° Perfilar correctamente (verifica campos)
-   ° Enganche alto requerido
+        Esto no detiene tu proceso, solo cambia la estrategia.
 
-   Recomendación:
-   Ingresar con otro perfil
-   """
+        Tu asesor te ayudará a encontrar la mejor solucion."""
 
-   # ⚠️ CAPACIDAD DE PAGO (CONDICIONA)
+            mensaje_asesor = """
+            🔍 Estrategia recomendada:
+    ° Ofrecer financiera flexible
+    ° Buscar cotitular fuerte
+    ° Subir enganche
+    ° Evitar más consultas en buró
+    """  
+
+    # ⚠️ CAPACIDAD DE PAGO (CONDICIONA)
    elif excede_capacidad and prob < 70:
-        decision = "🟡 AJUSTE NECESARIO"
-        plan = "AJUSTAR_PLAZO"
+            decision = "🟡 AJUSTE NECESARIO"
+            plan = "AJUSTAR_PLAZO"
+            
+            mensaje_cliente = """La mensualidad puede ajustarse para mejorar tu perfil.
+        Tu asesor te ayudara a encontrar una mejor estructura."""    
 
-        mensaje = """⚠️ Capacidad de pago excedida.
-
-   ° Ampliar plazo
-   ° Reducir monto
-   ° Probable validación de ingresos
-   """
+            mensaje_asesor = """
+        🔧 Ajuste recomendado:
+        
+    ° Ampliar plazo
+    ° Reducir monto a financiar
+    ° Validar ingresos
+    """
 
    # 🟠 RIESGO MEDIO (RESCATABLE)
    elif riesgo_medio and prob < 60:
-        decision = "🟠 PERFIL CON RIESGO (POSIBLE RESCATE)"
+        decision = "🟠 PERFIL CON OPORTUNIDAD"
         plan = "RESCATE"
 
-        mensaje = """👉 Perfil con riesgo detectado.
+        mensaje_cliente = """Tu perfil tiene alta posibilidad de avanzar ajustando algunos puntos clave.
+    Tu asesor te ayudará a estructurar la mejor opción para lograr la aprobación."""    
 
-   ° Subir enganche mínimo al 25%
-   ° Cotitular línea directa
+        mensaje_asesor = """
+        🔧 Estrategia recomendada:
+
+   ° Subir enganche (ideal 25%+)
+   ° Buscar cotitular línea directa
    ° Evitar más consultas en buró
    """
 
    # 🟢 PROBABILIDAD ALTA
-   if prob >= 70:
+   elif prob >= 70:
       if riesgo_medio:
-         decision = "🟢 APROBADO EN ANÁLISIS"
+         decision = "🟢 APROBADO EN PROCESO"
          plan = "SE VA A ANALISIS"
 
-         mensaje = """👉 Perfil con observaciones:
+         mensaje_cliente = """Tu perfil es viable y puede avanzar a proceso de aprobación.
+    Durante el proceso podrían aplicarse validaciones normales."""
 
+         mensaje_asesor = """
+         🔍 Consideraciones:     
    ° Posible validación de ingresos
    ° Investigación telefónica
    """
       else:
-        decision = "🟢 APROBADO AUTOMÁTICO"
-        plan = "DIRECTO"
+        decision = "🟢 APROBADO"
+        plan = "AUTOMATICO"
+
+        mensaje_cliente = """Tu perfil cumple con los criterios para avanzar en automatico.
+    Puedes continuar con tu proceso de forma inmediata."""
+        mensaje_asesor = "Perfil limpio. Proceder directo."    
 
    # 🟡 PERFIL MEDIO
    elif prob >= 50:
        if enganche_pct < 20 or riesgo_medio:
-           decision = "🟡 APROBABLE CON CONDICIONES"
+           decision = "🟡 APROBABLE AJUSTES"
            plan = "CONDICIONADO"
 
-           mensaje = """👉 Mejora viable:
-
-   ° Subir enganche mínimo 10 pts     
-   ° Validación de perfil por financiera     
-   """ 
+           mensaje_cliente = """Tu perfil es viable realizando algunos ajustes.
+    Tu asesor te ayudará a mejorar las condiciones para avanzar con mayor seguridad."""
+           mensaje_asesor = """
+           
+   ° Subir enganche mínimo (+10 pts ideal)    
+   ° Validación por financiera
+   """   
+  
        else:
           decision = "🟡 PRE APROBADO"
           plan = "DIRECTO"
 
+          mensaje_cliente = """Tu perfil es favorable para avanzar.
+   Se puede continuar con condiciones normales."""
+
+          mensaje_asesor = "Perfil estable. Proceder."       
+
    # 🟡 PERFIL BAJO
    elif prob >= 35:
-           decision = "🟡 RESCATABLE CON COTITULAR"
+           decision = "🟡 PERFIL MEJORABLE"
            plan = "COTITULAR"
 
-           mensaje = """👉 Perfil bajo:
+           mensaje_cliente = """Tu perfil puede fortalecerse con apoyo adicional.
+   Tu asesor te ayudará a estructurar una mejor opcion para lograr la aprobación."""
 
-   ° Requiere cotitular con buen score
+           mensaje_asesor = """
+     🔧 Estrategia:
+    ° Integrar cotitular fuerte
    """
+
+   
 
    # 🔴 NO VIABLE
    else:
-       decision = "🔴 RECHAZADO"
-       plan = "KUNA"
+       decision = "🟠 ESTRATEGIA ALTERNATIVA"
+       plan = "ALTERNATIVA"
+
+       mensaje_cliente = """Tu perfil puede avanzar mediante una alternativa de financiamiento.
+    Esto no detiene tu proceso, solo cambia la estrategia.
+
+    Tu asesor te ayudará a encontrar la mejor solución."""  
+       mensaje_asesor = """
+
+     🔍 Estrategia: 
+
+    • Financiera flexible
+    • Reestructura de perfil
+    """
     
    # INVESTIGACIÓN
-   investigacion = "🟢 Sin investigación"
+   investigacion = "🟢 Sin validaciones relevantes"
 
    if tipo_ingreso == "Independiente" and negocio_casa == 1 and prob < 80:
-       investigacion = "🔴 Investigación física obligatoria"
+       investigacion = "🔴 Requiere validación física"
    elif tipo_ingreso == "independiente" and prob < 70:
        investigacion = "🟡 validacion de ingresos"
    elif domicilio_buro == 2:
-       investigacion = "🔴 Investigación por domicilio"
+       investigacion = "🔴 Validación de domicilio"
    elif tipo_ingreso != "Nómina" and prob < 45:
-       investigacion = "🔴 Alta probabilidad de IF"
+       investigacion = "🔴 Validación adicional requerida"
 
    # DOCUMENTOS
    documentos = ["INE", "Comprobante de domicilio"]
@@ -424,6 +482,8 @@ if submitted:
        "decision": decision,
        "plan": plan,
        "mensaje": mensaje,
+       "mensaje_cliente": mensaje_cliente,
+       "mensaje_asesor": mensaje_asesor,
 
     # CLIENTE    
       "nombre": nombre_cliente,   
@@ -457,19 +517,33 @@ if submitted:
        # 📊 RESULTADO GENERAL
        # =========================
        st.subheader("📊 RESULTADO") 
-
-       # 🟢 DECISIÓN (PRINCIPAL)
+       
+       # 🟢 DECISIÓN (INTELIGENTE)
        if "APROBADO" in r["decision"]:
            st.success(r["decision"])
-       elif "CONDICIONES" in r["decision"] or "AJUSTE" in r["decision"]:
+       elif "ALTERNATIVA" in r["decision"]:
            st.warning(r["decision"])
+       elif "CONDICIONES" in r["decision"] or "AJUSTE" in r["decision"]:
+           st.warning(r["decision"])    
        else:  
            st.error(r["decision"])      
 
-       # 🔴MENSAJE GUIA
-       if "mensaje" in r and r["mensaje"]:
-            st.warning(r["mensaje"])
-       st.divider()     
+       # 💡 MENSAJE CLIENTE (SOLO UNA VEZ)
+       if r.get("mensaje_cliente"):
+            st.markdown(f"""
+            <div style="background-color:#1e293b;padding:15px;border-radius:10px">
+            💡 {r['mensaje_cliente']}💡 {r['mensaje_cliente']}
+            </div>
+            """, unsafe_allow_html=True)
+                        
+       # 🔒 MENSAJE ASESOR     
+       with st.expander("🔒 Estrategia interna"):
+           st.write(r.get("mensaje_asesor", ""))
+    
+       st.divider() 
+       # =========================
+       # SCORE
+       # =========================    
 
        if r["score_color"] == "AZUL":
            score_label = "🔵 SCORE AZUL"
@@ -485,16 +559,20 @@ if submitted:
            score_desc = "Perfil débil, requiere estructura (cotitular/enganche)"
        else:
            score_label = "🔴 SCORE ROJO"
-           score_desc = "Perfil de alto riesgo, probable rechazo"
+           score_desc = "Perfil de análisis alternativo"
     
        st.subheader(score_label)
        st.write(score_desc)
 
        st.write(f"Probabilidad: {r['prob']}%")
        st.progress(r["prob"]/100)
+       st.divider()
               
        st.subheader("💰 Capacidad de pago")
        st.markdown(f"### ${r['capacidad_pago']:,.0f}")
+       st.markdown(f"### 💡 {r['mensaje_cliente']}")
+       with st.expander("🔒 Estrategia interna"):
+           st.write(r.get("mensaje_asesor", ""))
 
        st.divider()
        # =========================
@@ -644,6 +722,7 @@ if submitted:
          Paragraph(f"Probabilidad estimada: {r['prob']}%", styles["Normal"]),
          Paragraph(f"<b>Mensualidad maxima recomendada:</b> ${r.get('capacidad_pago',0):,.0f}", styles["Normal"]),
          Paragraph(mensaje_perfil, styles["Normal"]),
+         Paragraph(r.get("mensaje_cliente", ""), styles["Normal"]),
          
 
          Paragraph(" ", styles["Normal"]),
@@ -716,6 +795,3 @@ if submitted:
             mime="application/pdf"
 
         )          
-       
-         
- 
