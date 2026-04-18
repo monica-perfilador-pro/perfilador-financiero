@@ -57,16 +57,20 @@ with st.form("formulario"):
 
     tipo_ingreso = st.selectbox(
         "Tipo de ingreso",
-        ["Nómina", "Independiente", "No comprueba ingresos"]
+        ["Nómina", "Independiente", "No comprueba ingresos"],
+        key="tipo_ingreso"
+    
     )
 
-    negocio_casa = 2
     if tipo_ingreso == "Independiente":
         negocio_casa = st.selectbox(
             "¿Negocio en domicilio?", 
             [1,2], 
-            format_func=lambda x: "Sí" if x==1 else "No"
-        )    
+            format_func=lambda x: "Sí" if x==1 else "No",
+            key="negocio_casa"
+    )  
+    else:
+        negocio_casa = 2  
 
     domicilio = st.selectbox(
        "Antigüedad domicilio", 
@@ -221,7 +225,7 @@ if submitted:
 
    if tipo_ingreso == "Nómina":
       capacidad_pago = ingreso / 2
-   elif tipo_ingreso == "Independiente":    
+   elif tipo_ingreso == "independiente":    
       capacidad_pago = ingreso / 3.33     
    else:      
       capacidad_pago = ingreso / 3.33
