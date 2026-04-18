@@ -518,7 +518,7 @@ if submitted:
        # =========================
        st.subheader("📊 RESULTADO") 
        
-       # 🟢 DECISIÓN (INTELIGENTE)
+       # 🟢 DECISIÓN (INTELIGENTE)  
        if "APROBADO" in r["decision"]:
            st.success(r["decision"])
        elif "ALTERNATIVA" in r["decision"]:
@@ -558,8 +558,8 @@ if submitted:
            score_label = "🟠 SCORE NARANJA"
            score_desc = "Perfil débil, requiere estructura (cotitular/enganche)"
        else:
-           score_label = "🔴 SCORE ROJO"
-           score_desc = "Perfil de análisis alternativo"
+           sscore_label = "🟠 PERFIL EN DESARROLLO"
+           score_desc = "Perfil con oportunidad mediante estrategia alternativa"
     
        st.subheader(score_label)
        st.write(score_desc)
@@ -570,9 +570,7 @@ if submitted:
               
        st.subheader("💰 Capacidad de pago")
        st.markdown(f"### ${r['capacidad_pago']:,.0f}")
-       st.markdown(f"### 💡 {r['mensaje_cliente']}")
-       with st.expander("🔒 Estrategia interna"):
-           st.write(r.get("mensaje_asesor", ""))
+       st.write(r.get("mensaje_asesor", ""))
 
        st.divider()
        # =========================
@@ -656,48 +654,7 @@ if submitted:
        # =========================
        # MENSAJE PARA PDF (INTELIGENTE)
        # =========================
-
-       if r["score_color"] == "AZUL":
-         mensaje_perfil = "Perfil con alta probabilidad de autorización."
-
-         posibles_condiciones = """
-         - Validación telefónica<br/>
-         """
-        
-       elif r["score_color"] == "VERDE":
-         mensaje_perfil = "Perfil sólido, sujeto a validaciones estándar."
-
-         posibles_condiciones = """
-         - Validación de ingresos<br/>
-         - Validación telefónica<br/>
-         """
-        
-       elif r["score_color"] == "AMARILLO":
-         mensaje_perfil = "Perfil viable, sujeto a revisión adicional."
-
-         posibles_condiciones = """
-         - Validación de ingresos<br/>
-         - Investigación telefónica o física<br/>
-         - Posible ajuste de condiciones<br/>
-         """
-
-       elif r["score_color"] == "NARANJA":
-         mensaje_perfil = "Perfil condicionado, requiere estructura para aprobación."
-
-         posibles_condiciones = """
-         - Cotitular recomendado<br/>
-         - Investigación<br/>
-         - Ajuste de enganche o plazo<br/>
-         """
-
-       else:  # ROJO
-         mensaje_perfil = "Perfil de alto riesgo, se recomienda estrategia alternativa."
-
-         posibles_condiciones = """
-         - Plan alternativo (KUNA)<br/>
-         - Reestructura de perfil<br/>
-         - Nuevo solicitante<br/>
-         """            
+       mensaje_pdf = r.get("mensaje_cliente", "")    
      
 
        buffer = BytesIO()
@@ -718,19 +675,24 @@ if submitted:
 
         # RESULTADO
          Paragraph("<b>RESULTADO DE PERFIL</b>", styles["Heading2"]),
-         Paragraph(f"Estatus: SCORE {r['score_color']}", styles["Normal"]),
+         Paragraph(f"Estatus: {r['decision']}", styles["Normal"]),
          Paragraph(f"Probabilidad estimada: {r['prob']}%", styles["Normal"]),
          Paragraph(f"<b>Mensualidad maxima recomendada:</b> ${r.get('capacidad_pago',0):,.0f}", styles["Normal"]),
-         Paragraph(mensaje_perfil, styles["Normal"]),
-         Paragraph(r.get("mensaje_cliente", ""), styles["Normal"]),
-         
+
+         Paragraph("<b>Resultado del análisis:</b>", styles["Heading3"]),
+         Paragraph(mensaje_pdf, styles["Normal"]),
+                 
 
          Paragraph(" ", styles["Normal"]),
 
 
         # CONDICIONES
          Paragraph("<b>Posibles validaciones durante el proceso:</b>", styles["Heading3"]),
-         Paragraph(f"{posibles_condiciones}", styles["Normal"]),
+         Paragraph("""
+         - Validación de ingresos
+         - Confirmación de datos                    
+         - Revisión por financiera
+         """, styles["Normal"]),          
  
          Paragraph(" ", styles["Normal"]),
 
