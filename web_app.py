@@ -23,106 +23,105 @@ if "cotitular_activo" not in st.session_state:
 if "cotitular_resultado" not in st.session_state:
     st.session_state.cotitular_resultado = None
 
-with st.form("formulario"):
-  with st.container():  
     # =========================
-    #  DATOS ASESOR
+    # TIPO DE INGRESO 
     # =========================
-    st.markdown("# 👤 Datos del asesor")
-       
-
-    asesor = st.text_input("Nombre asesor")
-    telefono_asesor = st.text_input("Teléfono asesor")
-    correo_asesor = st.text_input("Correo asesor")
-    rfc = st.text_input("RFC asesor")
-
-    # =========================
-    # DATOS CLIENTE
-    # =========================
-    st.markdown("## 👥 Datos del cliente")
-
-    nombre_cliente = st.text_input("Nombre cliente")
-    telefono = st.text_input("Teléfono")
-    correo = st.text_input("Correo")
-
-    edad = st.number_input("Edad", 18, 73, 18)
-        
-    ingreso = st.number_input(
-        "Ingreso mensual",
-        min_value=6500.0,
-        value=6500.0,
-        step=500.0,
-        format="%.2f"
-    )
-
-tipo_ingreso = st.selectbox(
+    tipo_ingreso = st.selectbox(
         "Tipo de ingreso",
         ["Nómina", "Independiente", "No comprueba ingresos"],
         key="tipo_ingreso"
     
     )
 
-if tipo_ingreso == "Independiente":
+    if tipo_ingreso == "Independiente":
         negocio_casa = st.selectbox(
             "¿Negocio en domicilio?", 
             [1,2], 
             format_func=lambda x: "Sí" if x==1 else "No",
             key="negocio_casa"
     )  
-else:
+    else:
         negocio_casa = 2  
 
-        domicilio = st.selectbox(
-       "Antigüedad domicilio", 
-       [1,2,3],
-       format_func=lambda x: ["<1 año","1-3 años","+3 años"][x-1]
-    )
+    with st.form("formulario"):
+        
+       # =========================
+       # DATOS ASESOR
+       # =========================
+       st.markdown("# 👤 Datos del asesor")
+       asesor = st.text_input("Nombre asesor")
+       telefono_asesor = st.text_input("Teléfono asesor")
+       correo_asesor = st.text_input("Correo asesor")
+       rfc = st.text_input("RFC asesor")
 
-        domicilio_buro = st.selectbox(
-       "¿Tu domicilio coincide con identificaciones?",
-        [1,2],
-      format_func=lambda x: "Sí" if x==1 else "No"
-    )
+       # =========================
+       # DATOS CLIENTE
+       # =========================
+       st.markdown("## 👥 Datos del cliente")
+       nombre_cliente = st.text_input("Nombre cliente")
+       telefono = st.text_input("Teléfono")
+       correo = st.text_input("Correo")
+       edad = st.number_input("Edad", 18, 73, 18)
+       ingreso = st.number_input(
+           "Ingreso mensual",
+           min_value=6500.0,
+           value=6500.0,
+           step=500.0,
+           format="%.2f"
+        )   
+       
+         
+       domicilio = st.selectbox(
+          "Antigüedad domicilio", 
+          [1,2,3],
+          format_func=lambda x: ["<1 año","1-3 años","+3 años"][x-1]
+        )
 
-        precio = st.number_input("Precio vehículo", format="%0.2f")
-        enganche = st.number_input("Enganche", format="%0.2f")
+       domicilio_buro = st.selectbox(
+          "¿Tu domicilio coincide con identificaciones?",
+          [1,2],
+          format_func=lambda x: "Sí" if x==1 else "No"
+        )
 
-        consultas = st.number_input("Consultas o creditos recientes (últimos 3 meses)", 0, 20)
-        plazo = st.selectbox("Plazo", [12,24,36,48,60,72])
+       precio = st.number_input("Precio vehículo", format="%0.2f")
+       enganche = st.number_input("Enganche", format="%0.2f")
+
+       consultas = st.number_input("Consultas o creditos recientes (últimos 3 meses)", 0, 20)
+       plazo = st.selectbox("Plazo", [12,24,36,48,60,72])
 
     # =========================
     # HISTORIAL
     # =========================
-        st.subheader("📊 Historial")
+       st.subheader("📊 Historial")
 
-        auto = st.selectbox("Automotriz", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
-        credinissan = st.selectbox("CrediNissan", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
+       auto = st.selectbox("Automotriz", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
+       credinissan = st.selectbox("CrediNissan", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
 
-        hipotecario = st.selectbox(
+       hipotecario = st.selectbox(
       "Hipotecario",
        [1,2,3],
        format_func=lambda x: ["Bancario","Infonavit","No tiene"][x-1]
     )
 
-        tarjeta_alta = st.selectbox("Tarjetas mayores a 100 mil", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
-        tarjeta_baja = st.selectbox("Tarjetas menores a 100 mil o departamentales", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
+       tarjeta_alta = st.selectbox("Tarjetas mayores a 100 mil", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
+       tarjeta_baja = st.selectbox("Tarjetas menores a 100 mil o departamentales", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
 
-        atrasos = st.selectbox(
-      "Atrasos", 
-      [1,2,3],
-      format_func=lambda x: ["Sin","Leves","Fuertes"][x-1]
+       atrasos = st.selectbox(
+          "Atrasos", 
+          [1,2,3],
+          format_func=lambda x: ["Sin","Leves","Fuertes"][x-1]
     )
 
     # =========================
     # PERFIL COMPRA
     # =========================
-        st.subheader("🔥 Perfil compra")
+       st.subheader("🔥 Perfil compra")
 
-        enganche_disp = st.selectbox("¿Tiene enganche?", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
-        compra_mes = st.selectbox("¿Compra este mes?", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
-        unidad = st.selectbox("¿Hay unidad?", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
+       enganche_disp = st.selectbox("¿Tiene enganche?", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
+       compra_mes = st.selectbox("¿Compra este mes?", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
+       unidad = st.selectbox("¿Hay unidad?", [1,2], format_func=lambda x: "Sí" if x==1 else "No")
 
-        submitted = st.form_submit_button("🔥ANALIZAR PERFIL")
+       submitted = st.form_submit_button("🔥ANALIZAR PERFIL")
 
 # =========================
 # ANALIZAR
