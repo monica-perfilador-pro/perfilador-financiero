@@ -30,9 +30,34 @@ if "cotitular_activo" not in st.session_state:
 if "cotitular_resultado" not in st.session_state:
     st.session_state.cotitular_resultado = None
 
+      
+     # 👤 ASESOR
+    st.markdown("# 👤 Datos del asesor")
 
+    asesor = st.text_input("Nombre asesor")
+    telefono_asesor = st.text_input("Teléfono asesor")
+    correo_asesor = st.text_input("Correo asesor")
+    rfc = st.text_input("RFC asesor")
+    st.divider()
+
+    # 👥 CLIENTE
+    st.markdown("## 👥 Datos del cliente")
+    nombre_cliente = st.text_input("Nombre cliente")
+    telefono = st.text_input("Teléfono")
+    correo = st.text_input("Correo")
 with st.form("formulario"):
     st.markdown("## 📊 Perfil del cliente")
+
+    edad = st.number_input("Edad", 18, 73, 18)
+
+    ingreso = st.number_input(
+           "Ingreso mensual",
+           min_value=6500.0,
+           value=6500.0,
+           step=500.0,
+           format="%.2f"
+     )
+
 
     tipo_ingreso = st.selectbox(
          "Tipo de ingreso",
@@ -49,33 +74,8 @@ with st.form("formulario"):
         )   
     else:
      negocio_casa = 2  # valor por default (NO aplica)
-    st.divider()
-   
-      
-     # 👤 ASESOR
-    st.markdown("# 👤 Datos del asesor")
-
-    asesor = st.text_input("Nombre asesor")
-    telefono_asesor = st.text_input("Teléfono asesor")
-    correo_asesor = st.text_input("Correo asesor")
-    rfc = st.text_input("RFC asesor")
-    st.divider()
-
-    # 👥 CLIENTE
-    st.markdown("## 👥 Datos del cliente")
-    nombre_cliente = st.text_input("Nombre cliente")
-    telefono = st.text_input("Teléfono")
-    correo = st.text_input("Correo")
-
-    edad = st.number_input("Edad", 18, 73, 18)
-
-    ingreso = st.number_input(
-           "Ingreso mensual",
-           min_value=6500.0,
-           value=6500.0,
-           step=500.0,
-           format="%.2f"
-     )   
+    st.divider() 
+          
     domicilio = st.selectbox(
           "Antigüedad domicilio", 
           [1,2,3],
