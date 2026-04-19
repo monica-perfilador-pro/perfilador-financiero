@@ -58,11 +58,11 @@ with st.form("formulario"):
     edad = st.number_input("Edad", 18, 73, 18)
 
     ingreso = st.number_input(
-           "Ingreso mensual",
-           min_value=6500.0,
-           value=6500.0,
-           step=500.0,
-           format="%.2f"
+        "Ingreso mensual",
+        min_value=6500.0,
+        value=6500.0,
+        step=500.0,
+        format="%.2f"
     )
     tipo_ingreso = st.selectbox(
         "Tipo de ingreso",
@@ -75,9 +75,11 @@ with st.form("formulario"):
         "¿Negocio en domicilio?",
         [1, 2],
         format_func=lambda x: "Sí" if x == 1 else "No",
-        key="negocio_casa",
-        disabled=(tipo_ingreso != "Independiente")
-    )   
+    )    
+    # ⚠️ aviso visual (UX)
+    if tipo_ingreso != "Independiente":
+      st.caption("⚠️ Solo aplica para independientes")    
+     
  
     domicilio = st.selectbox(
           "Antigüedad domicilio", 
@@ -288,7 +290,7 @@ if submitted:
     # 🔴 SCORE MUY BAJO
    elif score_color == "ROJO":
         decision = "🟠 ESTRATEGIA ALTERNATIVA"
-        plan = "FINANCIERA FLEXIBLE"
+        plan = "COTITULAR"
 
         mensaje_cliente = """Tu perfil actualmente requiere una alternativa de financiamiento."""
         mensaje_asesor = """Buscar cotitular fuerte / Subir enganche / Evitar más consultas en buró."""
@@ -360,10 +362,11 @@ if submitted:
    # INVESTIGACIÓN
    investigacion = "🟢 Sin validaciones relevantes"
 
-   if tipo_ingreso == "Independiente" and negocio_casa == 1 and prob < 80:
+   if tipo_ingreso == "Independiente" and negocio_casa == 1:
+       prob = max(prob, 80)
        investigacion = "🔴 Requiere validación física"
 
-   elif tipo_ingreso == "Independiente" and prob < 70:
+   elif tipo_ingreso == "Independiente":
        investigacion = "🟡 validacion de ingresos"
        
    elif domicilio_buro == 2:
