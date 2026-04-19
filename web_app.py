@@ -28,30 +28,30 @@ if "cotitular_activo" not in st.session_state:
     st.session_state.cotitular_activo = False
 
 if "cotitular_resultado" not in st.session_state:
-    st.session_state.cotitular_resultado = None
+  st.session_state.cotitular_resultado = None
 
-      
-     # 👤 ASESOR
-    st.markdown("# 👤 Datos del asesor")
+if "analizado" not in st.session_state:
+    st.session_state.analizado = False
+# =========================      
+# 👤 ASESOR
+# =========================
+st.markdown("# 👤 Datos del asesor")
 
-    asesor = st.text_input("Nombre asesor")
-    telefono_asesor = st.text_input("Teléfono asesor")
-    correo_asesor = st.text_input("Correo asesor")
-    rfc = st.text_input("RFC asesor")
-    st.divider()
+asesor = st.text_input("Nombre asesor")
+telefono_asesor = st.text_input("Teléfono asesor")
+correo_asesor = st.text_input("Correo asesor")
+rfc = st.text_input("RFC asesor")
+st.divider()
 
-    # 👥 CLIENTE
-    st.markdown("## 👥 Datos del cliente")
-    nombre_cliente = st.text_input("Nombre cliente")
-    telefono = st.text_input("Teléfono")
-    correo = st.text_input("Correo")
+# =========================
+# 👥 CLIENTE
+# =========================
+st.markdown("## 👥 Datos del cliente")
+nombre_cliente = st.text_input("Nombre cliente")
+telefono = st.text_input("Teléfono")
+correo = st.text_input("Correo")
 
-    tipo_ingreso = st.selectbox(
-         "Tipo de ingreso",
-         ["Nómina", "Independiente", "No comprueba ingresos"],
-         key="tipo_ingreso"
-    )
- 
+     
 with st.form("formulario"):
     st.markdown("## 📊 Perfil del cliente")
 
@@ -64,20 +64,21 @@ with st.form("formulario"):
            step=500.0,
            format="%.2f"
     )
+    tipo_ingreso = st.selectbox(
+        "Tipo de ingreso",
+        ["Nómina", "Independiente", "No comprueba ingresos"],
+        key="tipo_ingreso"
+    )    
    
-    if tipo_ingreso == "Independiente":
-       negocio_casa = st.selectbox(
-           "¿Negocio en domicilio?",
-           [1, 2],
-           format_func=lambda x: "Sí" if x == 1 else "No",
-           key="negocio_casa"
-        )   
-    else:
-     
-     negocio_casa = 2  
-
-    st.divider() 
-
+    
+    negocio_casa = st.selectbox(
+        "¿Negocio en domicilio?",
+        [1, 2],
+        format_func=lambda x: "Sí" if x == 1 else "No",
+        key="negocio_casa",
+        disabled=(tipo_ingreso != "Independiente")
+    )   
+ 
     domicilio = st.selectbox(
           "Antigüedad domicilio", 
           [1,2,3],
@@ -135,10 +136,13 @@ with st.form("formulario"):
 # =========================
 
 if submitted:
+   st.session_state.analizado = True
+   st.session_state.ingreso = ingreso
    # BASE
    monto = precio - enganche
    mensualidad = (monto/100000)*2200*(plazo/72)
    enganche_pct = (enganche/precio)*100 if precio>0 else 0
+   
          
    # =========================
    # FILTRO DE RIESGO REAL
@@ -241,28 +245,6 @@ if submitted:
 
    excede_capacidad = mensualidad > capacidad_pago           
 
-
-
-   # =========================     
-   # VALIDACIÓN CAPACIDAD     
-   # =========================     
-    
-   mensaje_capacidad = ""
-
-   if excede_capacidad:     
-    if prob < 70:         
-      mensaje_capacidad = """⚠️ Capacidad de pago excedida.          
-
-    ° Se recomienda ampliar plazo o reducir monto    
-    ° Probable comprobacion de ingresos    
-    """
-      decision = "🟡 AJUSTE NECESARIO" 
-      plan = "AJUSTAR_PLAZO"
-   else:     
-      mensaje_capacidad = """⚠️ Mensualidad alta para el ingreso.
-   ° Puede requerir validacion adicional     
-    """
-
    # TEMPERATURA     
    if compra_mes == 2:    
       temp = "❄️ FRÍO"
@@ -289,8 +271,6 @@ if submitted:
    # =========================     
    # DECISION PREDICTIVA REAL     
    # =========================     
-
-   mensaje = ""
    mensaje_cliente = ""
    mensaje_asesor = ""
    decision = "🟡 EN EVALUACIÓN"
@@ -301,154 +281,94 @@ if submitted:
         decision = "🟠 ESTRATEGIA ALTERNATIVA"
         plan = "ALTERNATIVA"
         
-        mensaje_cliente = """Tu perfil puede avanzar mediante una alternativa de financiamiento.
+        mensaje_cliente = """Tu perfil puede avanzar mediante una alternativa de financiamiento."""
+        mensaje_asesor = """Subir enganche / cotitular / evitar consultas"""
 
-        Esto no detiene tu proceso, solo cambia la estrategia.
 
-        Tu asesor te guiará para lograr la mejor opcion.""" 
-        mensaje_asesor = """ 
-        🔍 Estrategia recomendada:
-    ° Ofrecer financiera flexible
-    ° Buscar cotitular fuerte
-    ° Subir enganche
-    ° Evitar más consultas en buró
-    """
-
-        # 🔴 SCORE MUY BAJO
+    # 🔴 SCORE MUY BAJO
    elif score_color == "ROJO":
-            decision = "🟠 ESTRATEGIA ALTERNATIVA"
-            plan = "FINANCIERA FLEXIBLE"
+        decision = "🟠 ESTRATEGIA ALTERNATIVA"
+        plan = "FINANCIERA FLEXIBLE"
 
-            mensaje_cliente = """Tu perfil actualmente requiere una alternativa de financiamiento.
-
-        Esto no detiene tu proceso, solo cambia la estrategia.
-
-        Tu asesor te ayudará a encontrar la mejor solucion."""
-
-            mensaje_asesor = """
-            🔍 Estrategia recomendada:
-    ° Ofrecer financiera flexible
-    ° Buscar cotitular fuerte
-    ° Subir enganche
-    ° Evitar más consultas en buró
-    """  
-
+        mensaje_cliente = """Tu perfil actualmente requiere una alternativa de financiamiento."""
+        mensaje_asesor = """Buscar cotitular fuerte / Subir enganche / Evitar más consultas en buró."""
+    
     # ⚠️ CAPACIDAD DE PAGO (CONDICIONA)
    elif excede_capacidad and prob < 70:
-            decision = "🟡 AJUSTE NECESARIO"
-            plan = "AJUSTAR_PLAZO"
+        decision = "🟡 AJUSTE NECESARIO"
+        plan = "AJUSTAR_PLAZO"
             
-            mensaje_cliente = """La mensualidad puede ajustarse para mejorar tu perfil.
-        Tu asesor te ayudara a encontrar una mejor estructura."""    
-
-            mensaje_asesor = """
-        🔧 Ajuste recomendado:
-        
-    ° Ampliar plazo
-    ° Reducir monto a financiar
-    ° Validar ingresos
-    """
-
+        mensaje_cliente = """La mensualidad puede ajustarse para mejorar tu perfil."""
+        mensaje_asesor = """Ampliar plazo / Reducir monto a financiar / Validar ingresos """
+   
    # 🟠 RIESGO MEDIO (RESCATABLE)
    elif riesgo_medio and prob < 60:
         decision = "🟠 PERFIL CON OPORTUNIDAD"
         plan = "RESCATE"
 
-        mensaje_cliente = """Tu perfil tiene alta posibilidad de avanzar ajustando algunos puntos clave.
-    Tu asesor te ayudará a estructurar la mejor opción para lograr la aprobación."""    
-
-        mensaje_asesor = """
-        🔧 Estrategia recomendada:
-
-   ° Subir enganche (ideal 25%+)
-   ° Buscar cotitular línea directa
-   ° Evitar más consultas en buró
-   """
-
+        mensaje_cliente = """Tu perfil tiene alta posibilidad de avanzar ajustando algunos puntos clave."""
+        mensaje_asesor = """ Subir enganche (ideal 25%+) / Buscar cotitular línea directa / Evitar más consultas en buró. """
+    
    # 🟢 PROBABILIDAD ALTA
    elif prob >= 70:
       if riesgo_medio:
-         decision = "🟢 APROBADO EN PROCESO"
-         plan = "SE VA A ANALISIS"
-
-         mensaje_cliente = """Tu perfil es viable y puede avanzar a proceso de aprobación.
-    Durante el proceso podrían aplicarse validaciones normales."""
-
-         mensaje_asesor = """
-         🔍 Consideraciones:     
-   ° Posible validación de ingresos
-   ° Investigación telefónica
-   """
+        decision = "🟢 APROBADO EN ANALISIS DE FIANCIERA"
+        plan = "SE VA A ANALISIS"
+              
+        mensaje_cliente = """Tu perfil es viable y puede avanzar a proceso de aprobación, con validaciones normales."""
+        mensaje_asesor = """Posible validación de ingresos / Investigacion telefónica"""
+       
       else:
         decision = "🟢 APROBADO"
         plan = "AUTOMATICO"
 
-        mensaje_cliente = """Tu perfil cumple con los criterios para avanzar en automatico.
-    Puedes continuar con tu proceso de forma inmediata."""
+        mensaje_cliente = """Tu perfil cumple con los criterios para avanzar en automatico."""
         mensaje_asesor = "Perfil limpio. Proceder directo."    
 
    # 🟡 PERFIL MEDIO
    elif prob >= 50:
        if enganche_pct < 20 or riesgo_medio:
-           decision = "🟡 APROBABLE AJUSTES"
-           plan = "CONDICIONADO"
+         decision = "🟡 APROBABLE AJUSTES"
+         plan = "CONDICIONADO"
 
-           mensaje_cliente = """Tu perfil es viable realizando algunos ajustes.
-    Tu asesor te ayudará a mejorar las condiciones para avanzar con mayor seguridad."""
-           mensaje_asesor = """
-           
-   ° Subir enganche mínimo (+10 pts ideal)    
-   ° Validación por financiera
-   """   
-  
+         mensaje_cliente = """Tu perfil es viable realizando algunos ajustes."""
+
+         mensaje_asesor = """ Subir enganche (+15 pts ideal) / Validacion por financiera."""
+        
        else:
-          decision = "🟡 PRE APROBADO"
-          plan = "DIRECTO"
+        decision = "🟡 PRE APROBADO"
+        plan = "DIRECTO"
 
-          mensaje_cliente = """Tu perfil es favorable para avanzar.
-   Se puede continuar con condiciones normales."""
-
-          mensaje_asesor = "Perfil estable. Proceder."       
+        mensaje_cliente = """Tu perfil es favorable para avanzar."""
+        mensaje_asesor = "Perfil estable. Proceder."       
 
    # 🟡 PERFIL BAJO
    elif prob >= 35:
-           decision = "🟡 PERFIL MEJORABLE"
-           plan = "COTITULAR"
+        decision = "🟡 PERFIL MEJORABLE"
+        plan = "COTITULAR"
 
-           mensaje_cliente = """Tu perfil puede fortalecerse con apoyo adicional.
-   Tu asesor te ayudará a estructurar una mejor opcion para lograr la aprobación."""
-
-           mensaje_asesor = """
-     🔧 Estrategia:
-    ° Integrar cotitular fuerte
-   """
-
-    # 🔴 NO VIABLE
+        mensaje_cliente = """Tu perfil puede fortalecerse con apoyo adicional."""
+        mensaje_asesor = """Integrar cotitular fuerte / Comprobar ingresos / Mejorar enganche"""
+   # 🔴 NO VIABLE
    else:
-       decision = "🟠 ESTRATEGIA ALTERNATIVA"
-       plan = "ALTERNATIVA"
+        decision = "🟠 ESTRATEGIA ALTERNATIVA"
+        plan = "ALTERNATIVA"
 
-       mensaje_cliente = """Tu perfil puede avanzar mediante una alternativa de financiamiento.
-    Esto no detiene tu proceso, solo cambia la estrategia.
+        mensaje_cliente = """Tu perfil puede avanzar mediante una alternativa de financiamiento"""
+        mensaje_asesor = """Financiera flexible / Reestructura de perfil."""
 
-    Tu asesor te ayudará a encontrar la mejor solución."""  
-       mensaje_asesor = """
-
-     🔍 Estrategia: 
-
-    • Financiera flexible
-    • Reestructura de perfil
-    """
-    
    # INVESTIGACIÓN
    investigacion = "🟢 Sin validaciones relevantes"
 
    if tipo_ingreso == "Independiente" and negocio_casa == 1 and prob < 80:
        investigacion = "🔴 Requiere validación física"
+
    elif tipo_ingreso == "Independiente" and prob < 70:
        investigacion = "🟡 validacion de ingresos"
+       
    elif domicilio_buro == 2:
        investigacion = "🔴 Validación de domicilio"
+
    elif tipo_ingreso != "Nómina" and prob < 45:
        investigacion = "🔴 Validación adicional requerida"
 
@@ -492,7 +412,6 @@ if submitted:
        "investigacion": investigacion,
        "decision": decision,
        "plan": plan,
-       "mensaje": mensaje,
        "mensaje_cliente": mensaje_cliente,
        "mensaje_asesor": mensaje_asesor,
 
@@ -513,109 +432,107 @@ if submitted:
    }
 
        
-   st.session_state.cotitular_activo = (plan == "SIN_BURO" or plan == "COTITULAR")
+   st.session_state.cotitular_activo = (plan == "COTITULAR")
    st.session_state.cotitular_resultado = None
 
    # =========================
    # RESULTADO
    # =========================
 
-   if st.session_state.resultado:
-
-       r = st.session_state.resultado
-
-       # =========================
-       # 📊 RESULTADO GENERAL
-       # =========================
-       st.subheader("📊 RESULTADO") 
+if st.session_state.resultado:
+   r = st.session_state.resultado
+   # =========================
+   # 📊 RESULTADO GENERAL
+   # =========================
+   st.subheader("📊 RESULTADO") 
        
-       # 🟢 DECISIÓN (INTELIGENTE)  
-       if "APROBADO" in r["decision"]:
-           st.success(r["decision"])
-       elif "ALTERNATIVA" in r["decision"]:
+   # 🟢 DECISIÓN (INTELIGENTE)  
+   if "APROBADO" in r["decision"]:
+     st.success(r["decision"])
+   elif "ALTERNATIVA" in r["decision"]:
            st.warning(r["decision"])
-       elif "CONDICIONES" in r["decision"] or "AJUSTE" in r["decision"]:
+   elif "CONDICIONES" in r["decision"] or "AJUSTE" in r["decision"]:
            st.warning(r["decision"])    
-       else:  
+   else:  
            st.error(r["decision"])      
 
-       # 💡 MENSAJE CLIENTE (SOLO UNA VEZ)
-       if r.get("mensaje_cliente"):
-            st.markdown(f"""
+    # 💡 MENSAJE CLIENTE (SOLO UNA VEZ)
+   if r.get("mensaje_cliente"):
+        st.markdown(f"""
             <div style="background-color:#1e293b;padding:15px;border-radius:10px">
             💡 {r['mensaje_cliente']}
             </div>
             """, unsafe_allow_html=True)
                         
        # 🔒 MENSAJE ASESOR     
-       with st.expander("🔒 Estrategia interna"):
+   with st.expander("🔒 Estrategia interna"):
            st.write(r.get("mensaje_asesor", ""))
     
-       st.divider() 
+   st.divider() 
        # =========================
        # SCORE
        # =========================    
 
-       if r["score_color"] == "AZUL":
+   if r["score_color"] == "AZUL":
            score_label = "🔵 SCORE AZUL"
            score_desc = "Perfil fuerte, alta probabilidad de aprobación"
-       elif r["score_color"] == "VERDE":
+   elif r["score_color"] == "VERDE":
            score_label = "🟢 SCORE VERDE"
            score_desc = "Buen perfil, aprobado con condiciones normales"
-       elif r["score_color"] == "AMARILLO":
+   elif r["score_color"] == "AMARILLO":
            score_label = "🟡 SCORE AMARILLO"
            score_desc = "Perfil medio, requiere validación adicional"
-       elif r["score_color"] == "NARANJA":
+   elif r["score_color"] == "NARANJA":
            score_label = "🟠 SCORE NARANJA"
            score_desc = "Perfil débil, requiere estructura (cotitular/enganche)"
-       else:
+   else:
            score_label = "🟠 PERFIL EN DESARROLLO"
            score_desc = "Perfil con oportunidad mediante estrategia alternativa"
     
-       st.subheader(score_label)
-       st.write(score_desc)
+   st.subheader(score_label)
+   st.write(score_desc)
 
-       st.write(f"Probabilidad: {r['prob']}%")
-       st.progress(r["prob"]/100)
-       st.divider()
+   st.write(f"Probabilidad: {r['prob']}%")
+   st.progress(r["prob"]/100)
+   st.divider()
               
-       st.subheader("💰 Capacidad de pago")
-       st.markdown(f"### ${r['capacidad_pago']:,.0f}")
-       st.write(r.get("mensaje_asesor", ""))
+   st.subheader("💰 Capacidad de pago")
+   st.markdown(f"### ${r['capacidad_pago']:,.0f}")
+   
 
-       st.divider()
+   st.divider()
        # =========================
        # 🔥 TEMPERATURA
        # =========================
-       st.subheader("🔥 Temperatura de venta")
-       if "CALIENTE" in r["temp"]:
+   st.subheader("🔥 Temperatura de venta")
+   if "CALIENTE" in r["temp"]:
            st.success(r["temp"])
-       elif "TIBIO" in r["temp"]:
+   elif "TIBIO" in r["temp"]:
            st.warning(r["temp"])
-       else:
+   else:
            st.info(r["temp"])
-       st.divider()    
+   st.divider()    
 
        # =========================
        # 🔎 INVESTIGACIÓN
        # =========================
-       st.subheader("🔎 Validaciones")
-       st.write(r["investigacion"])
+   st.subheader("🔎 Validaciones")
+   st.write(r["investigacion"])
      
        # =========================
        # 📄 DOCUMENTOS DOCUMENTOS
        # =========================
-       st.subheader("📄 Documentación")
-       for d in r["documentos"]:
+   st.subheader("📄 Documentación")
+   for d in r["documentos"]:
            st.write(f"• {d}")
 
-       st.divider()    
+   st.divider()    
 
        # =========================
        # COTITULAR
        # =========================
 
-       if st.session_state.cotitular_activo:
+   if st.session_state.cotitular_activo:
 
            st.subheader("👥 ANALIZAR COTITULAR")
 
@@ -624,7 +541,7 @@ if submitted:
            buro_cot = st.selectbox("Historial", ["Malo","Regular","Bueno"])
 
            if st.button("Evaluar cotitular"):
-              capacidad_total = (ingreso + ingreso_cot) * 0.3
+              capacidad_total = (st.session_state.ingreso + ingreso_cot) * 0.3
 
               if tipo_cot == "Conocido" and buro_cot != "Bueno":
                 resultado_cot = "❌ Debe ser línea directa"
@@ -635,7 +552,7 @@ if submitted:
 
               st.session_state.cotitular_resultado = resultado_cot
 
-       if st.session_state.cotitular_resultado:
+   if st.session_state.cotitular_resultado:
           st.subheader("📊 RESULTADO FINAL")
           st.write(st.session_state.cotitular_resultado)
 
@@ -643,21 +560,21 @@ if submitted:
         # =========================
         # 💰 APARTADO + ACCIÓN
         # =========================
-       st.subheader("💰 Siguiente paso")
-       if r["plan"] == "DIRECTO":
+   st.subheader("💰 Siguiente paso")
+   if r["plan"] == "DIRECTO":
            st.success("👉 Solicitar ENGANCHE COMPLETO")
-       else:
+   else:
            st.warning("👉 Solicitar APARTADO $5,000")
-       st.error("⚠️ Solicita anticipo para asegurar unidad")   
-       st.markdown("### 🏦 Cuenta BBVA")
-       st.write("Cuenta DAOSA SA DE CV: 012320001250476847")
+   st.error("⚠️ Solicita anticipo para asegurar unidad")   
+   st.markdown("### 🏦 Cuenta BBVA")
+   st.write("Cuenta DAOSA SA DE CV: 012320001250476847")
        
        # =========================
        # 📊 COTIZADOR
        # =========================
        
-       st.markdown("### 📊 Cotizador")
-       st.link_button(
+   st.markdown("### 📊 Cotizador")
+   st.link_button(
         "📊 Cotizar ahora",
          "https://procotiza.losnrtelepro.com.mx/Procotiza/login.aspx?mns"
        )
@@ -665,14 +582,14 @@ if submitted:
        # =========================
        # MENSAJE PARA PDF (INTELIGENTE)
        # =========================
-       mensaje_pdf = r.get("mensaje_cliente", "")    
+   mensaje_pdf = r.get("mensaje_cliente", "")    
      
 
-       buffer = BytesIO()
-       doc = SimpleDocTemplate(buffer)
-       styles = getSampleStyleSheet()
+   buffer = BytesIO()
+   doc = SimpleDocTemplate(buffer)
+   styles = getSampleStyleSheet()
 
-       content = [
+   content = [
 
          Paragraph("SOLICITUD DE PERFILAMIENTO CREDITICIO", styles["Title"]),
          Paragraph(" ", styles["Normal"]) ,
@@ -749,7 +666,7 @@ if submitted:
 
         # VALIDACION
        
-       if not all([
+   if not all([
          r.get("asesor", "").strip(),
          r.get("nombre", "").strip(),
          r.get("telefono", "").strip(),
@@ -758,7 +675,7 @@ if submitted:
         ]):
          st.warning("⚠️ Completa datos de cliente y asesor para generar PDF")
 
-       else:
+   else:
          doc.build(content)
 
          st.download_button(
