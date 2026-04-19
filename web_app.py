@@ -45,6 +45,13 @@ if "cotitular_resultado" not in st.session_state:
     nombre_cliente = st.text_input("Nombre cliente")
     telefono = st.text_input("Teléfono")
     correo = st.text_input("Correo")
+
+    tipo_ingreso = st.selectbox(
+         "Tipo de ingreso",
+         ["Nómina", "Independiente", "No comprueba ingresos"],
+         key="tipo_ingreso"
+    )
+ 
 with st.form("formulario"):
     st.markdown("## 📊 Perfil del cliente")
 
@@ -56,15 +63,8 @@ with st.form("formulario"):
            value=6500.0,
            step=500.0,
            format="%.2f"
-     )
-
-
-    tipo_ingreso = st.selectbox(
-         "Tipo de ingreso",
-         ["Nómina", "Independiente", "No comprueba ingresos"],
-         key="tipo_ingreso"
     )
- 
+   
     if tipo_ingreso == "Independiente":
        negocio_casa = st.selectbox(
            "¿Negocio en domicilio?",
@@ -73,9 +73,11 @@ with st.form("formulario"):
            key="negocio_casa"
         )   
     else:
-     negocio_casa = 2  # valor por default (NO aplica)
+     
+     negocio_casa = 2  
+
     st.divider() 
-          
+
     domicilio = st.selectbox(
           "Antigüedad domicilio", 
           [1,2,3],
@@ -182,8 +184,11 @@ if submitted:
    if auto == 1:
         score += 3
     # 🏦 HIPOTECARIO (menos peso para auto)
-   if hipotecario == "bancario":
-        score += 2    
+   if hipotecario == 1:
+       score += 3
+   elif hipotecario == 2: 
+       score += 1
+      
       
    #ATRASOS
    if atrasos == 2:          
@@ -229,7 +234,7 @@ if submitted:
 
    if tipo_ingreso == "Nómina":
       capacidad_pago = ingreso / 2
-   elif tipo_ingreso == "independiente":    
+   elif tipo_ingreso == "Independiente":    
       capacidad_pago = ingreso / 3.33     
    else:      
       capacidad_pago = ingreso / 3.33
@@ -418,9 +423,7 @@ if submitted:
     ° Integrar cotitular fuerte
    """
 
-   
-
-   # 🔴 NO VIABLE
+    # 🔴 NO VIABLE
    else:
        decision = "🟠 ESTRATEGIA ALTERNATIVA"
        plan = "ALTERNATIVA"
@@ -442,7 +445,7 @@ if submitted:
 
    if tipo_ingreso == "Independiente" and negocio_casa == 1 and prob < 80:
        investigacion = "🔴 Requiere validación física"
-   elif tipo_ingreso == "independiente" and prob < 70:
+   elif tipo_ingreso == "Independiente" and prob < 70:
        investigacion = "🟡 validacion de ingresos"
    elif domicilio_buro == 2:
        investigacion = "🔴 Validación de domicilio"
@@ -517,7 +520,7 @@ if submitted:
    # RESULTADO
    # =========================
 
-   if "resultado" in st.session_state:
+   if st.session_state.resultado:
 
        r = st.session_state.resultado
 
@@ -540,7 +543,7 @@ if submitted:
        if r.get("mensaje_cliente"):
             st.markdown(f"""
             <div style="background-color:#1e293b;padding:15px;border-radius:10px">
-            💡 {r['mensaje_cliente']}💡 {r['mensaje_cliente']}
+            💡 {r['mensaje_cliente']}
             </div>
             """, unsafe_allow_html=True)
                         
@@ -566,7 +569,7 @@ if submitted:
            score_label = "🟠 SCORE NARANJA"
            score_desc = "Perfil débil, requiere estructura (cotitular/enganche)"
        else:
-           sscore_label = "🟠 PERFIL EN DESARROLLO"
+           score_label = "🟠 PERFIL EN DESARROLLO"
            score_desc = "Perfil con oportunidad mediante estrategia alternativa"
     
        st.subheader(score_label)
