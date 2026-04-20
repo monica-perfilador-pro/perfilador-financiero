@@ -9,50 +9,60 @@ from io import BytesIO
 st.set_page_config(page_title="Perfilador PRO", layout="centered")
 st.markdown("""
 <style>
-/* FONDO GENERAL CON GRADIENTE */
+/* FONDO TECNOLÓGICO */
 html, body, .stApp {
    background: radial-gradient(circle at top, #0f172a, #020617);
    color: white;
 }
+/* HERO SECTION */
+.hero {
+    text-align: center;
+    padding-top: 40px;
+    padding-bottom: 20px;
+}
+/* LOGO GRANDE + GLOW */
+.hero img {
+    width: 420px;
+    filter: drop-shadow(0px 0px 60px rgba(56,189,248,0.9));
+}
+/* EFECTO LUZ ABAJO */
+.glow-line {
+    width: 60%; 
+    height: 3px;
+    margin: 25px auto;
+    background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+    box-shadow: 0px 0px 20px #38bdf8;
+    border-radius: 50%;
+}                                                                                                                                                                                                 
 /* CONTENEDOR */
 .block-container {
-    padding-top: 2rem;
+    padding-top: 0rem;
+    max-width: 900px;      
 }
-/* INPUTS ESTILO TECNOLÓGICO */
+/* INPUTS */
 .stTextInput input,
 .stNumberInput input,
 .stSelectbox div {
-   background: rgba(17, 24, 39, 0.8);
-   color: white;
-   border-radius: 12px;
-   border: 1px solid #1f293border: 1px solid #1f2937;7;
+   background-color: #111827 !important;
+   color: white !important;
+   border-radius: 10px;
+   border: 1px solid #1f2937;
 }
 /* LABELS */
 label {
-    color: #94a3b8 !important;
+    color: #9ca3af !important;
 }
-/* DIVIDER */
-hr {
-    border: 1px solid #1f2937;
-}
-/* GLOW DEL LOGO */
-<style>
-img[src*="logo"] {
-   filter: drop-shadow(0px 0px 40px rgba(56,189,248,0.7));
-}       
 </style>                                                         
 """, unsafe_allow_html=True)
 
-# ESPACIO SUPERIOR
-st.markdown("<br><br>", unsafe_allow_html=True)
+# HERO VISUAL
+st.markdown("""
+<div class="hero">
+    <img src="logo_new.png">
+    <div class="glow-line"></div>
+</div>
+""", unsafe_allow_html=True)
 
-# LOGO CENTRADO
-col1, col2, col3 = st.columns([1,4,1])
-
-with col2:
-    st.image("logo_new.png", width=650)
-
-st.markdown("<br><br>", unsafe_allow_html=True)                             
 # =========================
 # SESSION
 # =========================
