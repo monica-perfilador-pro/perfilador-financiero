@@ -52,8 +52,6 @@ with col2:
     st.image("logo_new.png", width=420)
 
 st.markdown("<br>", unsafe_allow_html=True)                             
-st.divider()
-
 # =========================
 # SESSION
 # =========================
