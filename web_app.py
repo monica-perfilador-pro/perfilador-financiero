@@ -402,7 +402,8 @@ if submitted:
        "telefono_asesor": telefono_asesor,
        "correo_asesor": correo_asesor,
        "rfc": rfc,
-       "capacidad_pago": capacidad_pago
+       "capacidad_pago": capacidad_pago,
+       
 
    }    
 
@@ -431,7 +432,8 @@ if submitted:
         
        "documentos": documentos,
        "mensualidad": mensualidad,
-       "capacidad_pago": capacidad_pago
+       "capacidad_pago": capacidad_pago,
+       
    }
 
        
@@ -450,10 +452,7 @@ if st.session_state.resultado:
    # =========================
    # 🟡 SCORE
    # =========================
-   st.subheader(r["score_label"])
-   st.write(r["score_desc"])
-   st.write(f"Probabilidad: {r['prob']}%")
-
+   
    if r["score_color"] == "AZUL":
         score_label = "🔵 SCORE AZUL"
         score_desc = "Perfil fuerte, alta probabilidad de aprobación"
@@ -468,7 +467,11 @@ if st.session_state.resultado:
        score_desc = "Perfil débil, requiere estructura (cotitular/enganche)"           
    else:
        score_label = "🟠 PERFIL EN DESARROLLO"
-       score_desc = "Perfil con oportunidad mediante estrategia alternativa"     
+       score_desc = "Perfil con oportunidad mediante estrategia alternativa" 
+
+   st.subheader(r["score_label"])
+   st.write(r["score_desc"])
+   st.write(f"Probabilidad: {r['prob']}%")    
    # =========================
    # 💰 CAPACIDAD DE PAGO
    # =========================
@@ -516,13 +519,13 @@ if st.session_state.resultado:
        tipo_cot = st.selectbox("Tipo cotitular", ["Línea directa","Conocido"])
        ingreso_cot = st.number_input("Ingreso cotitular")
        buro_cot = st.selectbox("Historial", ["Malo","Regular","Bueno"])
-       if st.button("Evaluar cotitular"):
-           capacidad_total = (st.session_state.ingreso + ingreso_cot) * 0.3
-       if tipo_cot == "Conocido" and buro_cot != "Bueno":
+   if st.button("Evaluar cotitular"):
+        capacidad_total = (st.session_state.ingreso + ingreso_cot) * 0.3
+        if tipo_cot == "Conocido" and buro_cot != "Bueno":
            resultado_cot = "❌ Debe ser línea directa"
-       elif capacidad_total >= r["mensualidad"] and buro_cot == "Bueno":
+        elif capacidad_total >= r["mensualidad"] and buro_cot == "Bueno":
            resultado_cot = "🟢 APROBADO FINAL"     
-       else:
+        else:
            resultado_cot = "🟡 Aún condicionado"
    st.session_state.cotitular_resultado = resultado_cot
    if st.session_state.cotitular_resultado:
