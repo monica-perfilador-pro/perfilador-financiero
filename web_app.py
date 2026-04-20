@@ -444,10 +444,36 @@ if submitted:
 
 if st.session_state.resultado:
    r = st.session_state.resultado
-   # =========================
-   # 📊 RESULTADO GENERAL
-   # =========================
+
    st.subheader("📊 RESULTADO") 
+
+   # =========================
+   # 🟡 SCORE
+   # =========================
+   st.subheader(r["score_label"])
+   st.write(r["score_desc"])
+   st.write(f"Probabilidad: {r['prob']}%")
+
+   if r["score_color"] == "AZUL":
+        score_label = "🔵 SCORE AZUL"
+        score_desc = "Perfil fuerte, alta probabilidad de aprobación"
+   elif r["score_color"] == "VERDE":
+        score_label = "🟢 SCORE VERDE"
+        score_desc = "Buen perfil, aprobado con condiciones normales"
+   elif r["score_color"] == "AMARILLO":
+        score_label = "🟡 SCORE AMARILLO"
+        score_desc = "Perfil medio, requiere validación adicional"
+   elif r["score_color"] == "NARANJA":
+       score_label = "🟠 SCORE NARANJA"
+       score_desc = "Perfil débil, requiere estructura (cotitular/enganche)"           
+   else:
+       score_label = "🟠 PERFIL EN DESARROLLO"
+       score_desc = "Perfil con oportunidad mediante estrategia alternativa"     
+   # =========================
+   # 💰 CAPACIDAD DE PAGO
+   # =========================
+   st.subheader("💰 Capacidad de pago")
+   st.markdown(f"### 💰 Capacidad de pago: ${r['capacidad_pago']:,.0f}")
        
    # 🟢 DECISIÓN (INTELIGENTE)  
    if "APROBADO" in r["decision"]:
@@ -470,43 +496,42 @@ if st.session_state.resultado:
        # 🔒 MENSAJE ASESOR     
    with st.expander("🔒 Estrategia interna"):
            st.write(r.get("mensaje_asesor", ""))
-    
-   st.divider() 
-       # =========================
-       # SCORE
-       # =========================    
-
-   if r["score_color"] == "AZUL":
-           score_label = "🔵 SCORE AZUL"
-           score_desc = "Perfil fuerte, alta probabilidad de aprobación"
-   elif r["score_color"] == "VERDE":
-           score_label = "🟢 SCORE VERDE"
-           score_desc = "Buen perfil, aprobado con condiciones normales"
-   elif r["score_color"] == "AMARILLO":
-           score_label = "🟡 SCORE AMARILLO"
-           score_desc = "Perfil medio, requiere validación adicional"
-   elif r["score_color"] == "NARANJA":
-           score_label = "🟠 SCORE NARANJA"
-           score_desc = "Perfil débil, requiere estructura (cotitular/enganche)"
-   else:
-           score_label = "🟠 PERFIL EN DESARROLLO"
-           score_desc = "Perfil con oportunidad mediante estrategia alternativa"
-    
-   st.subheader(score_label)
-   st.write(score_desc)
-
-   st.write(f"Probabilidad: {r['prob']}%")
-   st.progress(r["prob"]/100)
-   st.divider()
-              
-   st.subheader("💰 Capacidad de pago")
-   st.markdown(f"### ${r['capacidad_pago']:,.0f}")
+   # =========================
+   # 🔎 INVESTIGACIÓN
+   # =========================
+   st.subheader("🔎 Validaciones")
+   st.write(r["investigacion"])
+   # =========================
+   # 📄 DOCUMENTOS DOCUMENTOS
+   # =========================
+   st.subheader("📄 Documentación")
+   for d in r["documentos"]:
+       st.write(f"• {d}")
    
-
-   st.divider()
-       # =========================
-       # 🔥 TEMPERATURA
-       # =========================
+    # =========================
+    # COTITULAR
+    # =========================
+   if st.session_state.cotitular_activo:
+       st.subheader("👥 ANALIZAR COTITULAR")
+       tipo_cot = st.selectbox("Tipo cotitular", ["Línea directa","Conocido"])
+       ingreso_cot = st.number_input("Ingreso cotitular")
+       buro_cot = st.selectbox("Historial", ["Malo","Regular","Bueno"])
+       if st.button("Evaluar cotitular"):
+           capacidad_total = (st.session_state.ingreso + ingreso_cot) * 0.3
+       if tipo_cot == "Conocido" and buro_cot != "Bueno":
+           resultado_cot = "❌ Debe ser línea directa"
+       elif capacidad_total >= r["mensualidad"] and buro_cot == "Bueno":
+           resultado_cot = "🟢 APROBADO FINAL"     
+       else:
+           resultado_cot = "🟡 Aún condicionado"
+   st.session_state.cotitular_resultado = resultado_cot
+   if st.session_state.cotitular_resultado:
+       st.subheader("📊 RESULTADO FINAL")
+       st.write(st.session_state.cotitular_resultado)  
+   st.divider()  
+   # =========================
+   # 🔥 TEMPERATURA
+    # =========================
    st.subheader("🔥 Temperatura de venta")
    if "CALIENTE" in r["temp"]:
            st.success(r["temp"])
@@ -514,55 +539,9 @@ if st.session_state.resultado:
            st.warning(r["temp"])
    else:
            st.info(r["temp"])
-   st.divider()    
-
-       # =========================
-       # 🔎 INVESTIGACIÓN
-       # =========================
-   st.subheader("🔎 Validaciones")
-   st.write(r["investigacion"])
-     
-       # =========================
-       # 📄 DOCUMENTOS DOCUMENTOS
-       # =========================
-   st.subheader("📄 Documentación")
-   for d in r["documentos"]:
-           st.write(f"• {d}")
-
-   st.divider()    
-
-       # =========================
-       # COTITULAR
-       # =========================
-
-   if st.session_state.cotitular_activo:
-
-           st.subheader("👥 ANALIZAR COTITULAR")
-
-           tipo_cot = st.selectbox("Tipo cotitular", ["Línea directa","Conocido"])
-           ingreso_cot = st.number_input("Ingreso cotitular")
-           buro_cot = st.selectbox("Historial", ["Malo","Regular","Bueno"])
-
-           if st.button("Evaluar cotitular"):
-              capacidad_total = (st.session_state.ingreso + ingreso_cot) * 0.3
-
-              if tipo_cot == "Conocido" and buro_cot != "Bueno":
-                resultado_cot = "❌ Debe ser línea directa"
-              elif capacidad_total >= r["mensualidad"] and buro_cot == "Bueno":
-                resultado_cot = "🟢 APROBADO FINAL"
-              else:
-                resultado_cot = "🟡 Aún condicionado"
-
-              st.session_state.cotitular_resultado = resultado_cot
-
-   if st.session_state.cotitular_resultado:
-          st.subheader("📊 RESULTADO FINAL")
-          st.write(st.session_state.cotitular_resultado)
-
-       
-        # =========================
-        # 💰 APARTADO + ACCIÓN
-        # =========================
+    # =========================
+    # 💰 APARTADO + ACCIÓN
+    # =========================
    st.subheader("💰 Siguiente paso")
    if r["plan"] == "DIRECTO":
            st.success("👉 Solicitar ENGANCHE COMPLETO")
