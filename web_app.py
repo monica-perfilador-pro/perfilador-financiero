@@ -28,6 +28,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     height: 500px;
     background: radial-gradient(circle, rgba(56,189,248,0.45), transparent 70%);
     z-index: -1;
+}   
 .block-container {
     position: relative;
     z-index: 1;
