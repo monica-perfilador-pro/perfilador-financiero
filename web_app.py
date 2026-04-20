@@ -35,9 +35,10 @@ label {
 hr {
     border: 1px solid #1f2937;
 }
-/* GLOW DEL LOGO */           
+/* GLOW DEL LOGO */
+<style>
 img[src*="logo"] {
-     filter: drop-shadow(0px 0px 30px rgba(56,189,248,0.6));
+   filter: drop-shadow(0px 0px 40px rgba(56,189,248,0.7));
 }       
 </style>                                                         
 """, unsafe_allow_html=True)
@@ -46,12 +47,12 @@ img[src*="logo"] {
 st.markdown("<br><br>", unsafe_allow_html=True)
 
 # LOGO CENTRADO
-col1, col2, col3 = st.columns([1,3,1])
+col1, col2, col3 = st.columns([1,4,1])
 
 with col2:
-    st.image("logo_new.png", width=420)
+    st.image("logo_new.png", width=650)
 
-st.markdown("<br>", unsafe_allow_html=True)                             
+st.markdown("<br><br>", unsafe_allow_html=True)                             
 # =========================
 # SESSION
 # =========================
