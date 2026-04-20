@@ -159,8 +159,9 @@ if submitted:
         
    # 🔴 MUCHAS CONSULTAS
    if consultas >= 8:
-       riesgo_medio = True
-        
+       riesgo_alto = True
+   elif consultas >= 5: 
+       riesgo_medio = True        
 
    # 🔴 INGRESO NO ESTABLE   
    if tipo_ingreso == "Independiente":
@@ -203,9 +204,11 @@ if submitted:
         score -= 10
     # CONSULTAS    
    if consultas >= 8:     
-       score -= 5
+       score -= 12
    elif consultas >= 5:     
-      score -= 2
+      score -= 6
+   elif consultas >= 3:
+       score -= 3
 
     # PERFIL    
    if score <= 0:    
@@ -228,9 +231,12 @@ if submitted:
    elif enganche_pct >= 25:     
         prob += 5
 
-   if consultas >= 5:     
-        prob -= 10
-
+   if consultas >= 8:    
+        prob -= 25
+   elif consultas >= 5:
+       prob -= 15
+   elif consultas >= 3:
+       prob -= 5    
    prob = max(5, min(95, prob))
 
    # =========================
@@ -278,8 +284,12 @@ if submitted:
    decision = "🟡 EN EVALUACIÓN"
    plan = "REVISION"
 
+   if consultas >= 10:
+       decision = "🟠 ESTRATEGIA ALTERNATIVA"
+       plan = "COTITULAR"
+
     # 🔴 BLOQUEO TOTAL
-   if atrasos == 3:
+   elif atrasos == 3:
         decision = "🟠 ESTRATEGIA ALTERNATIVA"
         plan = "ALTERNATIVA"
         
@@ -569,9 +579,9 @@ if st.session_state.resultado:
          "https://procotiza.losnrtelepro.com.mx/Procotiza/login.aspx?mns"
        )
                       
-       # =========================
-       # MENSAJE PARA PDF (INTELIGENTE)
-       # =========================
+   # =========================
+   # MENSAJE PARA PDF (INTELIGENTE)
+   # =========================
    mensaje_pdf = r.get("mensaje_cliente", "")    
      
 
