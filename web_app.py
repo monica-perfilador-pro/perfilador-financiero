@@ -29,7 +29,7 @@ html, body, .stApp {
 .glow-line {
     width: 50%; 
     height: 2px;
-    margin: 10px auto;
+    margin: 5px auto;
     background: linear-gradient(90deg, transparent, #38bdf8, transparent);
     box-shadow: 0px 0px 20px #38bdf8;
     border-radius: 50%;
@@ -65,7 +65,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns([1,4,1])
 
 with col2:
-    st.image("logo_new.png", width=720)
+    st.image("logo_new.png", width=920)
     st.markdown('<div class="glow-line"></div>', unsafe_allow_html=True)    
 # =========================
 # SESSION
