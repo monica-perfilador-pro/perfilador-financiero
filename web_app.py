@@ -28,7 +28,7 @@ html, body, .stApp {
 /* EFECTO LUZ ABAJO */
 .glow-line {
     width: 50%; 
-    height: 2px;
+    height: 1px;
     margin: 10px auto;
     background: linear-gradient(90deg, transparent, #38bdf8, transparent);
     box-shadow: 0px 0px 20px #38bdf8;
