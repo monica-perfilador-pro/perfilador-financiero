@@ -7,13 +7,19 @@ from io import BytesIO
 # CONFIG
 # =========================
 st.set_page_config(page_title="Perfilador PRO", layout="centered")
-st.image("logo.png", width=220)
+col1, col2, col3 = st.columns([1,2,1])
+with col2:
+    st.image("logo.png", width=250)
 st.markdown("""
-<div style="text-align:center;">
-    <img src="logo.png" width="280">
-    <h3 style="color:#38bdf8; margin-top:-10px;">Aprobación Inteligente</h3>
-</div>
-""", unsafe_allow_html=True)                        
+<h2 style='text-align:center;
+    color:#38bdf8;
+    font-weight:700;
+    margin-top:10px;
+    text-shadow: 0px 0px 10px rgba(56,189,248,0.6);'>
+🚀 Aprobación Inteligente
+</h2>
+""", unsafe_allow_html=True)    
+                             
 st.divider()
 
 # =========================
