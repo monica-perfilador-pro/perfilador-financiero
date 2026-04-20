@@ -106,7 +106,6 @@ label {
 }
 </style>
 """, unsafe_allow_html=True)
-
 # HERO VISUAL
 col1, col2, col3 = st.columns([1,3,1])
 with col2:
