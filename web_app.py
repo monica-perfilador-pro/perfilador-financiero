@@ -528,18 +528,61 @@ if st.session_state.resultado:
 
        tipo_cot = st.selectbox("Tipo cotitular", ["Línea directa", "Conocido"])
        ingreso_cot = st.number_input("Ingreso cotitular")
-       buro_cot = st.selectbox("Historial", ["Malo", "Regular", "Bueno"])
-
+       auto_cot = st.selectbox("Automotriz cotitular", ["Sí","No"])
+       credinissan_cot = st.selectbox("CrediNissan cotitular", ["Sí","No"])
+       hipotecario_cot = st.selectbox("Hipotecario cotitular", ["No tiene","Infonavit","Bancario"])
+       tarjeta_alta_cot = st.selectbox("Tarjetas >100k cotitular", ["Sí","No"])
+       atrasos_cot = st.selectbox(
+           "Buró de crédito cotitular",
+           ["Sin atrasos", "1-30 días", "31-60 días", "61+ días"]
+       )   
+       score_cot = 0
+       # AUTOMOTRIZ
+       if auto_cot == "Sí":
+           score_cot += 3
+       # CREDINISSAN (extra peso)
+       if credinissan_cot == "Sí":
+           score_cot += 5
+       # HIPOTECARIO
+       if hipotecario_cot == "Bancario":
+           score_cot += 4
+       elif hipotecario_cot == "Infonavit":
+           score_cot += 2
+       # TARJETAS
+       if tarjeta_alta_cot == "Sí":
+           score_cot += 4
+       # ATRASOS (AQUÍ ESTÁ LA CLAVE)
+       if atrasos_cot == "Sin atrasos":
+           score_cot += 5
+       elif atrasos_cot == "1-30 días":
+           score_cot += 2
+       elif atrasos_cot == "31-60 días":
+           score_cot -= 4
+       elif atrasos_cot == "61+ días":
+           score_cot -= 10           
+           
+           
        if st.button("Evaluar cotitular"):
 
           capacidad_total = (st.session_state.ingreso + ingreso_cot) * 0.3
-
-          if tipo_cot == "Conocido" and buro_cot != "Bueno":
-           resultado_cot = "❌ Debe ser línea directa"
-          elif capacidad_total >= r["mensualidad"] and buro_cot == "Bueno":
-           resultado_cot = "🟢 APROBADO FINAL"     
+          if score_cot >= 12:
+              buro_cot = "BUENO"
+          elif score_cot >= 6:
+              buro_cot = "REGULAR"
           else:
-            resultado_cot = "🟡 Aún condicionado"
+              buro_cot = "MALO"
+          st.write(f"📊 Buró cotitular: {buro_cot}")
+              
+          if tipo_cot == "Conocido" and buro_cot != "BUENO":
+           resultado_cot = "❌ Debe ser línea directa con buen historial"
+
+          elif capacidad_total >= r["mensualidad"] and buro_cot == "BUENO":
+           resultado_cot = "🟢 APROBADO FINAL"  
+          elif buro_cot == "REGULAR":
+              resultado_cot = "🟡 Aún condicionado (mejorar perfil)"    
+          else:
+            resultado_cot = "🔴 Cotitular no viable"
+
 
           st.session_state.cotitular_resultado = resultado_cot
 
