@@ -59,7 +59,7 @@ label {
 col1, col2, col3 = st.columns([1,2,1])
 
 with col2:
-    st.image("logo_new.png", width=480)
+    st.image("logo_new.png", width=620)
     
     st.markdown('<div class="glow-line"></div>', unsafe_allow_html=True)    
 # =========================
