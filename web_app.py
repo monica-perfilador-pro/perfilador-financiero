@@ -110,7 +110,7 @@ label {
 # HERO VISUAL
 col1, col2, col3 = st.columns([1,3,1])
 with col2:
-    st.image("logo_new.png", width=500)
+ st.image("logo_new.png", width=500)
 st.markdown("""
 <div style="
 width: 40%;
