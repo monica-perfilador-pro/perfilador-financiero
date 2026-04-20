@@ -7,67 +7,112 @@ from io import BytesIO
 # CONFIG
 # =========================
 st.set_page_config(page_title="Perfilador PRO", layout="centered")
+
 st.markdown("""
 <style>
-/* FONDO TECNOLÓGICO */
-html, body, .stApp {
+/* =========================            
+   FONDO TECNOLÓGICO
+========================= */
+html, body, .stApp,
+{[data-testid="stAppViewContainer"] {
    background: radial-gradient(circle at top, #0f172a, #020617);
    color: white;
 }
-/* HERO SECTION */
-.hero {
-    text-align: center;
-    padding-top: 20px;
-    padding-bottom: 5px;
+/* LUZ SUPERIOR */
+.stApp::before {
+    content: "";
+    position: fixed;
+    top: -200px;        
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 500px;                
+    background: radial-gradient(circle, rgba(56,189,248,0.18), transparent 70%);
+    z-index: 0;        
 }
-/* LOGO GRANDE + GLOW */
-.hero img {
-    transform: scale(1.1);         
-    filter: drop-shadow(0px 0px 60px rgba(56,189,248,0.9));
+/* LUZ INFERIOR */
+.stApp::after {
+    content: "";
+    position: fixed;
+    bottom: -250px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(139,92,246,0.18), transparent 70%);
+    z-index: 0;
 }
-/* EFECTO LUZ ABAJO */
-.glow-line {
-    width: 50%; 
-    height: 2px;
-    margin: 10px auto;
-    background: linear-gradient(90deg, transparent, #38bdf8, transparent);
-    box-shadow: 0px 0px 20px #38bdf8;
-    border-radius: 50%;
-}                                                                                                                                                                                                 
-/* CONTENEDOR */
+/* CONTENIDO ENCIMA */
 .block-container {
-    padding-top: 0rem;
-    max-width: 900px;      
+    position: relative;
+    z-index: 1;
+    padding-top: 0rem !important;
+    padding-bottom: 1rem;        
+    max-width: 900px;
+} 
+* {font-family: 'Inter', sans-serif;
+}
+/* =========================
+ CARD GLASS
+========================= */
+.card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0px 10px 40px rgba(0,0,0,0.6);
+    margin-bottom: 30px;
 }
 /* TITULOS */
 h1, h2, h3 {
     margin-top: 10px !important;
-}                                            
+}
+/* TITULOS DENTRO DE CARD */
+.card h1,
+.card h2,
+.card h3 {
+   margin-bottom: 12px !important;
+   color: #e2e8f0; 
+}                                                                            
 /* INPUTS */
 .stTextInput input,
 .stNumberInput input,
-.stSelectbox div {
-   background-color: #111827 !important;
+.stSelectbox > div {
+   background-color: rgba(17,24,39,0.8) !important;
    color: white !important;
-   border-radius: 10px;
+   border-radius: 12px;
    border: 1px solid #1f2937;
+   transition: all 0.3s ease;
+}
+/* EFECTO FOCUS */
+.stTextInput input:focus,
+.stNumberInput input:focus {
+    border: 1px solid #38bdf8 !important;
+    box-shadow: 0px 0px 10px #38bdf8;
 }
 /* LABELS */
 label {
     color: #9ca3af !important;
 }
-</style>                                                         
+</style>
 """, unsafe_allow_html=True)
 
 # HERO VISUAL
-st.markdown("<br>", unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns([1,4,1])
-
+col1, col2, col3 = st.columns([1,3,1])
 with col2:
-    st.image("logo_new.png", width=920)
-    st.markdown('<div class="glow-line"></div>', unsafe_allow_html=True)    
-# =========================
+    st.image("logo_new.png", width=500)
+st.markdown("""
+<div style="
+width: 40%;
+height: 2px;
+margin: 0px auto 10px auto;
+background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+box-shadow: 0px 0px 25px rgba(56,189,248,0.8);
+border-radius: 100px;">
+</div>
+""", unsafe_allow_html=True)
+
 # SESSION
 # =========================
 if "resultado" not in st.session_state:
@@ -77,20 +122,24 @@ if "cotitular_activo" not in st.session_state:
     st.session_state.cotitular_activo = False
 
 if "cotitular_resultado" not in st.session_state:
-  st.session_state.cotitular_resultado = None
+    st.session_state.cotitular_resultado = None
 
 if "analizado" not in st.session_state:
     st.session_state.analizado = False
-# =========================      
+
+st.markdown("""    
+<div class="card">
+""", unsafe_allow_html=True)
+# =====================      
 # 👤 ASESOR
 # =========================
-st.markdown("# 👤 Datos del asesor")
+st.markdown("### 👤 Datos del asesor")
 
 asesor = st.text_input("Nombre asesor")
 telefono_asesor = st.text_input("Teléfono asesor")
 correo_asesor = st.text_input("Correo asesor")
 rfc = st.text_input("RFC asesor")
-st.divider()
+st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================
 # 👥 CLIENTE
