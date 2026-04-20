@@ -440,11 +440,11 @@ if submitted:
    st.session_state.cotitular_activo = (plan == "COTITULAR")
    st.session_state.cotitular_resultado = None
 
-   # =========================
-   # RESULTADO
-   # =========================
-
+# =========================   
+# RESULTADO   
+# =========================   
 if st.session_state.resultado:
+   
    r = st.session_state.resultado
 
    st.subheader("📊 RESULTADO") 
@@ -452,7 +452,6 @@ if st.session_state.resultado:
    # =========================
    # 🟡 SCORE
    # =========================
-   
    if r["score_color"] == "AZUL":
         score_label = "🔵 SCORE AZUL"
         score_desc = "Perfil fuerte, alta probabilidad de aprobación"
@@ -469,9 +468,9 @@ if st.session_state.resultado:
        score_label = "🟠 PERFIL EN DESARROLLO"
        score_desc = "Perfil con oportunidad mediante estrategia alternativa" 
 
-   st.subheader(r["score_label"])
-   st.write(r["score_desc"])
-   st.write(f"Probabilidad: {r['prob']}%")    
+   st.subheader(score_label)
+   st.write(score_desc)
+   st.write(f"Probabilidad: {r['prob']}%")   
    # =========================
    # 💰 CAPACIDAD DE PAGO
    # =========================
@@ -515,22 +514,29 @@ if st.session_state.resultado:
     # COTITULAR
     # =========================
    if st.session_state.cotitular_activo:
+       
        st.subheader("👥 ANALIZAR COTITULAR")
-       tipo_cot = st.selectbox("Tipo cotitular", ["Línea directa","Conocido"])
+
+       tipo_cot = st.selectbox("Tipo cotitular", ["Línea directa", "Conocido"])
        ingreso_cot = st.number_input("Ingreso cotitular")
-       buro_cot = st.selectbox("Historial", ["Malo","Regular","Bueno"])
-   if st.button("Evaluar cotitular"):
-        capacidad_total = (st.session_state.ingreso + ingreso_cot) * 0.3
-        if tipo_cot == "Conocido" and buro_cot != "Bueno":
+       buro_cot = st.selectbox("Historial", ["Malo", "Regular", "Bueno"])
+
+       if st.button("Evaluar cotitular"):
+
+          capacidad_total = (st.session_state.ingreso + ingreso_cot) * 0.3
+
+          if tipo_cot == "Conocido" and buro_cot != "Bueno":
            resultado_cot = "❌ Debe ser línea directa"
-        elif capacidad_total >= r["mensualidad"] and buro_cot == "Bueno":
+          elif capacidad_total >= r["mensualidad"] and buro_cot == "Bueno":
            resultado_cot = "🟢 APROBADO FINAL"     
-        else:
-           resultado_cot = "🟡 Aún condicionado"
-   st.session_state.cotitular_resultado = resultado_cot
-   if st.session_state.cotitular_resultado:
-       st.subheader("📊 RESULTADO FINAL")
-       st.write(st.session_state.cotitular_resultado)  
+          else:
+            resultado_cot = "🟡 Aún condicionado"
+
+          st.session_state.cotitular_resultado = resultado_cot
+
+       if st.session_state.cotitular_resultado:
+           st.subheader("📊 RESULTADO FINAL")
+           st.write(st.session_state.cotitular_resultado)  
    st.divider()  
    # =========================
    # 🔥 TEMPERATURA
