@@ -21,13 +21,16 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
 .stApp::before {
     content: "";
     position: fixed;
-    top: -200px;        
+    top: -200px;
     left: 50%;
     transform: translateX(-50%);
     width: 900px;
-    height: 500px;                
-    background: radial-gradient(circle, rgba(56,189,248,0.18), transparent 70%);
-    z-index: 0;        
+    height: 500px;
+    background: radial-gradient(circle, rgba(56,189,248,0.25), transparent 70%);
+    z-index: -1;
+.block-container {
+    position: relative;
+    z-index: 1;
 }
 /* LUZ INFERIOR */
 .stApp::after {
@@ -38,8 +41,8 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     transform: translateX(-50%);
     width: 900px;
     height: 500px;
-    background: radial-gradient(circle, rgba(139,92,246,0.18), transparent 70%);
-    z-index: 0;
+    background: radial-gradient(circle, rgba(139,92,246,0.25), transparent 70%);
+    z-index: -1;
 }
 /* CONTENIDO ENCIMA */
 .block-container {
@@ -106,7 +109,7 @@ st.markdown("""
 <div style="
 width: 40%;
 height: 2px;
-margin: 0px auto 10px auto;
+margin: -5px auto 5px auto;
 background: linear-gradient(90deg, transparent, #38bdf8, transparent);
 box-shadow: 0px 0px 25px rgba(56,189,248,0.8);
 border-radius: 100px;">
