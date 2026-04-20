@@ -56,13 +56,12 @@ label {
 """, unsafe_allow_html=True)
 
 # HERO VISUAL
-st.markdown("""
-<div class="hero">
-    <img src="logo_new.png">
-    <div class="glow-line"></div>
-</div>
-""", unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1,2,1])
 
+with col2:
+    st.image("logo_new.png", width=480)
+    
+    st.markdown('<div class="glow-line"></div>', unsafe_allow_html=True)    
 # =========================
 # SESSION
 # =========================
