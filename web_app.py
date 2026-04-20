@@ -13,8 +13,7 @@ st.markdown("""
 /* =========================            
    FONDO TECNOLÓGICO
 ========================= */
-html, body, .stApp,
-{[data-testid="stAppViewContainer"] {
+html, body, .stApp, [data-testid="stAppViewContainer"] {
    background: radial-gradient(circle at top, #0f172a, #020617);
    color: white;
 }
@@ -50,7 +49,8 @@ html, body, .stApp,
     padding-bottom: 1rem;        
     max-width: 900px;
 } 
-* {font-family: 'Inter', sans-serif;
+* {
+    font-family: 'Inter', sans-serif;
 }
 /* =========================
  CARD GLASS
