@@ -7,9 +7,8 @@ from io import BytesIO
 # CONFIG
 # =========================
 st.set_page_config(page_title="Perfilador PRO", layout="centered")
-st.image("logo.png", width=300)
 st.markdown("""
-div style="text-align:center;">
+<div style="text-align:center;">
     <img src="logo.png" width="280">
     <h3 style="color:#38bdf8; margin-top:-10px;">Aprobación Inteligente</h3>
 </div>
