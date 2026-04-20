@@ -1,5 +1,5 @@
 import streamlit as st
-from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
 
@@ -7,6 +7,14 @@ from io import BytesIO
 # CONFIG
 # =========================
 st.set_page_config(page_title="Perfilador PRO", layout="centered")
+st.image("logo.png", width=300)
+st.markdown("""
+div style="text-align:center;">
+    <img src="logo.png" width="280">
+    <h3 style="color:#38bdf8; margin-top:-10px;">Aprobación Inteligente</h3>
+</div>
+""", unsafe_allow_html=True)                        
+st.divider()
 
 # =========================
 # HEADER
