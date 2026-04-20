@@ -7,22 +7,13 @@ from io import BytesIO
 # CONFIG
 # =========================
 st.set_page_config(page_title="Perfilador PRO", layout="centered")
+st.image("logo.png", width=220)
 st.markdown("""
 <div style="text-align:center;">
     <img src="logo.png" width="280">
     <h3 style="color:#38bdf8; margin-top:-10px;">Aprobación Inteligente</h3>
 </div>
 """, unsafe_allow_html=True)                        
-st.divider()
-
-# =========================
-# HEADER
-# =========================
-st.markdown("""
-<h1 style='text-align: center; color: #00E0FF; margin-bottom: 20px;'>
-🚗 AutoScore AI
-</h1>
-""", unsafe_allow_html=True)
 st.divider()
 
 # =========================
