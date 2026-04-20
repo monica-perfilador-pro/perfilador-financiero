@@ -35,7 +35,11 @@ label {
 hr {
     border: 1px solid #1f2937;
 }
-</style>
+/* GLOW DEL LOGO */           
+img[src*="logo"] {
+     filter: drop-shadow(0px 0px 30px rgba(56,189,248,0.6));
+}       
+</style>                                                         
 """, unsafe_allow_html=True)
 
 # ESPACIO SUPERIOR
@@ -45,8 +49,9 @@ st.markdown("<br><br>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns([1,3,1])
 
 with col2:
-    st.image("logo.png", width=380)
-                             
+    st.image("logo_new.png", width=420)
+
+st.markdown("<br>", unsafe_allow_html=True)                             
 st.divider()
 
 # =========================
