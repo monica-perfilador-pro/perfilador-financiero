@@ -17,8 +17,8 @@ html, body, .stApp {
 /* HERO SECTION */
 .hero {
     text-align: center;
-    padding-top: 40px;
-    padding-bottom: 20px;
+    padding-top: 20px;
+    padding-bottom: 5px;
 }
 /* LOGO GRANDE + GLOW */
 .hero img {
@@ -27,9 +27,9 @@ html, body, .stApp {
 }
 /* EFECTO LUZ ABAJO */
 .glow-line {
-    width: 60%; 
-    height: 3px;
-    margin: 25px auto;
+    width: 50%; 
+    height: 2px;
+    margin: 10px auto;
     background: linear-gradient(90deg, transparent, #38bdf8, transparent);
     box-shadow: 0px 0px 20px #38bdf8;
     border-radius: 50%;
@@ -39,6 +39,10 @@ html, body, .stApp {
     padding-top: 0rem;
     max-width: 900px;      
 }
+/* TITULOS */
+h1, h2, h3 {
+    margin-top: 10px !important;
+}                                            
 /* INPUTS */
 .stTextInput input,
 .stNumberInput input,
@@ -61,7 +65,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns([1,4,1])
 
 with col2:
-    st.image("logo_new.png", width=650)
+    st.image("logo_new.png", width=720)
     st.markdown('<div class="glow-line"></div>', unsafe_allow_html=True)    
 # =========================
 # SESSION
