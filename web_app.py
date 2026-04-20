@@ -26,7 +26,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     transform: translateX(-50%);
     width: 900px;
     height: 500px;
-    background: radial-gradient(circle, rgba(56,189,248,0.25), transparent 70%);
+    background: radial-gradient(circle, rgba(56,189,248,0.45), transparent 70%);
     z-index: -1;
 .block-container {
     position: relative;
@@ -41,7 +41,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     transform: translateX(-50%);
     width: 900px;
     height: 500px;
-    background: radial-gradient(circle, rgba(139,92,246,0.25), transparent 70%);
+    background: radial-gradient(circle, rgba(139,92,246,0.45), transparent 70%);
     z-index: -1;
 }
 /* CONTENIDO ENCIMA */
@@ -59,12 +59,14 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
  CARD GLASS
 ========================= */
 .card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(15,23,42,0.6);
+    border: 1px solid rgba(56,189,248,0.15);
     border-radius: 20px;
     padding: 25px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0px 10px 40px rgba(0,0,0,0.6);
+    backdrop-filter: blur(14px);
+    box-shadow: 
+        0px 10px 40px rgba(0,0,0,0.6),
+        0px 0px 40px rgba(56,189,248,0.05);
     margin-bottom: 30px;
 }
 /* TITULOS */
@@ -81,18 +83,21 @@ h1, h2, h3 {
 /* INPUTS */
 .stTextInput input,
 .stNumberInput input,
-.stSelectbox > div {
-   background-color: rgba(17,24,39,0.8) !important;
+.stSelectbox > div > div {
+   background-color: rgba(15,23,42,0.9) !important;
    color: white !important;
-   border-radius: 12px;
-   border: 1px solid #1f2937;
-   transition: all 0.3s ease;
+   border-radius: 12px !important;
+   border: 1px solid #1f2937 !important;
 }
-/* EFECTO FOCUS */
+/* TEXTO dentro del input */
+input {
+   color: white !important;
+}            
+/* FOCUS glow */
 .stTextInput input:focus,
 .stNumberInput input:focus {
     border: 1px solid #38bdf8 !important;
-    box-shadow: 0px 0px 10px #38bdf8;
+    box-shadow: 0px 0px 12px rgba(56,189,248,0.7);
 }
 /* LABELS */
 label {
