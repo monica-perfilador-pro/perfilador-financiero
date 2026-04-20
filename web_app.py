@@ -119,7 +119,7 @@ with st.form("formulario"):
     atrasos = st.selectbox(
           "Atrasos", 
           [1,2,3],
-          format_func=lambda x: ["Sin","Leves","Fuertes"][x-1]
+          format_func=lambda x: ["1-30 dias","31 a 60","+ 61 dias"][x-1]
     )
 
     # =========================
