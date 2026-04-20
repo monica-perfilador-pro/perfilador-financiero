@@ -18,7 +18,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
    color: white;
 }
 /* LUZ SUPERIOR */
-.stApp::before {
+[data-testid="stAppViewContainer"]::before {
     content: "";
     position: fixed;
     top: -200px;
@@ -27,14 +27,15 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     width: 900px;
     height: 500px;
     background: radial-gradient(circle, rgba(56,189,248,0.45), transparent 70%);
+    filter: blur(80px);        
     z-index: -1;
-}   
+}            
 .block-container {
     position: relative;
     z-index: 1;
 }
 /* LUZ INFERIOR */
-.stApp::after {
+[data-testid="stAppViewContainer"]::after {
     content: "";
     position: fixed;
     bottom: -250px;
@@ -42,7 +43,8 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
     transform: translateX(-50%);
     width: 900px;
     height: 500px;
-    background: radial-gradient(circle, rgba(139,92,246,0.45), transparent 70%);
+    background: radial-gradient(circle, rgba(56,189,248,0.45), transparent 70%);
+    filter: blur(80px);        
     z-index: -1;
 }
 /* CONTENIDO ENCIMA */
@@ -59,7 +61,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
 /* =========================
  CARD GLASS
 ========================= */
-.card {
+[data-testid="stVerticalBlock"] > div {            
     background: rgba(15,23,42,0.6);
     border: 1px solid rgba(56,189,248,0.15);
     border-radius: 20px;
@@ -114,7 +116,7 @@ st.markdown("""
 <div style="
 width: 40%;
 height: 2px;
-margin: -5px auto 5px auto;
+margin: 10px auto 15px auto;
 background: linear-gradient(90deg, transparent, #38bdf8, transparent);
 box-shadow: 0px 0px 25px rgba(56,189,248,0.8);
 border-radius: 100px;">
@@ -135,19 +137,17 @@ if "cotitular_resultado" not in st.session_state:
 if "analizado" not in st.session_state:
     st.session_state.analizado = False
 
-st.markdown("""    
-<div class="card">
-""", unsafe_allow_html=True)
+
 # =====================      
 # 👤 ASESOR
 # =========================
-st.markdown("### 👤 Datos del asesor")
+with st.container():
+    st.markdown("### 👤 Datos del asesor")
 
-asesor = st.text_input("Nombre asesor")
-telefono_asesor = st.text_input("Teléfono asesor")
-correo_asesor = st.text_input("Correo asesor")
-rfc = st.text_input("RFC asesor")
-st.markdown("</div>", unsafe_allow_html=True)
+    asesor = st.text_input("Nombre asesor")
+    telefono_asesor = st.text_input("Teléfono asesor")
+    correo_asesor = st.text_input("Correo asesor")
+    rfc = st.text_input("RFC asesor")
 
 # =========================
 # 👥 CLIENTE
