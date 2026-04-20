@@ -499,7 +499,11 @@ if st.session_state.resultado:
     # 💡 MENSAJE CLIENTE (SOLO UNA VEZ)
    if r.get("mensaje_cliente"):
         st.markdown(f"""
-            <div style="background-color:#1e293b;padding:15px;border-radius:10px">
+            <div style="background-color:#f8fafc;
+                    padding:15px;
+                    border-radius:10px;
+                    color:#0f172a;
+                    border:1px solid #e2e8f0;">
             💡 {r['mensaje_cliente']}
             </div>
             """, unsafe_allow_html=True)
