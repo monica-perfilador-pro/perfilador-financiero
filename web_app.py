@@ -7,18 +7,44 @@ from io import BytesIO
 # CONFIG
 # =========================
 st.set_page_config(page_title="Perfilador PRO", layout="centered")
+st.markdown("""
+<style>
+/* FONDO TOTAL */
+html, body, .stApp {
+   background-color: #020617 !important;
+   color: white !important;
+}
+/* CONTENEDOR PRINCIPAL */
+.block-container {
+    background-color: #020617 !important;
+}
+/* INPUTS */
+.stTextInput input,
+.stNumberInput input,
+.stSelectbox div {
+   background-color: #111827 !important;
+   color: white !important;
+   border-radius: 10px;
+   border: 1px solid #1f2937;
+}
+/* LABELS */
+label {
+    color: #9ca3af !important;
+}
+/* DIVIDER */
+hr {
+    border: 1px solid #1f2937;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ESPACIO SUPERIOR
+st.markdown("<br>", unsafe_allow_html=True)
+
+# LOGO CENTRADO
 col1, col2, col3 = st.columns([1,2,1])
 with col2:
-    st.image("logo.png", width=250)
-st.markdown("""
-<h2 style='text-align:center;
-    color:#38bdf8;
-    font-weight:700;
-    margin-top:10px;
-    text-shadow: 0px 0px 10px rgba(56,189,248,0.6);'>
-🚀 Aprobación Inteligente
-</h2>
-""", unsafe_allow_html=True)    
+    st.image("logo.png", width=220, use_container_width=False)
                              
 st.divider()
 
