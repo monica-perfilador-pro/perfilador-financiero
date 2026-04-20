@@ -474,7 +474,6 @@ if st.session_state.resultado:
    # =========================
    # 💰 CAPACIDAD DE PAGO
    # =========================
-   st.subheader("💰 Capacidad de pago")
    st.markdown(f"### 💰 Capacidad de pago: ${r['capacidad_pago']:,.0f}")
        
    # 🟢 DECISIÓN (INTELIGENTE)  
