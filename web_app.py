@@ -9,27 +9,27 @@ from io import BytesIO
 st.set_page_config(page_title="Perfilador PRO", layout="centered")
 st.markdown("""
 <style>
-/* FONDO TOTAL */
+/* FONDO GENERAL CON GRADIENTE */
 html, body, .stApp {
-   background-color: #020617 !important;
-   color: white !important;
+   background: radial-gradient(circle at top, #0f172a, #020617);
+   color: white;
 }
-/* CONTENEDOR PRINCIPAL */
+/* CONTENEDOR */
 .block-container {
-    background-color: #020617 !important;
+    padding-top: 2rem;
 }
-/* INPUTS */
+/* INPUTS ESTILO TECNOLÓGICO */
 .stTextInput input,
 .stNumberInput input,
 .stSelectbox div {
-   background-color: #111827 !important;
-   color: white !important;
-   border-radius: 10px;
-   border: 1px solid #1f2937;
+   background: rgba(17, 24, 39, 0.8);
+   color: white;
+   border-radius: 12px;
+   border: 1px solid #1f293border: 1px solid #1f2937;7;
 }
 /* LABELS */
 label {
-    color: #9ca3af !important;
+    color: #94a3b8 !important;
 }
 /* DIVIDER */
 hr {
@@ -39,12 +39,13 @@ hr {
 """, unsafe_allow_html=True)
 
 # ESPACIO SUPERIOR
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<br><br>", unsafe_allow_html=True)
 
 # LOGO CENTRADO
-col1, col2, col3 = st.columns([1,2,1])
+col1, col2, col3 = st.columns([1,3,1])
+
 with col2:
-    st.image("logo.png", width=220, use_container_width=False)
+    st.image("logo.png", width=380)
                              
 st.divider()
 
