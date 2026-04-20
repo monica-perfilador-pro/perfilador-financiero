@@ -7,7 +7,7 @@ from io import BytesIO
 # CONFIG
 # =========================
 st.set_page_config(page_title="Perfilador PRO", layout="centered")
-st.image(r"C:\Users\MONICA\OneDrive\Escritorio\proyecto\logo.png", width=300)
+st.image("logo.png", width=300)
 st.markdown("""
 div style="text-align:center;">
     <img src="logo.png" width="280">
