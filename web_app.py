@@ -61,7 +61,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
 /* =========================
  CARD GLASS
 ========================= */
-[data-testid="stVerticalBlock"] > div {            
+.card {
     background: rgba(15,23,42,0.6);
     border: 1px solid rgba(56,189,248,0.15);
     border-radius: 20px;
@@ -71,7 +71,19 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {
         0px 10px 40px rgba(0,0,0,0.6),
         0px 0px 40px rgba(56,189,248,0.05);
     margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;                
 }
+.card::before {
+    content: "";  
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(56,189,248,0.15), transparent 70%);
+}
+                                                                            
 /* TITULOS */
 h1, h2, h3 {
     margin-top: 10px !important;
@@ -141,13 +153,14 @@ if "analizado" not in st.session_state:
 # =====================      
 # 👤 ASESOR
 # =========================
-with st.container():
-    st.markdown("### 👤 Datos del asesor")
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown("### 👤 Datos del asesor")
 
-    asesor = st.text_input("Nombre asesor")
-    telefono_asesor = st.text_input("Teléfono asesor")
-    correo_asesor = st.text_input("Correo asesor")
-    rfc = st.text_input("RFC asesor")
+asesor = st.text_input("Nombre asesor")
+telefono_asesor = st.text_input("Teléfono asesor")
+correo_asesor = st.text_input("Correo asesor")
+rfc = st.text_input("RFC asesor")
+st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================
 # 👥 CLIENTE
