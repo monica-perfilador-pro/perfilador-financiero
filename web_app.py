@@ -149,6 +149,9 @@ if "cotitular_resultado" not in st.session_state:
 if "analizado" not in st.session_state:
     st.session_state.analizado = False
 
+if "ingreso" not in st.session_state:
+    st.session_state.ingreso = 0.0
+
 
 # =====================      
 # 👤 ASESOR
@@ -162,16 +165,15 @@ correo_asesor = st.text_input("Correo asesor")
 rfc = st.text_input("RFC asesor")
 st.markdown('</div>', unsafe_allow_html=True)
 
-# =========================
-# 👥 CLIENTE
-# =========================
-st.markdown("## 👥 Datos del cliente")
-nombre_cliente = st.text_input("Nombre cliente")
-telefono = st.text_input("Teléfono")
-correo = st.text_input("Correo")
-
-     
 with st.form("formulario"):
+    # =========================
+    # 👥 CLIENTE
+    # =========================
+    st.markdown("## 👥 Datos del cliente")
+    nombre_cliente = st.text_input("Nombre cliente")
+    telefono = st.text_input("Teléfono")
+    correo = st.text_input("Correo")
+
     st.markdown("## 📊 Perfil del cliente")
 
     edad = st.number_input("Edad", 18, 73, 18)
@@ -196,7 +198,7 @@ with st.form("formulario"):
         format_func=lambda x: "Sí" if x == 1 else "No",
     )    
     # ⚠️ aviso visual (UX)
-    if tipo_ingreso != "Independiente":
+    if tipo_ingreso == "Independiente":
       st.caption("⚠️ Solo aplica para independientes")    
      
  
@@ -261,7 +263,7 @@ if submitted:
    st.session_state.ingreso = ingreso
    # BASE
    monto = precio - enganche
-   mensualidad = (monto/100000)*2200*(plazo/72)
+   mensualidad = (monto/100000)*2200*(72/plazo) if plazo > 0 else 0
    enganche_pct = (enganche/precio)*100 if precio>0 else 0
    
          
@@ -407,6 +409,14 @@ if submitted:
        decision = "🟠 ESTRATEGIA ALTERNATIVA"
        plan = "COTITULAR"
 
+    # 🔴 RIESGO ALTO (enganche < 10% o sin comprobante)
+   elif riesgo_alto and perfil != "FUERTE":
+        decision = "🟠 ESTRATEGIA ALTERNATIVA"
+        plan = "ALTERNATIVA"
+
+        mensaje_cliente = """Tu perfil puede avanzar mediante una alternativa de financiamiento."""
+        mensaje_asesor = """Riesgo alto detectado: subir enganche mínimo al 10% / comprobar ingresos / buscar cotitular."""
+
     # 🔴 BLOQUEO TOTAL
    elif atrasos == 3:
         decision = "🟠 ESTRATEGIA ALTERNATIVA"
@@ -515,26 +525,6 @@ if submitted:
         documentos += ["Nómina", "Estado de cuenta"]
    else:
         documentos += ["Estados de cuenta"]
-
-   # =======================
-   # RESULTADO PARA PDF
-   # ======================
-    
-   r = {
-       "nombre": nombre_cliente,
-       "telefono": telefono,
-       "correo": correo, 
-       "perfil": perfil,
-       "prob": prob,
-       "decision": decision,
-       "asesor": asesor,
-       "telefono_asesor": telefono_asesor,
-       "correo_asesor": correo_asesor,
-       "rfc": rfc,
-       "capacidad_pago": capacidad_pago,
-       
-
-   }    
 
    # GUARDAR      
    st.session_state.resultado = {    
@@ -850,4 +840,4 @@ if st.session_state.resultado:
             file_name="perfil.pdf",
             mime="application/pdf"
 
-        )          
+        )
