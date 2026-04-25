@@ -41,149 +41,42 @@ html, body, .stApp,
     box-sizing: border-box;
 }
 
-/* ─── TOPBAR ────────────────────────────────── */
-.topbar {
-    display: flex; align-items: center; gap: 0;
-    padding: 10px 0 10px 0;
-    border-bottom: 1px solid rgba(56,189,248,0.15);
-    margin-bottom: 16px;
-    position: relative;
-}
-.topbar-logo { display:flex; align-items:center; }
-.topbar-divider {
-    width: 1px; height: 44px;
-    background: rgba(56,189,248,0.2);
-    margin: 0 18px;
-}
+/* ─── TOPBAR ─────────────────────────────────── */
 .topbar-title {
     font-family: 'Rajdhani', sans-serif !important;
     font-size: 1.5rem; font-weight: 700;
-    color: #e2e8f0; letter-spacing: 0.08em;
-    line-height: 1;
+    color: #e2e8f0; letter-spacing: 0.08em; line-height: 1;
 }
 .topbar-sub {
     color: #38bdf8; font-size: 0.65rem;
     letter-spacing: 0.16em; text-transform: uppercase; margin-top: 3px;
 }
-.topbar-badge {
-    margin-left: auto;
-    background: rgba(56,189,248,0.08);
-    border: 1px solid rgba(56,189,248,0.2);
-    border-radius: 50px; padding: 5px 14px;
-    font-size: 0.65rem; color: #38bdf8;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    font-weight: 600;
+.topbar-divider {
+    display: inline-block;
+    width: 1px; height: 38px;
+    background: rgba(56,189,248,0.2);
+    margin: 0 16px; vertical-align: middle;
 }
-
-/* ─── PANEL SEPARADOR ───────────────────────── */
-.panel-left  { border-right: 1px solid rgba(56,189,248,0.1); padding-right: 18px; }
-.panel-right { padding-left: 18px; }
+.topbar-desc {
+    color: #334155; font-size: 0.7rem; letter-spacing: 0.04em;
+}
+.topbar-badge {
+    background: rgba(56,189,248,0.07);
+    border: 1px solid rgba(56,189,248,0.18);
+    border-radius: 50px; padding: 4px 12px;
+    font-size: 0.62rem; color: #38bdf8;
+    letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;
+}
 
 /* ─── SECTION LABEL ─────────────────────────── */
 .sec-label {
     font-family: 'Rajdhani', sans-serif !important;
-    font-size: 0.7rem; font-weight: 700;
+    font-size: 0.68rem; font-weight: 700;
     color: #38bdf8; text-transform: uppercase;
-    letter-spacing: 0.14em; margin: 12px 0 6px;
+    letter-spacing: 0.14em; margin: 10px 0 5px;
     display: flex; align-items: center; gap: 7px;
-    padding-bottom: 6px;
+    padding-bottom: 5px;
     border-bottom: 1px solid rgba(56,189,248,0.1);
-}
-
-/* ─── ROW TABLE (estilo Excel) ───────────────── */
-.row-table { width: 100%; margin-bottom: 2px; }
-.row-table .row {
-    display: flex; align-items: center;
-    padding: 5px 10px;
-    border-bottom: 1px solid rgba(56,189,248,0.05);
-    gap: 8px;
-}
-.row-table .row:hover { background: rgba(56,189,248,0.03); }
-.row-table .row .lbl {
-    flex: 0 0 52%; color: #64748b;
-    font-size: 0.76rem; letter-spacing: 0.02em;
-}
-.row-table .row .val {
-    flex: 1; color: #cbd5e1;
-    font-size: 0.76rem; font-weight: 600;
-    text-align: right;
-}
-.val.green  { color: #4ade80 !important; }
-.val.yellow { color: #facc15 !important; }
-.val.red    { color: #f87171 !important; }
-.val.blue   { color: #38bdf8 !important; }
-.val.orange { color: #fb923c !important; }
-
-/* ─── RESULTADO HEADER ───────────────────────── */
-.res-header {
-    display: flex; align-items: center;
-    justify-content: space-between;
-    padding: 8px 12px;
-    background: rgba(56,189,248,0.06);
-    border: 1px solid rgba(56,189,248,0.18);
-    border-radius: 10px; margin-bottom: 10px;
-}
-.res-title {
-    font-family: 'Rajdhani', sans-serif !important;
-    font-size: 0.85rem; font-weight: 700;
-    color: #7dd3fc; text-transform: uppercase; letter-spacing: 0.1em;
-}
-.res-pct {
-    font-family: 'Rajdhani', sans-serif !important;
-    font-size: 1.6rem; font-weight: 700; line-height: 1;
-}
-
-/* ─── SEMÁFORO ───────────────────────────────── */
-.semaforo {
-    display: flex; align-items: center; justify-content: center;
-    gap: 10px; padding: 9px 14px; border-radius: 8px;
-    font-family: 'Rajdhani', sans-serif !important;
-    font-size: 0.95rem; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    margin: 4px 0;
-}
-.semaforo.verde   { background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.3); color:#4ade80; }
-.semaforo.amarillo{ background:rgba(234,179,8,0.10); border:1px solid rgba(234,179,8,0.28); color:#facc15; }
-.semaforo.naranja { background:rgba(249,115,22,0.10); border:1px solid rgba(249,115,22,0.28); color:#fb923c; }
-.semaforo.rojo    { background:rgba(239,68,68,0.10); border:1px solid rgba(239,68,68,0.28); color:#f87171; }
-
-/* ─── ALERTA CHIP ────────────────────────────── */
-.alerta-chip {
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 11px; border-radius: 7px;
-    font-size: 0.74rem; font-weight: 600;
-    margin: 4px 0; letter-spacing: 0.03em;
-}
-.alerta-chip.warn { background:rgba(245,158,11,0.09); border:1px solid rgba(245,158,11,0.22); color:#fcd34d; }
-.alerta-chip.ok   { background:rgba(34,197,94,0.07);  border:1px solid rgba(34,197,94,0.18);  color:#86efac; }
-.alerta-chip.bad  { background:rgba(239,68,68,0.09);  border:1px solid rgba(239,68,68,0.22);  color:#fca5a5; }
-
-/* ─── CONDICIONAMIENTOS BOX ──────────────────── */
-.cond-box {
-    background: rgba(234,179,8,0.08);
-    border: 1px solid rgba(234,179,8,0.25);
-    border-radius: 9px; padding: 10px 14px;
-    color: #fde68a; font-size: 0.78rem;
-    line-height: 1.7; margin: 6px 0;
-    font-weight: 500;
-}
-
-/* ─── ESTRATEGIA INTERNA ─────────────────────── */
-.estrategia-box {
-    background: rgba(239,68,68,0.07);
-    border: 1px solid rgba(239,68,68,0.18);
-    border-left: 3px solid #ef4444;
-    border-radius: 0 9px 9px 0;
-    padding: 10px 14px; color: #fca5a5;
-    font-size: 0.78rem; line-height: 1.65;
-    margin: 4px 0;
-}
-
-/* ─── CUENTA BOX ────────────────────────────── */
-.cuenta-box {
-    background: rgba(8,18,38,0.9);
-    border: 1px solid rgba(56,189,248,0.15);
-    border-radius: 9px; padding: 10px 14px; margin: 6px 0;
 }
 
 /* ─── INPUTS compactos ───────────────────────── */
@@ -223,7 +116,7 @@ label, [data-testid="stWidgetLabel"] p {
     color: #38bdf8 !important; border-radius: 6px !important;
     padding: 2px 8px !important; width: auto !important; margin: 0 !important;
 }
-div[data-testid="stVerticalBlock"] { gap: 0.3rem !important; }
+div[data-testid="stVerticalBlock"] { gap: 0.28rem !important; }
 
 /* ─── BOTÓN ──────────────────────────────────── */
 .stFormSubmitButton > button, .stButton > button {
@@ -243,23 +136,41 @@ div[data-testid="stVerticalBlock"] { gap: 0.3rem !important; }
     box-shadow: 0 0 40px rgba(99,102,241,0.5) !important;
 }
 
-/* ─── EXPANDER oscuro ────────────────────────── */
-details, summary,
-[data-testid="stExpander"],
-[data-testid="stExpander"] > div,
-.streamlit-expanderHeader,
-.streamlit-expanderContent {
-    background: rgba(3,9,22,0.88) !important;
-    border: 1px solid rgba(56,189,248,0.13) !important;
-    border-radius: 9px !important; color: #7dd3fc !important;
+/* ─── EXPANDER — fix encimado ─────────────────── */
+[data-testid="stExpander"] {
+    background: rgba(3,9,22,0.9) !important;
+    border: 1px solid rgba(56,189,248,0.14) !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
 }
-.streamlit-expanderHeader p, [data-testid="stExpander"] summary p {
-    color: #7dd3fc !important; font-size: 0.78rem !important; font-weight: 600 !important;
+[data-testid="stExpander"] summary {
+    background: rgba(3,9,22,0.9) !important;
+    padding: 10px 14px !important;
+    border-radius: 10px !important;
+    list-style: none !important;
 }
-[data-testid="stExpander"] > div > div {
-    background: rgba(3,9,22,0.92) !important;
+[data-testid="stExpander"] summary p,
+[data-testid="stExpander"] summary span,
+[data-testid="stExpander"] summary * {
+    color: #7dd3fc !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    background: transparent !important;
+    border: none !important;
+}
+[data-testid="stExpander"] > div {
+    background: rgba(3,9,22,0.95) !important;
     border-top: 1px solid rgba(56,189,248,0.08) !important;
-    border-radius: 0 0 9px 9px !important; padding: 10px !important;
+    padding: 12px 14px !important;
+    border-radius: 0 0 10px 10px !important;
+}
+/* Forzar fondo en todo contenido interno del expander */
+[data-testid="stExpander"] > div * {
+    background: transparent !important;
+}
+.streamlit-expanderHeader {
+    background: rgba(3,9,22,0.9) !important;
+    color: #7dd3fc !important;
 }
 
 /* ─── ALERTS ──────────────────────────────────  */
@@ -268,8 +179,9 @@ details, summary,
 .stError   > div { background:rgba(239,68,68,0.07)!important;  border:1px solid rgba(239,68,68,0.25)!important;  border-radius:9px!important; color:#fca5a5!important; font-size:0.82rem!important; }
 .stInfo    > div { background:rgba(56,189,248,0.06)!important; border:1px solid rgba(56,189,248,0.2)!important;  border-radius:9px!important; color:#7dd3fc!important;  font-size:0.82rem!important; }
 
-hr { border:none!important; border-top:1px solid rgba(56,189,248,0.09)!important; margin:10px 0!important; }
+hr { border:none!important; border-top:1px solid rgba(56,189,248,0.09)!important; margin:8px 0!important; }
 .stCaption p { color:#f59e0b!important; font-size:0.72rem!important; }
+
 .stLinkButton a {
     background:rgba(56,189,248,0.08)!important; border:1px solid rgba(56,189,248,0.22)!important;
     color:#7dd3fc!important; border-radius:8px!important; font-weight:600!important;
@@ -281,10 +193,134 @@ hr { border:none!important; border-top:1px solid rgba(56,189,248,0.09)!important
     color:#7dd3fc!important; border-radius:8px!important; font-weight:600!important;
     font-size:0.8rem!important; width:100%!important; padding:9px!important;
 }
+
+/* ─── RESULTADO UI ────────────────────────────── */
+
+/* PROBABILIDAD GRANDE */
+.prob-hero {
+    display: flex; align-items: flex-end; gap: 10px;
+    padding: 16px 20px 12px;
+    background: linear-gradient(135deg, rgba(8,18,40,0.98), rgba(4,10,24,0.99));
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 14px; margin-bottom: 10px;
+    position: relative; overflow: hidden;
+}
+.prob-hero::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, #38bdf8, #6366f1, #8b5cf6);
+}
+.prob-number {
+    font-family: 'Rajdhani', sans-serif !important;
+    font-size: 3.8rem; font-weight: 700; line-height: 1;
+}
+.prob-label {
+    font-size: 0.7rem; color: #475569; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 8px;
+}
+.prob-sublabel {
+    font-family: 'Rajdhani', sans-serif !important;
+    font-size: 0.82rem; color: #64748b; letter-spacing: 0.04em;
+}
+
+/* SCORE BADGE */
+.score-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 10px 16px; border-radius: 12px;
+    margin: 6px 0; width: 100%;
+}
+.score-badge .score-em  { font-size: 1.5rem; }
+.score-badge .score-lbl {
+    font-family: 'Rajdhani', sans-serif !important;
+    font-size: 1.1rem; font-weight: 700; letter-spacing: 0.06em;
+}
+.score-badge .score-sub { font-size: 0.72rem; color: #64748b; margin-top: 1px; }
+
+/* MÉTRICAS 2 COL */
+.metrics-2 { display: flex; gap: 10px; margin: 8px 0; }
+.metric-tile {
+    flex: 1; border-radius: 10px; padding: 10px 14px;
+}
+.metric-tile.blue   { background:rgba(56,189,248,0.07); border:1px solid rgba(56,189,248,0.16); }
+.metric-tile.purple { background:rgba(99,102,241,0.07); border:1px solid rgba(99,102,241,0.16); }
+.metric-tile .mt-lbl {
+    font-size: 0.62rem; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 4px; font-weight: 600;
+}
+.metric-tile.blue   .mt-lbl { color: #7dd3fc; }
+.metric-tile.purple .mt-lbl { color: #a5b4fc; }
+.metric-tile .mt-val {
+    font-family: 'Rajdhani', sans-serif !important;
+    font-size: 1.35rem; font-weight: 700; color: #e2e8f0; line-height: 1;
+}
+
+/* SEMÁFORO DECISIÓN */
+.semaforo {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; padding: 10px 16px; border-radius: 10px;
+    font-family: 'Rajdhani', sans-serif !important;
+    font-size: 1rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; margin: 8px 0;
+}
+.semaforo.verde    { background:rgba(34,197,94,0.11);  border:1px solid rgba(34,197,94,0.3);  color:#4ade80; }
+.semaforo.amarillo { background:rgba(234,179,8,0.09);  border:1px solid rgba(234,179,8,0.26); color:#facc15; }
+.semaforo.naranja  { background:rgba(249,115,22,0.09); border:1px solid rgba(249,115,22,0.26);color:#fb923c; }
+.semaforo.rojo     { background:rgba(239,68,68,0.09);  border:1px solid rgba(239,68,68,0.26); color:#f87171; }
+
+/* MSG CLIENTE */
+.msg-cliente {
+    background: rgba(56,189,248,0.05);
+    border: 1px solid rgba(56,189,248,0.12);
+    border-left: 3px solid #38bdf8;
+    border-radius: 0 9px 9px 0;
+    padding: 10px 14px; color: #cbd5e1;
+    font-size: 0.8rem; line-height: 1.6; margin: 6px 0;
+}
+
+/* ESTRATEGIA INTERNA */
+.estrategia-box {
+    background: rgba(239,68,68,0.07);
+    border: 1px solid rgba(239,68,68,0.18);
+    border-left: 3px solid #ef4444;
+    border-radius: 0 9px 9px 0;
+    padding: 10px 14px; color: #fca5a5;
+    font-size: 0.78rem; line-height: 1.6;
+}
+
+/* ALERTA CHIP */
+.alerta-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 11px; border-radius: 7px;
+    font-size: 0.74rem; font-weight: 600;
+    margin: 3px 0; letter-spacing: 0.02em;
+}
+.alerta-chip.warn { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); color:#fcd34d; }
+.alerta-chip.ok   { background:rgba(34,197,94,0.06);  border:1px solid rgba(34,197,94,0.16); color:#86efac; }
+.alerta-chip.bad  { background:rgba(239,68,68,0.08);  border:1px solid rgba(239,68,68,0.2);  color:#fca5a5; }
+
+/* CONDICIONAMIENTOS */
+.cond-box {
+    background: rgba(234,179,8,0.07);
+    border: 1px solid rgba(234,179,8,0.22);
+    border-radius: 9px; padding: 10px 14px;
+    color: #fde68a; font-size: 0.76rem;
+    line-height: 1.75; margin: 4px 0; font-weight: 500;
+}
+
+/* CUENTA */
+.cuenta-box {
+    background: rgba(8,18,38,0.9);
+    border: 1px solid rgba(56,189,248,0.14);
+    border-radius: 9px; padding: 10px 14px; margin: 4px 0;
+}
+
 .security-line {
     text-align:center; color:#1e3a4a; font-size:0.68rem; letter-spacing:0.06em;
     margin-top:8px; display:flex; align-items:center; justify-content:center; gap:5px;
 }
+
+/* separador vertical panel */
+.panel-left  { border-right: 1px solid rgba(56,189,248,0.09); padding-right: 16px; }
+.panel-right { padding-left: 16px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -297,28 +333,28 @@ for k, v in {
         st.session_state[k] = v
 
 # ── TOPBAR ─────────────────────────────────────────────────────────
-tc1, tc2 = st.columns([1, 11])
-with tc1:
-    st.image("logo_new.png", width=72)
-with tc2:
+t1, t2 = st.columns([1, 14])
+with t1:
+    st.image("logo_new.png", width=68)
+with t2:
     st.markdown("""
-    <div style="display:flex;align-items:center;gap:16px;padding:6px 0;">
+    <div style="display:flex;align-items:center;gap:0;padding:7px 0 0 6px;">
       <div>
         <div class="topbar-title">AutoScore AI</div>
         <div class="topbar-sub">Aprobación Inteligente</div>
       </div>
-      <div class="topbar-divider"></div>
-      <div style="color:#475569;font-size:0.72rem;letter-spacing:0.04em;">
-        Herramienta de Pre-Análisis de Crédito Automotriz
+      <span class="topbar-divider"></span>
+      <div class="topbar-desc">Herramienta de Pre-Análisis de Crédito Automotriz</div>
+      <div style="margin-left:auto;">
+        <span class="topbar-badge">🔒 Datos protegidos</span>
       </div>
-      <div class="topbar-badge" style="margin-left:auto;">🔒 Datos protegidos</div>
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown("""
-<div style="height:1px;margin:0 0 14px;
+<div style="height:1px;margin:4px 0 14px;
 background:linear-gradient(90deg,transparent,#38bdf8 25%,#8b5cf6 75%,transparent);
-box-shadow:0 0 14px rgba(56,189,248,0.3);"></div>
+box-shadow:0 0 14px rgba(56,189,248,0.28);"></div>
 """, unsafe_allow_html=True)
 
 # ── DOS COLUMNAS ───────────────────────────────────────────────────
@@ -352,15 +388,14 @@ with col_izq:
         # PERFIL
         st.markdown('<div class="sec-label">📊 Perfil Financiero</div>', unsafe_allow_html=True)
         p1, p2, p3 = st.columns(3)
-        with p1: edad   = st.number_input("Edad", 18, 73, 18)
-        with p2: ingreso = st.number_input("Ingreso mensual ($)", min_value=6500.0, value=6500.0, step=500.0, format="%.0f")
-        with p3: tipo_ingreso = st.selectbox("Tipo de ingreso", ["Nómina","Independiente","No comprueba"])
+        with p1: edad        = st.number_input("Edad", 18, 73, 18)
+        with p2: ingreso     = st.number_input("Ingreso mensual ($)", min_value=6500.0, value=6500.0, step=500.0, format="%.0f")
+        with p3: tipo_ingreso= st.selectbox("Tipo de ingreso", ["Nómina","Independiente","No comprueba"])
 
         q1, q2, q3 = st.columns(3)
         with q1: negocio_casa  = st.selectbox("Negocio en domicilio", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         with q2: domicilio     = st.selectbox("Antigüedad domicilio", [1,2,3], format_func=lambda x:["<1 año","1-3 años","+3 años"][x-1])
         with q3: domicilio_buro= st.selectbox("Domicilio = ID", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
-
         if tipo_ingreso == "Independiente":
             st.caption("⚠️ Solo aplica para independientes")
 
@@ -391,7 +426,7 @@ with col_izq:
         with k2: compra_mes    = st.selectbox("¿Compra este mes?", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         with k3: unidad        = st.selectbox("¿Hay unidad?", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
 
-        st.markdown("<div style='margin:6px 0'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin:4px 0'></div>", unsafe_allow_html=True)
         submitted = st.form_submit_button("✦  ANALIZAR PERFIL FINANCIERO")
 
 # ── LÓGICA ─────────────────────────────────────────────────────────
@@ -441,13 +476,15 @@ if submitted:
     elif compra_mes==1 and enganche_disp==1 and unidad==1:  temp="🔥 CALIENTE"
     else:                                                   temp="🟡 TIBIO"
 
+    # FIX: score_color se asigna DESPUÉS de calcular la probabilidad final
+    # para que refleje el prob real, no el perfil base
     if prob>=80:   sc="AZUL"
     elif prob>=70: sc="VERDE"
     elif prob>=45: sc="AMARILLO"
     elif prob>=35: sc="NARANJA"
     else:          sc="ROJO"
 
-    msg_c=msg_a=""; decision="🟡 EN EVALUACIÓN"; plan="REVISION"
+    msg_c=msg_a=""; decision="EN EVALUACIÓN"; plan="REVISION"
     condicionamientos=[]
 
     if consultas>=10:
@@ -509,12 +546,10 @@ if submitted:
         msg_a="Financiera flexible / Reestructura de perfil."
         condicionamientos+=["FINANCIERA FLEXIBLE","REESTRUCTURA DE PERFIL"]
 
-    # alertas
-    alerta_cotitular   = "COTITULAR" in " ".join(condicionamientos)
-    alerta_ingresos    = any(x in " ".join(condicionamientos) for x in ["INGRESO","INGRESOS","VALIDACIÓN"])
+    alerta_cotitular     = "COTITULAR" in " ".join(condicionamientos)
+    alerta_ingresos      = any(x in " ".join(condicionamientos) for x in ["INGRESO","INGRESOS","VALIDACIÓN"])
     alerta_investigacion = "INVESTIGACIÓN" in " ".join(condicionamientos) or "FÍSICA" in " ".join(condicionamientos)
 
-    # investigación
     inv="Sin alerta relevante"
     if tipo_ingreso!="Nómina" and prob<45:     inv="Validación adicional requerida"
     if domicilio_buro==2:                      inv="Validación de domicilio"
@@ -528,34 +563,32 @@ if submitted:
     elif tipo_ingreso=="Nómina": docs+=["Nómina","Estado de cuenta"]
     else:                        docs+=["Estados de cuenta"]
 
-    # semaforo css
-    if "APROBADO" in decision and "FINANCIERA" not in decision: sem_class="verde"
-    elif "FINANCIERA" in decision or "PRE" in decision:         sem_class="amarillo"
-    elif "OPORTUNIDAD" in decision or "AJUSTE" in decision:     sem_class="naranja"
-    else:                                                        sem_class="naranja"
-    if "ALTERNATIVA" in decision: sem_class="rojo"
+    if plan in ["AUTOMATICO","DIRECTO"]:             financiera="Automático"
+    elif plan in ["SE VA A ANALISIS","CONDICIONADO"]: financiera="Condicionado"
+    else:                                            financiera="Revisión especial"
 
-    # color probabilidad
+    # semaforo
+    if "APROBADO" in decision and "FINANCIERA" not in decision: sem="verde"
+    elif "FINANCIERA" in decision or "PRE" in decision:          sem="amarillo"
+    elif "ALTERNATIVA" in decision:                              sem="rojo"
+    else:                                                        sem="naranja"
+
+    # color prob
     if prob>=70:   prob_col="#4ade80"
     elif prob>=50: prob_col="#facc15"
     elif prob>=35: prob_col="#fb923c"
     else:          prob_col="#f87171"
 
-    # financiera sugerida
-    if plan in ["AUTOMATICO","DIRECTO"]:       financiera="Automático"
-    elif plan in ["SE VA A ANALISIS","CONDICIONADO"]: financiera="Condicionado"
-    else:                                      financiera="Revisión especial"
-
     st.session_state.resultado = {
-        "sc":sc, "prob":prob, "prob_col":prob_col,
-        "temp":temp, "inv":inv, "decision":decision, "sem_class":sem_class,
+        "sc":sc, "prob":prob, "prob_col":prob_col, "sem":sem,
+        "temp":temp, "inv":inv, "decision":decision,
         "plan":plan, "msg_c":msg_c, "msg_a":msg_a,
         "condicionamientos":condicionamientos,
         "alerta_cotitular":alerta_cotitular,
         "alerta_ingresos":alerta_ingresos,
         "alerta_investigacion":alerta_investigacion,
-        "financiera":financiera,
-        "enganche_pct":enganche_pct, "score":score, "perfil":perfil,
+        "financiera":financiera, "perfil":perfil, "score":score,
+        "enganche_pct":enganche_pct,
         "nombre":nombre_cliente, "telefono":telefono, "correo":correo,
         "asesor":asesor, "telefono_asesor":telefono_asesor,
         "correo_asesor":correo_asesor, "rfc":rfc,
@@ -564,142 +597,135 @@ if submitted:
     st.session_state.cotitular_activo    = (plan=="COTITULAR")
     st.session_state.cotitular_resultado = None
 
-# ╔══════════════════════════════════╗
-# ║    DERECHA — RESULTADO ANÁLISIS  ║
-# ╚══════════════════════════════════╝
+# ╔══════════════════════════════════════╗
+# ║   DERECHA — RESULTADO REESTRUCTURADO ║
+# ╚══════════════════════════════════════╝
 with col_der:
 
     if not st.session_state.resultado:
         st.markdown("""
         <div style="display:flex;flex-direction:column;align-items:center;
-            justify-content:center;min-height:55vh;gap:12px;opacity:0.3;">
-          <div style="font-size:3rem;">📊</div>
-          <div style="font-family:'Rajdhani',sans-serif;font-size:0.85rem;color:#38bdf8;
-              text-transform:uppercase;letter-spacing:0.12em;text-align:center;">
+            justify-content:center;min-height:55vh;gap:12px;opacity:0.28;">
+          <div style="font-size:3.2rem;">📊</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:0.82rem;color:#38bdf8;
+              text-transform:uppercase;letter-spacing:0.12em;text-align:center;line-height:1.8;">
               Resultado del Análisis<br>
-              <span style="font-size:0.65rem;opacity:0.7;">Completa el formulario y presiona Analizar</span>
+              <span style="font-size:0.62rem;opacity:0.7;">Completa el formulario y presiona Analizar</span>
           </div>
         </div>""", unsafe_allow_html=True)
 
     else:
         r = st.session_state.resultado
 
-        # ── ENCABEZADO RESULTADO ──────────────────────────────
         SCORE_MAP = {
-            "AZUL":     ("🔵","SCORE AZUL",    "#38bdf8"),
-            "VERDE":    ("🟢","SCORE VERDE",   "#22c55e"),
-            "AMARILLO": ("🟡","SCORE AMARILLO","#eab308"),
-            "NARANJA":  ("🟠","SCORE NARANJA", "#f97316"),
-            "ROJO":     ("🔴","EN DESARROLLO", "#ef4444"),
+            "AZUL":     ("🔵","SCORE AZUL",    "#38bdf8","Perfil fuerte — alta probabilidad de aprobación"),
+            "VERDE":    ("🟢","SCORE VERDE",   "#22c55e","Buen perfil — condiciones normales"),
+            "AMARILLO": ("🟡","SCORE AMARILLO","#eab308","Perfil medio — requiere validación adicional"),
+            "NARANJA":  ("🟠","SCORE NARANJA", "#f97316","Perfil con áreas de oportunidad"),
+            "ROJO":     ("🔴","SCORE ROJO",    "#ef4444","Perfil requiere estrategia alternativa"),
         }
-        em, lbl, col_hex = SCORE_MAP[r["sc"]]
+        em, lbl, col_hex, dsc = SCORE_MAP[r["sc"]]
 
+        # ── 1. PROBABILIDAD — lo más importante, grande ──────
         st.markdown(f"""
-        <div class="res-header">
-          <div class="res-title">Resultado de Análisis:</div>
-          <div class="res-pct" style="color:{r['prob_col']};">{r['prob']}%</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # ── TABLA DE RESULTADOS (estilo Excel) ────────────────
-        nivel_map = {"FUERTE":"Perfil fuerte","MEDIO":"Perfil medio","DELGADO":"Perfil delgado"}
-        st.markdown(f"""
-        <div class="row-table">
-          <div class="row">
-            <span class="lbl">Capacidad de pago estimada</span>
-            <span class="val blue">$ {r['cap_pago']:,.2f}</span>
+        <div class="prob-hero">
+          <div style="flex:1;">
+            <div class="prob-label">Probabilidad de aprobación</div>
+            <div class="prob-number" style="color:{r['prob_col']};">{r['prob']}%</div>
+            <div class="prob-sublabel">{r['temp']} &nbsp;·&nbsp; {r['financiera']}</div>
           </div>
-          <div class="row">
-            <span class="lbl">% de enganche</span>
-            <span class="val {'green' if r['enganche_pct']>=20 else 'orange'}">{r['enganche_pct']:.0f}%</span>
-          </div>
-          <div class="row">
-            <span class="lbl">Score perfil</span>
-            <span class="val blue">{r['score']}</span>
-          </div>
-          <div class="row">
-            <span class="lbl">Nivel perfil</span>
-            <span class="val blue">{nivel_map.get(r['perfil'], r['perfil'])}</span>
-          </div>
-          <div class="row">
-            <span class="lbl">Score crediticio</span>
-            <span class="val" style="color:{col_hex};">{em} {lbl}</span>
-          </div>
-          <div class="row">
-            <span class="lbl">Mensualidad estimada</span>
-            <span class="val {'green' if r['mensualidad']<=r['cap_pago'] else 'red'}">$ {r['mensualidad']:,.0f}</span>
-          </div>
-          <div class="row">
-            <span class="lbl">Financiera sugerida</span>
-            <span class="val blue">{r['financiera']}</span>
-          </div>
-          <div class="row">
-            <span class="lbl">Tipo de cliente</span>
-            <span class="val {'green' if 'CALIENTE' in r['temp'] else ('yellow' if 'TIBIO' in r['temp'] else 'blue')}">{r['temp']}</span>
-          </div>
-          <div class="row">
-            <span class="lbl">Sugerencia anticipo</span>
-            <span class="val yellow">{'Enganche completo' if r['plan']=='DIRECTO' else 'Solicitar anticipo $5,000'}</span>
+          <div style="text-align:right;">
+            <div style="font-size:0.62rem;color:#334155;text-transform:uppercase;
+                letter-spacing:0.08em;margin-bottom:5px;">Score crediticio</div>
+            <div class="score-badge" style="background:rgba({
+                '56,189,248' if r['sc']=='AZUL' else
+                '34,197,94'  if r['sc']=='VERDE' else
+                '234,179,8'  if r['sc']=='AMARILLO' else
+                '249,115,22' if r['sc']=='NARANJA' else
+                '239,68,68'
+            },0.1);border:1px solid {col_hex}33;width:auto;display:inline-flex;">
+              <span class="score-em">{em}</span>
+              <div>
+                <div class="score-lbl" style="color:{col_hex};">{lbl}</div>
+                <div class="score-sub">{dsc}</div>
+              </div>
+            </div>
           </div>
         </div>
         """, unsafe_allow_html=True)
 
-        # ── SEMÁFORO ──────────────────────────────────────────
+        # ── 2. MENSUALIDAD + CAPACIDAD ───────────────────────
+        excede_color = "#f87171" if r["mensualidad"] > r["cap_pago"] else "#e2e8f0"
         st.markdown(f"""
-        <div class="semaforo {r['sem_class']}" style="margin-top:10px;">
-            {'✅' if r['sem_class']=='verde' else ('⚠️' if r['sem_class']=='amarillo' else '🔴')}
+        <div class="metrics-2">
+          <div class="metric-tile blue">
+            <div class="mt-lbl">Capacidad de pago</div>
+            <div class="mt-val">${r['cap_pago']:,.0f}</div>
+          </div>
+          <div class="metric-tile purple">
+            <div class="mt-lbl">Mensualidad estimada</div>
+            <div class="mt-val" style="color:{excede_color};">${r['mensualidad']:,.0f}</div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ── 3. DECISIÓN / SEMÁFORO ────────────────────────────
+        st.markdown(f"""
+        <div class="semaforo {r['sem']}">
+            {'✅' if r['sem']=='verde' else ('⚡' if r['sem']=='amarillo' else ('⚠️' if r['sem']=='naranja' else '🔴'))}
             {r['decision']}
         </div>""", unsafe_allow_html=True)
 
-        # ── ESTRATEGIA INTERNA ────────────────────────────────
+        # ── 4. MENSAJE CLIENTE ────────────────────────────────
+        if r.get("msg_c"):
+            st.markdown(f'<div class="msg-cliente">💡 {r["msg_c"]}</div>', unsafe_allow_html=True)
+
+        # ── 5. ESTRATEGIA INTERNA (oculta, solo asesor) ───────
         with st.expander("🔒 Estrategia interna — solo asesor"):
-            st.markdown(f'<div class="estrategia-box">🔴 {r["msg_a"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="estrategia-box">🔴 {r["msg_a"]}<br><br>'
+                        f'<b>Nivel interno:</b> {r["perfil"]} &nbsp;·&nbsp; Score: {r["score"]} pts &nbsp;·&nbsp; Enganche: {r["enganche_pct"]:.0f}%'
+                        f'</div>', unsafe_allow_html=True)
 
-        # ── RIESGOS / ALERTAS ─────────────────────────────────
+        # ── 6. ALERTAS ────────────────────────────────────────
         st.markdown('<div class="sec-label">⚠️ Riesgos detectados</div>', unsafe_allow_html=True)
-
-        ac = "bad" if r["alerta_cotitular"]   else "ok"
-        ai = "bad" if r["alerta_ingresos"]    else "ok"
-        av = r["inv"]
-
-        alerta_cotitular_txt  = "Requiere cotitular" if r["alerta_cotitular"] else "Sin alerta de cotitular"
-        alerta_ingresos_txt   = "Validar ingresos"   if r["alerta_ingresos"]  else "Sin alerta de ingresos"
-
         st.markdown(f"""
-        <div class="alerta-chip {ac}">
-            {'🔴' if r['alerta_cotitular'] else '🟢'} ALERTA DE COTITULAR &nbsp;—&nbsp; {alerta_cotitular_txt}
+        <div class="alerta-chip {'bad' if r['alerta_cotitular'] else 'ok'}">
+            {'🔴' if r['alerta_cotitular'] else '🟢'} COTITULAR &nbsp;—&nbsp;
+            {'Requiere cotitular' if r['alerta_cotitular'] else 'Sin alerta'}
         </div>
-        <div class="alerta-chip {ai}">
-            {'🔴' if r['alerta_ingresos'] else '🟢'} ALERTA DE INGRESOS &nbsp;—&nbsp; {alerta_ingresos_txt}
+        <div class="alerta-chip {'bad' if r['alerta_ingresos'] else 'ok'}">
+            {'🔴' if r['alerta_ingresos'] else '🟢'} INGRESOS &nbsp;—&nbsp;
+            {'Validar ingresos' if r['alerta_ingresos'] else 'Sin alerta'}
         </div>
         <div class="alerta-chip {'bad' if r['alerta_investigacion'] else 'ok'}">
-            {'🔴' if r['alerta_investigacion'] else '🟢'} ALERTA DE INVESTIGACIÓN &nbsp;—&nbsp; {av}
+            {'🔴' if r['alerta_investigacion'] else '🟢'} INVESTIGACIÓN &nbsp;—&nbsp; {r['inv']}
         </div>
         """, unsafe_allow_html=True)
 
-        # ── CONDICIONAMIENTOS ────────────────────────────────
+        # ── 7. CONDICIONAMIENTOS ──────────────────────────────
         if r["condicionamientos"]:
-            st.markdown('<div class="sec-label">📋 Tipos de condicionamientos</div>', unsafe_allow_html=True)
-            cond_txt = ", ".join(r["condicionamientos"])
-            st.markdown(f'<div class="cond-box">⚡ {cond_txt}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-label">📋 Condicionamientos</div>', unsafe_allow_html=True)
+            cond_items = "".join([f"• {c}<br>" for c in r["condicionamientos"]])
+            st.markdown(f'<div class="cond-box">{cond_items}</div>', unsafe_allow_html=True)
 
-        # ── DOCUMENTACIÓN ─────────────────────────────────────
+        # ── 8. DOCUMENTACIÓN ─────────────────────────────────
         st.markdown('<div class="sec-label">📄 Documentación requerida</div>', unsafe_allow_html=True)
-        docs_html = " &nbsp;·&nbsp; ".join([f"📎 {d}" for d in r["docs"]])
-        st.markdown(f'<div style="color:#94a3b8;font-size:0.78rem;padding:4px 0;">{docs_html}</div>', unsafe_allow_html=True)
+        docs_chips = " &nbsp;·&nbsp; ".join([f"📎 {d}" for d in r["docs"]])
+        st.markdown(f'<div style="color:#64748b;font-size:0.76rem;padding:4px 2px;">{docs_chips}</div>', unsafe_allow_html=True)
 
-        # ── CUENTA + COTIZADOR ───────────────────────────────
-        st.markdown('<div class="sec-label">🏦 Cuenta para depósito</div>', unsafe_allow_html=True)
-        st.markdown("""
+        # ── 9. SIGUIENTE PASO + CUENTA ────────────────────────
+        st.markdown('<div class="sec-label">💰 Siguiente paso</div>', unsafe_allow_html=True)
+        anticipo = "Solicitar ENGANCHE COMPLETO" if r["plan"]=="DIRECTO" else "Solicitar APARTADO $5,000"
+        st.markdown(f"""
         <div class="cuenta-box">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
             <div>
-              <div style="font-family:'Rajdhani',sans-serif;font-size:0.9rem;
-                  font-weight:700;color:#e2e8f0;">DAOSA SA DE CV</div>
-              <div style="color:#475569;font-size:0.78rem;margin-top:2px;">BBVA · 012320001250476847</div>
+              <div style="color:#fcd34d;font-size:0.78rem;font-weight:700;margin-bottom:6px;">👉 {anticipo}</div>
+              <div style="font-family:'Rajdhani',sans-serif;font-size:0.88rem;font-weight:700;color:#e2e8f0;">DAOSA SA DE CV — BBVA</div>
+              <div style="color:#475569;font-size:0.75rem;margin-top:2px;letter-spacing:0.03em;">012320001250476847</div>
             </div>
-            <div style="color:#38bdf8;font-size:0.65rem;letter-spacing:0.06em;
-                text-transform:uppercase;font-weight:600;">Verificar antes<br>de transferir</div>
+            <div style="color:#ef4444;font-size:0.7rem;font-weight:600;text-align:right;
+                line-height:1.5;padding:4px 0;">⚠️ Solicita anticipo<br>para asegurar unidad</div>
           </div>
         </div>""", unsafe_allow_html=True)
 
@@ -719,7 +745,7 @@ with col_der:
                 with cu1: auto_cot         = st.selectbox("Auto previo",  ["Sí","No"])
                 with cu2: credinissan_cot  = st.selectbox("CrediNissan",   ["Sí","No"])
                 with cu3: hipotecario_cot  = st.selectbox("Hipotecario",   ["No tiene","Infonavit","Bancario"])
-                cv1,cv2,cv3 = st.columns(3)
+                cv1,cv2 = st.columns(2)
                 with cv1: tarjeta_alta_cot = st.selectbox("Tarjetas >100K",["Sí","No"])
                 with cv2: atrasos_cot      = st.selectbox("Buró",["Sin atrasos","1-30d","31-60d","61+d"])
                 submit_cot = st.form_submit_button("✦  EVALUAR COTITULAR")
@@ -735,11 +761,9 @@ with col_der:
                 elif atrasos_cot=="1-30d":          sc2+=2
                 elif atrasos_cot=="31-60d":         sc2-=4
                 elif atrasos_cot=="61+d":           sc2-=10
-
                 cap_t  = (st.session_state.ingreso + ingreso_cot)*0.3
                 men_g  = st.session_state.mensualidad
                 buro_c = "BUENO" if sc2>=12 else ("REGULAR" if sc2>=6 else "MALO")
-
                 if tipo_cot=="Conocido" and buro_c!="BUENO":   res_cot="❌ Debe ser línea directa con buen historial"
                 elif cap_t>=men_g and buro_c=="BUENO":         res_cot="🟢 APROBADO FINAL"
                 elif buro_c=="REGULAR":                        res_cot="🟡 Aún condicionado — mejorar perfil"
@@ -749,7 +773,7 @@ with col_der:
         if st.session_state.cotitular_resultado:
             st.markdown(f"""
             <div class="alerta-chip {'ok' if 'APROBADO' in st.session_state.cotitular_resultado else 'bad'}"
-                style="margin-top:6px;font-size:0.82rem;">
+                style="margin-top:4px;font-size:0.82rem;">
                 {st.session_state.cotitular_resultado}
             </div>""", unsafe_allow_html=True)
 
@@ -770,13 +794,13 @@ with col_der:
                 Paragraph(f"<b>Correo:</b> {r.get('correo','')}", sty["Normal"]),
                 Paragraph(" ", sty["Normal"]),
                 Paragraph("<b>RESULTADO DE PERFIL</b>", sty["Heading2"]),
+                Paragraph(f"Probabilidad de aprobación: {r['prob']}%", sty["Normal"]),
+                Paragraph(f"Score crediticio: {lbl}", sty["Normal"]),
                 Paragraph(f"Estatus: {r['decision']}", sty["Normal"]),
-                Paragraph(f"Probabilidad estimada: {r['prob']}%", sty["Normal"]),
                 Paragraph(f"Mensualidad estimada: ${r.get('mensualidad',0):,.0f}", sty["Normal"]),
                 Paragraph(f"Capacidad de pago: ${r.get('cap_pago',0):,.0f}", sty["Normal"]),
                 Paragraph(f"Condicionamientos: {', '.join(r.get('condicionamientos',[]))}", sty["Normal"]),
                 Paragraph(" ", sty["Normal"]),
-                Paragraph("<b>Análisis:</b>", sty["Heading3"]),
                 Paragraph(r.get("msg_c",""), sty["Normal"]),
                 Paragraph(" ", sty["Normal"]),
                 Paragraph("<b>ASEGURA TU UNIDAD</b>", sty["Heading2"]),
