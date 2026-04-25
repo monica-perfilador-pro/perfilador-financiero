@@ -136,41 +136,58 @@ div[data-testid="stVerticalBlock"] { gap: 0.28rem !important; }
     box-shadow: 0 0 40px rgba(99,102,241,0.5) !important;
 }
 
-/* ─── EXPANDER — fix encimado ─────────────────── */
+/* ─── EXPANDER — fix definitivo encimado ──────── */
 [data-testid="stExpander"] {
-    background: rgba(3,9,22,0.9) !important;
+    background: rgba(3,9,22,0.92) !important;
     border: 1px solid rgba(56,189,248,0.14) !important;
     border-radius: 10px !important;
-    overflow: hidden !important;
+    overflow: visible !important;
 }
-[data-testid="stExpander"] summary {
-    background: rgba(3,9,22,0.9) !important;
-    padding: 10px 14px !important;
+/* Header del expander */
+[data-testid="stExpander"] details {
+    background: transparent !important;
+}
+[data-testid="stExpander"] details summary {
+    background: rgba(3,9,22,0.92) !important;
     border-radius: 10px !important;
-    list-style: none !important;
+    padding: 10px 14px !important;
+    cursor: pointer !important;
+    position: relative !important;
+    z-index: 1 !important;
 }
-[data-testid="stExpander"] summary p,
-[data-testid="stExpander"] summary span,
-[data-testid="stExpander"] summary * {
+[data-testid="stExpander"] details summary::marker,
+[data-testid="stExpander"] details summary::-webkit-details-marker {
+    display: none !important;
+    content: "" !important;
+}
+/* Texto del summary */
+[data-testid="stExpander"] details summary p,
+[data-testid="stExpander"] details summary div,
+[data-testid="stExpander"] details summary span {
     color: #7dd3fc !important;
     font-size: 0.78rem !important;
     font-weight: 600 !important;
     background: transparent !important;
     border: none !important;
+    box-shadow: none !important;
 }
-[data-testid="stExpander"] > div {
-    background: rgba(3,9,22,0.95) !important;
+/* Contenido expandido */
+[data-testid="stExpander"] details > div {
+    background: rgba(3,9,22,0.96) !important;
     border-top: 1px solid rgba(56,189,248,0.08) !important;
     padding: 12px 14px !important;
     border-radius: 0 0 10px 10px !important;
+    position: relative !important;
+    z-index: 0 !important;
 }
-/* Forzar fondo en todo contenido interno del expander */
-[data-testid="stExpander"] > div * {
+[data-testid="stExpander"] details > div * {
     background: transparent !important;
+    box-shadow: none !important;
 }
-.streamlit-expanderHeader {
-    background: rgba(3,9,22,0.9) !important;
+/* Ícono flecha del expander */
+[data-testid="stExpander"] svg {
     color: #7dd3fc !important;
+    fill: #7dd3fc !important;
 }
 
 /* ─── ALERTS ──────────────────────────────────  */
@@ -332,27 +349,20 @@ for k, v in {
     if k not in st.session_state:
         st.session_state[k] = v
 
-# ── TOPBAR ─────────────────────────────────────────────────────────
-t1, t2 = st.columns([1, 14])
-with t1:
-    st.image("logo_new.png", width=68)
-with t2:
-    st.markdown("""
-    <div style="display:flex;align-items:center;gap:0;padding:7px 0 0 6px;">
-      <div>
-        <div class="topbar-title">AutoScore AI</div>
-        <div class="topbar-sub">Aprobación Inteligente</div>
-      </div>
-      <span class="topbar-divider"></span>
-      <div class="topbar-desc">Herramienta de Pre-Análisis de Crédito Automotriz</div>
-      <div style="margin-left:auto;">
-        <span class="topbar-badge">🔒 Datos protegidos</span>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
+# ── TOPBAR — título centrado, sin imagen problemática ──────────────
 st.markdown("""
-<div style="height:1px;margin:4px 0 14px;
+<div style="display:flex;align-items:center;gap:14px;padding:10px 0 8px;">
+  <div>
+    <div class="topbar-title">AutoScore AI</div>
+    <div class="topbar-sub">Aprobación Inteligente</div>
+  </div>
+  <span class="topbar-divider"></span>
+  <div class="topbar-desc">Herramienta de Pre-Análisis de Crédito Automotriz</div>
+  <div style="margin-left:auto;">
+    <span class="topbar-badge">🔒 Datos protegidos</span>
+  </div>
+</div>
+<div style="height:1px;margin:2px 0 14px;
 background:linear-gradient(90deg,transparent,#38bdf8 25%,#8b5cf6 75%,transparent);
 box-shadow:0 0 14px rgba(56,189,248,0.28);"></div>
 """, unsafe_allow_html=True)
@@ -365,18 +375,23 @@ col_izq, col_der = st.columns([1, 1], gap="medium")
 # ╚══════════════════════════════════╝
 with col_izq:
 
-    # ASESOR
-    st.markdown('<div class="sec-label">👤 Datos del Asesor</div>', unsafe_allow_html=True)
-    a1, a2 = st.columns(2)
-    with a1: asesor = st.text_input("Nombre asesor", placeholder="Nombre completo")
-    with a2: rfc    = st.text_input("RFC asesor", placeholder="XAXX010101000")
-    b1, b2 = st.columns(2)
-    with b1: telefono_asesor = st.text_input("Teléfono asesor", placeholder="55 1234 5678")
-    with b2: correo_asesor   = st.text_input("Correo asesor", placeholder="asesor@correo.com")
+    # LOGO arriba del formulario — izquierda
+    _lc1, _lc2, _lc3 = st.columns([1, 2, 1])
+    with _lc2:
+        st.image("logo_new.png", use_container_width=True)
 
-    st.markdown("<div style='margin:4px 0'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin:2px 0 10px'></div>", unsafe_allow_html=True)
 
     with st.form("formulario"):
+
+        # ASESOR — ahora dentro del form para alineación consistente
+        st.markdown('<div class="sec-label">👤 Datos del Asesor</div>', unsafe_allow_html=True)
+        a1, a2 = st.columns(2)
+        with a1: asesor = st.text_input("Nombre asesor", placeholder="Nombre completo")
+        with a2: rfc    = st.text_input("RFC asesor", placeholder="XAXX010101000")
+        b1, b2 = st.columns(2)
+        with b1: telefono_asesor = st.text_input("Teléfono asesor", placeholder="55 1234 5678")
+        with b2: correo_asesor   = st.text_input("Correo asesor", placeholder="asesor@correo.com")
 
         # CLIENTE
         st.markdown('<div class="sec-label">👥 Datos del Cliente</div>', unsafe_allow_html=True)
@@ -626,35 +641,42 @@ with col_der:
         }
         em, lbl, col_hex, dsc = SCORE_MAP[r["sc"]]
 
-        # ── 1. PROBABILIDAD — lo más importante, grande ──────
+        # ── 1. DECISIÓN — lo primero y más grande ─────────────
+        sem_icon = {'verde':'✅','amarillo':'⚡','naranja':'⚠️','rojo':'🔴'}[r['sem']]
         st.markdown(f"""
         <div class="prob-hero">
           <div style="flex:1;">
-            <div class="prob-label">Probabilidad de aprobación</div>
-            <div class="prob-number" style="color:{r['prob_col']};">{r['prob']}%</div>
-            <div class="prob-sublabel">{r['temp']} &nbsp;·&nbsp; {r['financiera']}</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:0.62rem;color:#334155;text-transform:uppercase;
-                letter-spacing:0.08em;margin-bottom:5px;">Score crediticio</div>
-            <div class="score-badge" style="background:rgba({
-                '56,189,248' if r['sc']=='AZUL' else
-                '34,197,94'  if r['sc']=='VERDE' else
-                '234,179,8'  if r['sc']=='AMARILLO' else
-                '249,115,22' if r['sc']=='NARANJA' else
-                '239,68,68'
-            },0.1);border:1px solid {col_hex}33;width:auto;display:inline-flex;">
-              <span class="score-em">{em}</span>
-              <div>
-                <div class="score-lbl" style="color:{col_hex};">{lbl}</div>
-                <div class="score-sub">{dsc}</div>
-              </div>
+            <div class="prob-label">Resultado del análisis</div>
+            <div style="font-family:'Rajdhani',sans-serif;font-size:1.6rem;font-weight:700;
+                line-height:1.1;margin:4px 0 6px;color:{'#4ade80' if r['sem']=='verde' else '#facc15' if r['sem']=='amarillo' else '#fb923c' if r['sem']=='naranja' else '#f87171'};">
+                {sem_icon} {r['decision']}
             </div>
+            <div class="prob-sublabel">{r['temp']} &nbsp;·&nbsp; {r['financiera']}</div>
           </div>
         </div>
         """, unsafe_allow_html=True)
 
-        # ── 2. MENSUALIDAD + CAPACIDAD ───────────────────────
+        # ── 2. MENSAJE CLIENTE ────────────────────────────────
+        if r.get("msg_c"):
+            st.markdown(f'<div class="msg-cliente">💡 {r["msg_c"]}</div>', unsafe_allow_html=True)
+
+        # ── 3. PROBABILIDAD + SCORE ───────────────────────────
+        rgb = {'AZUL':'56,189,248','VERDE':'34,197,94','AMARILLO':'234,179,8','NARANJA':'249,115,22','ROJO':'239,68,68'}[r['sc']]
+        st.markdown(f"""
+        <div class="metrics-2" style="margin-top:10px;">
+          <div class="metric-tile blue" style="text-align:center;">
+            <div class="mt-lbl">Probabilidad de aprobación</div>
+            <div class="mt-val" style="color:{r['prob_col']};font-size:2.2rem;">{r['prob']}%</div>
+          </div>
+          <div class="metric-tile" style="background:rgba({rgb},0.08);border:1px solid {col_hex}33;text-align:center;">
+            <div class="mt-lbl" style="color:{col_hex};">Score crediticio</div>
+            <div style="font-size:1.6rem;line-height:1.2;margin:4px 0;">{em}</div>
+            <div style="font-family:'Rajdhani',sans-serif;font-size:0.88rem;font-weight:700;color:{col_hex};">{lbl}</div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ── 4. MENSUALIDAD + CAPACIDAD ────────────────────────
         excede_color = "#f87171" if r["mensualidad"] > r["cap_pago"] else "#e2e8f0"
         st.markdown(f"""
         <div class="metrics-2">
@@ -669,24 +691,7 @@ with col_der:
         </div>
         """, unsafe_allow_html=True)
 
-        # ── 3. DECISIÓN / SEMÁFORO ────────────────────────────
-        st.markdown(f"""
-        <div class="semaforo {r['sem']}">
-            {'✅' if r['sem']=='verde' else ('⚡' if r['sem']=='amarillo' else ('⚠️' if r['sem']=='naranja' else '🔴'))}
-            {r['decision']}
-        </div>""", unsafe_allow_html=True)
-
-        # ── 4. MENSAJE CLIENTE ────────────────────────────────
-        if r.get("msg_c"):
-            st.markdown(f'<div class="msg-cliente">💡 {r["msg_c"]}</div>', unsafe_allow_html=True)
-
-        # ── 5. ESTRATEGIA INTERNA (oculta, solo asesor) ───────
-        with st.expander("🔒 Estrategia interna — solo asesor"):
-            st.markdown(f'<div class="estrategia-box">🔴 {r["msg_a"]}<br><br>'
-                        f'<b>Nivel interno:</b> {r["perfil"]} &nbsp;·&nbsp; Score: {r["score"]} pts &nbsp;·&nbsp; Enganche: {r["enganche_pct"]:.0f}%'
-                        f'</div>', unsafe_allow_html=True)
-
-        # ── 6. ALERTAS ────────────────────────────────────────
+        # ── 5. ALERTAS ────────────────────────────────────────
         st.markdown('<div class="sec-label">⚠️ Riesgos detectados</div>', unsafe_allow_html=True)
         st.markdown(f"""
         <div class="alerta-chip {'bad' if r['alerta_cotitular'] else 'ok'}">
@@ -701,6 +706,14 @@ with col_der:
             {'🔴' if r['alerta_investigacion'] else '🟢'} INVESTIGACIÓN &nbsp;—&nbsp; {r['inv']}
         </div>
         """, unsafe_allow_html=True)
+
+        # ── 6. ESTRATEGIA INTERNA (oculta, solo asesor) ───────
+        with st.expander("🔒 Estrategia interna — solo asesor"):
+            st.markdown(f'<div class="estrategia-box">🔴 {r["msg_a"]}<br><br>'
+                        f'<b>Nivel interno:</b> {r["perfil"]} &nbsp;·&nbsp; '
+                        f'Score: {r["score"]} pts &nbsp;·&nbsp; '
+                        f'Enganche: {r["enganche_pct"]:.0f}%'
+                        f'</div>', unsafe_allow_html=True)
 
         # ── 7. CONDICIONAMIENTOS ──────────────────────────────
         if r["condicionamientos"]:
