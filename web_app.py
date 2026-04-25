@@ -707,13 +707,23 @@ with col_der:
         </div>
         """, unsafe_allow_html=True)
 
-        # ── 6. ESTRATEGIA INTERNA (oculta, solo asesor) ───────
-        with st.expander("🔒 Estrategia interna — solo asesor"):
-            st.markdown(f'<div class="estrategia-box">🔴 {r["msg_a"]}<br><br>'
-                        f'<b>Nivel interno:</b> {r["perfil"]} &nbsp;·&nbsp; '
-                        f'Score: {r["score"]} pts &nbsp;·&nbsp; '
-                        f'Enganche: {r["enganche_pct"]:.0f}%'
-                        f'</div>', unsafe_allow_html=True)
+        # ── 6. ESTRATEGIA INTERNA — toggle manual (sin st.expander) ──
+        if "mostrar_estrategia" not in st.session_state:
+            st.session_state.mostrar_estrategia = False
+
+        lbl_btn = "🔓 Ocultar estrategia interna" if st.session_state.mostrar_estrategia else "🔒 Ver estrategia interna — solo asesor"
+        if st.button(lbl_btn, key="btn_estrategia"):
+            st.session_state.mostrar_estrategia = not st.session_state.mostrar_estrategia
+
+        if st.session_state.mostrar_estrategia:
+            st.markdown(f"""
+            <div class="estrategia-box">
+                🔴 {r["msg_a"]}<br><br>
+                <b>Nivel interno:</b> {r["perfil"]} &nbsp;·&nbsp;
+                Score: {r["score"]} pts &nbsp;·&nbsp;
+                Enganche: {r["enganche_pct"]:.0f}%
+            </div>
+            """, unsafe_allow_html=True)
 
         # ── 7. CONDICIONAMIENTOS ──────────────────────────────
         if r["condicionamientos"]:
