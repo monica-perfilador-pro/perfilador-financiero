@@ -335,6 +335,28 @@ hr { border:none!important; border-top:1px solid rgba(56,189,248,0.09)!important
     margin-top:8px; display:flex; align-items:center; justify-content:center; gap:5px;
 }
 
+/* Botón discreto estrategia interna */
+div[data-testid="stButton"]:has(button[key="btn_estrategia"]) > button,
+[data-testid="stButton"] button[kind="secondary"] {
+    background: transparent !important;
+    border: 1px solid rgba(56,189,248,0.18) !important;
+    color: #334155 !important;
+    border-radius: 6px !important;
+    padding: 4px 12px !important;
+    font-size: 0.68rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: none !important;
+    box-shadow: none !important;
+    width: auto !important;
+    margin: 4px 0 !important;
+}
+div[data-testid="stButton"]:has(button[key="btn_estrategia"]) > button:hover {
+    border-color: rgba(56,189,248,0.3) !important;
+    color: #475569 !important;
+    transform: none !important;
+}
+
 /* separador vertical panel */
 .panel-left  { border-right: 1px solid rgba(56,189,248,0.09); padding-right: 16px; }
 .panel-right { padding-left: 16px; }
@@ -711,9 +733,11 @@ with col_der:
         if "mostrar_estrategia" not in st.session_state:
             st.session_state.mostrar_estrategia = False
 
-        lbl_btn = "🔓 Ocultar estrategia interna" if st.session_state.mostrar_estrategia else "🔒 Ver estrategia interna — solo asesor"
-        if st.button(lbl_btn, key="btn_estrategia"):
-            st.session_state.mostrar_estrategia = not st.session_state.mostrar_estrategia
+        lbl_btn = "🔒 Notas internas" if not st.session_state.mostrar_estrategia else "🔒 Cerrar notas"
+        col_btn, _ = st.columns([1, 3])
+        with col_btn:
+            if st.button(lbl_btn, key="btn_estrategia"):
+                st.session_state.mostrar_estrategia = not st.session_state.mostrar_estrategia
 
         if st.session_state.mostrar_estrategia:
             st.markdown(f"""
