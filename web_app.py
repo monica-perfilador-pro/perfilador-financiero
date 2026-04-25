@@ -432,7 +432,7 @@ with col_izq:
         q1, q2, q3 = st.columns(3)
         with q1: negocio_casa  = st.selectbox("Negocio en domicilio", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         with q2: domicilio     = st.selectbox("Antigüedad domicilio", [1,2,3], format_func=lambda x:["<1 año","1-3 años","+3 años"][x-1])
-        with q3: domicilio_buro= st.selectbox("Domicilio = ID", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
+        with q3: domicilio_buro= st.selectbox("Domicilio coincide con ID", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         if tipo_ingreso == "Independiente":
             st.caption("⚠️ Solo aplica para independientes")
 
@@ -447,13 +447,13 @@ with col_izq:
         # HISTORIAL
         st.markdown('<div class="sec-label">🏦 Historial Crediticio</div>', unsafe_allow_html=True)
         h1, h2, h3 = st.columns(3)
-        with h1: auto        = st.selectbox("Crédito auto previo", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
+        with h1: auto        = st.selectbox("Crédito automotriz", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         with h2: credinissan = st.selectbox("CrediNissan", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         with h3: hipotecario = st.selectbox("Hipotecario", [1,2,3], format_func=lambda x:["Bancario","Infonavit","No tiene"][x-1])
 
         i1, i2, i3 = st.columns(3)
-        with i1: tarjeta_alta = st.selectbox("Tarjetas >$100K", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
-        with i2: tarjeta_baja = st.selectbox("Tarjetas <$100K", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
+        with i1: tarjeta_alta = st.selectbox("Tarjetas may 100mil", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
+        with i2: tarjeta_baja = st.selectbox("Tarjetas menor $100mil", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         with i3: atrasos      = st.selectbox("Atrasos en buró", [1,2,3], format_func=lambda x:["1-30d","31-60d","+61d"][x-1])
 
         # PERFIL COMPRA
