@@ -736,27 +736,29 @@ hr { border:none !important; border-top:1px solid #1a1a1a !important; margin:8px
     display: flex; align-items: center; justify-content: center; gap: 5px;
 }
 
-/* Botón discreto estrategia interna — sobrescribe el estilo del botón principal */
+/* Botón notas internas — alineado como fila de alerta */
+div[data-testid="stButton"]:has(button[key="btn_estrategia"]) {
+    width: 100% !important;
+}
 div[data-testid="stButton"]:has(button[key="btn_estrategia"]) > button {
-    background: transparent !important;
-    border: 1px solid #333 !important;
+    background: #111 !important;
+    border: 1px solid #2a2a2a !important;
     color: #555 !important;
-    border-radius: 6px !important;
-    padding: 3px 10px !important;
-    font-size: 0.65rem !important;
-    font-weight: 500 !important;
-    letter-spacing: 0.05em !important;
+    border-radius: 7px !important;
+    padding: 6px 11px !important;
+    font-size: 0.74rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em !important;
     text-transform: none !important;
     box-shadow: none !important;
-    width: auto !important;
-    min-width: 0 !important;
-    margin: 4px 0 2px 0 !important;
-    display: inline-block !important;
+    width: 100% !important;
+    text-align: left !important;
+    margin: 3px 0 !important;
 }
 div[data-testid="stButton"]:has(button[key="btn_estrategia"]) > button:hover {
-    border-color: #c3002f !important;
-    color: #c3002f !important;
-    background: transparent !important;
+    border-color: rgba(195,0,47,0.4) !important;
+    color: #888 !important;
+    background: #161616 !important;
     transform: none !important;
     box-shadow: none !important;
 }
@@ -1141,11 +1143,9 @@ with col_der:
         if "mostrar_estrategia" not in st.session_state:
             st.session_state.mostrar_estrategia = False
 
-        lbl_btn = "🔒 Notas internas" if not st.session_state.mostrar_estrategia else "🔒 Cerrar notas"
-        _bc1, _bc2, _bc3 = st.columns([1, 2, 3])
-        with _bc1:
-            if st.button(lbl_btn, key="btn_estrategia"):
-                st.session_state.mostrar_estrategia = not st.session_state.mostrar_estrategia
+        lbl_btn = "🔒 Notas internas — solo asesor" if not st.session_state.mostrar_estrategia else "🔒 Cerrar notas internas"
+        if st.button(lbl_btn, key="btn_estrategia"):
+            st.session_state.mostrar_estrategia = not st.session_state.mostrar_estrategia
 
         if st.session_state.mostrar_estrategia:
             st.markdown(f"""
