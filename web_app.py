@@ -437,8 +437,18 @@ st.markdown("""
 html, body, .stApp,
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"], section.main {
-    background: #f5f5f5 !important;
+    background: #f0f0f0 !important;
     color: #111 !important;
+}
+/* Panel izquierdo blanco */
+[data-testid="column"]:first-child {
+    background: #ffffff !important;
+    padding: 0 16px 16px 16px !important;
+}
+/* Panel derecho negro */
+[data-testid="column"]:last-child {
+    background: #0d0d0d !important;
+    padding: 0 16px 16px 16px !important;
 }
 [data-testid="stAppViewContainer"]::before {
     content: ""; position: fixed; inset: 0;
@@ -450,7 +460,7 @@ html, body, .stApp,
 }
 .block-container {
     position: relative; z-index: 1;
-    padding: 0 1.5rem 2rem 1.5rem !important;
+    padding: 0 0 2rem 0 !important;
     max-width: 100% !important;
 }
 /* Separación entre sec-label y primer input */
@@ -464,13 +474,7 @@ html, body, .stApp,
 }
 
 /* ─── TOPBAR ────────────────────────────── */
-.topbar-wrap {
-    background: #000;
-    padding: 10px 24px;
-    display: flex; align-items: center; gap: 14px;
-    margin: 0 -1.5rem;
-    min-height: 72px;
-}
+.topbar-wrap { display: none; }
 .topbar-title {
     font-family: 'Rajdhani', sans-serif !important;
     font-size: 1.4rem; font-weight: 700;
@@ -506,12 +510,6 @@ html, body, .stApp,
 .sec-label:first-child { margin-top: 16px; }
 
 /* ─── PANEL FORMULARIO — gris claro ──────── */
-/* Panel izquierdo — blanco */
-[data-testid="column"]:first-child {
-    background: #ffffff !important;
-    border-right: 1px solid #e0e0e0 !important;
-    padding: 0 16px 16px 0 !important;
-}
 [data-testid="column"]:first-child .sec-label {
     color: #c3002f !important;
     border-bottom-color: rgba(195,0,47,0.2) !important;
@@ -519,11 +517,6 @@ html, body, .stApp,
 [data-testid="column"]:first-child label,
 [data-testid="column"]:first-child [data-testid="stWidgetLabel"] p {
     color: #c3002f !important;
-}
-/* Panel derecho — negro */
-[data-testid="column"]:last-child {
-    background: #0d0d0d !important;
-    padding: 0 0 16px 16px !important;
 }
 [data-testid="column"]:last-child label,
 [data-testid="column"]:last-child [data-testid="stWidgetLabel"] p {
@@ -797,16 +790,40 @@ for k, v in {
         st.session_state[k] = v
 
 # ── TOPBAR — título centrado, sin imagen problemática ──────────────
-st.markdown(f"""
-<div class="topbar-wrap">
-  <img src="{_LOGO_SRC}" height="52"
-       style="flex-shrink:0;object-fit:contain;margin-left:8px;">
-  <div style="margin-left:auto;display:flex;align-items:center;gap:20px;">
-    <span style="color:#555;font-size:0.72rem;letter-spacing:0.04em;">Herramienta de Pre-Análisis de Crédito Automotriz</span>
-    <span class="topbar-badge">🔒 Datos protegidos</span>
-  </div>
+# Topbar con logo usando st.image (funciona 100% en Streamlit Cloud)
+st.markdown("""
+<div style="background:#000;padding:0;margin:0 -1rem;">
+<div style="height:2px;background:#c3002f;"></div>
 </div>
-<div style="height:2px;margin:0 -1.5rem 0;background:#c3002f;"></div>
+""", unsafe_allow_html=True)
+
+_tb1, _tb2, _tb3 = st.columns([2, 5, 2])
+with _tb1:
+    try:
+        st.image("AUTOSCOREIA.png", width=200)
+    except:
+        st.markdown('<div style="color:#fff;font-size:1.2rem;font-weight:700;padding:10px;">AutoScore <span style="color:#c3002f;">AI</span></div>', unsafe_allow_html=True)
+with _tb2:
+    st.markdown("""
+    <div style="background:#000;height:72px;display:flex;align-items:center;
+        justify-content:center;margin:-1rem 0;">
+      <span style="color:#444;font-size:0.72rem;letter-spacing:0.04em;">
+        Herramienta de Pre-Análisis de Crédito Automotriz
+      </span>
+    </div>""", unsafe_allow_html=True)
+with _tb3:
+    st.markdown("""
+    <div style="background:#000;height:72px;display:flex;align-items:center;
+        justify-content:flex-end;margin:-1rem 0;padding-right:8px;">
+      <span style="background:rgba(195,0,47,0.12);border:1px solid rgba(195,0,47,0.3);
+          border-radius:50px;padding:4px 12px;font-size:0.6rem;color:#c3002f;
+          letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">
+          🔒 Datos protegidos
+      </span>
+    </div>""", unsafe_allow_html=True)
+
+st.markdown("""
+<div style="height:2px;background:#c3002f;margin:0 -1rem 16px;"></div>
 """, unsafe_allow_html=True)
 
 # ── DOS COLUMNAS ───────────────────────────────────────────────────
