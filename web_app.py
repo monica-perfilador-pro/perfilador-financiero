@@ -437,18 +437,8 @@ st.markdown("""
 html, body, .stApp,
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"], section.main {
-    background: #f0f0f0 !important;
-    color: #111 !important;
-}
-/* Panel izquierdo blanco */
-[data-testid="column"]:first-child {
     background: #ffffff !important;
-    padding: 0 16px 16px 16px !important;
-}
-/* Panel derecho negro */
-[data-testid="column"]:last-child {
-    background: #0d0d0d !important;
-    padding: 0 16px 16px 16px !important;
+    color: #111 !important;
 }
 [data-testid="stAppViewContainer"]::before {
     content: ""; position: fixed; inset: 0;
@@ -789,41 +779,28 @@ for k, v in {
     if k not in st.session_state:
         st.session_state[k] = v
 
-# ── TOPBAR — título centrado, sin imagen problemática ──────────────
-# Topbar con logo usando st.image (funciona 100% en Streamlit Cloud)
-st.markdown("""
-<div style="background:#000;padding:0;margin:0 -1rem;">
-<div style="height:2px;background:#c3002f;"></div>
-</div>
-""", unsafe_allow_html=True)
-
-_tb1, _tb2, _tb3 = st.columns([2, 5, 2])
+# ── TOPBAR ─────────────────────────────────────────────────────────
+_tb1, _tb2, _tb3 = st.columns([3, 5, 2])
 with _tb1:
-    try:
-        st.image("AUTOSCOREIA.png", width=200)
-    except:
-        st.markdown('<div style="color:#fff;font-size:1.2rem;font-weight:700;padding:10px;">AutoScore <span style="color:#c3002f;">AI</span></div>', unsafe_allow_html=True)
+    st.image("AUTOSCOREIA.png", width=220)
 with _tb2:
     st.markdown("""
-    <div style="background:#000;height:72px;display:flex;align-items:center;
-        justify-content:center;margin:-1rem 0;">
-      <span style="color:#444;font-size:0.72rem;letter-spacing:0.04em;">
+    <div style="height:72px;display:flex;align-items:center;justify-content:center;">
+      <span style="color:#888;font-size:0.72rem;letter-spacing:0.04em;">
         Herramienta de Pre-Análisis de Crédito Automotriz
       </span>
     </div>""", unsafe_allow_html=True)
 with _tb3:
     st.markdown("""
-    <div style="background:#000;height:72px;display:flex;align-items:center;
-        justify-content:flex-end;margin:-1rem 0;padding-right:8px;">
-      <span style="background:rgba(195,0,47,0.12);border:1px solid rgba(195,0,47,0.3);
-          border-radius:50px;padding:4px 12px;font-size:0.6rem;color:#c3002f;
-          letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">
+    <div style="height:72px;display:flex;align-items:center;justify-content:flex-end;">
+      <span style="background:rgba(195,0,47,0.08);border:1px solid rgba(195,0,47,0.25);
+          border-radius:50px;padding:4px 14px;font-size:0.62rem;color:#c3002f;
+          letter-spacing:0.08em;text-transform:uppercase;font-weight:600;">
           🔒 Datos protegidos
       </span>
     </div>""", unsafe_allow_html=True)
-
 st.markdown("""
-<div style="height:2px;background:#c3002f;margin:0 -1rem 16px;"></div>
+<div style="height:2px;background:#c3002f;margin-bottom:18px;"></div>
 """, unsafe_allow_html=True)
 
 # ── DOS COLUMNAS ───────────────────────────────────────────────────
@@ -1071,18 +1048,18 @@ if submitted:
 with col_der:
 
     if not st.session_state.resultado:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        _lc1, _lc2, _lc3 = st.columns([1, 3, 1])
+        with _lc2:
+            st.image("AUTOSCOREIA.png", use_container_width=True)
         st.markdown("""
-        <div style="display:flex;flex-direction:column;align-items:center;
-            justify-content:center;min-height:55vh;gap:20px;padding:20px 0;">
-          <img src="" + _LOGO_SRC + ""
-               style="width:260px;max-width:90%;object-fit:contain;"
-               onerror="this.style.display='none'"/>
-          <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;
-              color:#111;text-transform:uppercase;letter-spacing:0.12em;text-align:center;">
+        <div style="text-align:center;padding:16px 0 8px;">
+          <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;
+              text-transform:uppercase;letter-spacing:0.1em;">
               Resultado del Análisis
           </div>
-          <div style="font-size:0.72rem;color:#999;letter-spacing:0.08em;
-              text-transform:uppercase;text-align:center;margin-top:-12px;">
+          <div style="font-size:0.7rem;color:#aaa;letter-spacing:0.06em;
+              text-transform:uppercase;margin-top:8px;">
               Completa el formulario y presiona Analizar
           </div>
         </div>""", unsafe_allow_html=True)
