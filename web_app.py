@@ -1,7 +1,6 @@
 import streamlit as st
-from reportlab.platypus import SimpleDocTemplate, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
+from pdf_cliente import generar_pdf_cliente
 
 st.set_page_config(page_title="AutoScore AI", page_icon="🚗", layout="wide")
 
@@ -9,27 +8,26 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap');
 
-/* ─── BASE ─────────────────────────────────── */
+/* ══════════════════════════════════════════
+   NISSAN BRAND PALETTE
+   Rojo #c3002f · Negro #000 · Blanco #fff
+   Gris form #f5f5f5 · Gris card #1a1a1a
+══════════════════════════════════════════ */
+
+/* ─── BASE ─────────────────────────────── */
 html, body, .stApp,
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"], section.main {
-    background: #060d1c !important;
-    color: #e2e8f0 !important;
+    background: #0d0d0d !important;
+    color: #f0f0f0 !important;
 }
 [data-testid="stAppViewContainer"]::before {
     content: ""; position: fixed; inset: 0;
     background-image:
-        linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+        linear-gradient(rgba(195,0,47,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(195,0,47,0.03) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none; z-index: 0;
-}
-[data-testid="stMain"]::before {
-    content: ""; position: fixed; top: -150px; left: 50%;
-    transform: translateX(-50%);
-    width: 1400px; height: 400px;
-    background: radial-gradient(ellipse, rgba(56,189,248,0.07) 0%, rgba(99,102,241,0.04) 40%, transparent 70%);
-    filter: blur(60px); pointer-events: none; z-index: 0;
 }
 .block-container {
     position: relative; z-index: 1;
@@ -41,236 +39,214 @@ html, body, .stApp,
     box-sizing: border-box;
 }
 
-/* ─── TOPBAR ─────────────────────────────────── */
+/* ─── TOPBAR ────────────────────────────── */
 .topbar-title {
     font-family: 'Rajdhani', sans-serif !important;
     font-size: 1.5rem; font-weight: 700;
-    color: #e2e8f0; letter-spacing: 0.08em; line-height: 1;
+    color: #ffffff; letter-spacing: 0.1em; line-height: 1;
 }
 .topbar-sub {
-    color: #38bdf8; font-size: 0.65rem;
-    letter-spacing: 0.16em; text-transform: uppercase; margin-top: 3px;
+    color: #c3002f; font-size: 0.65rem;
+    letter-spacing: 0.18em; text-transform: uppercase; margin-top: 3px;
 }
 .topbar-divider {
-    display: inline-block;
-    width: 1px; height: 38px;
-    background: rgba(56,189,248,0.2);
-    margin: 0 16px; vertical-align: middle;
+    display: inline-block; width: 1px; height: 38px;
+    background: #2a2a2a; margin: 0 16px; vertical-align: middle;
 }
-.topbar-desc {
-    color: #334155; font-size: 0.7rem; letter-spacing: 0.04em;
-}
+.topbar-desc { color: #444; font-size: 0.7rem; letter-spacing: 0.04em; }
 .topbar-badge {
-    background: rgba(56,189,248,0.07);
-    border: 1px solid rgba(56,189,248,0.18);
+    background: rgba(195,0,47,0.1);
+    border: 1px solid rgba(195,0,47,0.3);
     border-radius: 50px; padding: 4px 12px;
-    font-size: 0.62rem; color: #38bdf8;
+    font-size: 0.62rem; color: #c3002f;
     letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;
 }
 
-/* ─── SECTION LABEL ─────────────────────────── */
+/* ─── SECTION LABEL ─────────────────────── */
 .sec-label {
     font-family: 'Rajdhani', sans-serif !important;
     font-size: 0.68rem; font-weight: 700;
-    color: #38bdf8; text-transform: uppercase;
+    color: #c3002f; text-transform: uppercase;
     letter-spacing: 0.14em; margin: 10px 0 5px;
     display: flex; align-items: center; gap: 7px;
     padding-bottom: 5px;
-    border-bottom: 1px solid rgba(56,189,248,0.1);
+    border-bottom: 1px solid rgba(195,0,47,0.2);
 }
 
-/* ─── INPUTS compactos ───────────────────────── */
+/* ─── PANEL FORMULARIO — gris claro ──────── */
+[data-testid="column"]:first-child {
+    background: #f5f5f5 !important;
+    border-right: 1px solid #e0e0e0 !important;
+    padding: 0 16px 16px 0 !important;
+}
+[data-testid="column"]:first-child .sec-label {
+    color: #c3002f !important;
+    border-bottom-color: rgba(195,0,47,0.2) !important;
+}
+[data-testid="column"]:first-child label,
+[data-testid="column"]:first-child [data-testid="stWidgetLabel"] p {
+    color: #c3002f !important;
+}
+
+/* ─── INPUTS ────────────────────────────── */
 .stTextInput input, .stNumberInput input {
-    background: rgba(3,9,22,0.92) !important;
-    color: #cbd5e1 !important;
-    border: 1px solid rgba(56,189,248,0.15) !important;
+    background: #ffffff !important;
+    color: #111 !important;
+    border: 1px solid #ddd !important;
     border-radius: 8px !important;
-    padding: 7px 12px !important;
+    padding: 8px 12px !important;
     font-size: 0.82rem !important;
     width: 100% !important;
 }
 .stTextInput input:focus, .stNumberInput input:focus {
-    border-color: rgba(56,189,248,0.55) !important;
-    box-shadow: 0 0 0 2px rgba(56,189,248,0.07) !important;
+    border-color: #c3002f !important;
+    box-shadow: 0 0 0 2px rgba(195,0,47,0.12) !important;
 }
 .stTextInput input::placeholder, .stNumberInput input::placeholder {
-    color: #1e3a4a !important;
+    color: #bbb !important;
 }
 .stSelectbox > div > div {
-    background: rgba(3,9,22,0.92) !important;
-    color: #cbd5e1 !important;
-    border: 1px solid rgba(56,189,248,0.15) !important;
+    background: #ffffff !important;
+    color: #111 !important;
+    border: 1px solid #ddd !important;
     border-radius: 8px !important;
     padding: 2px 8px !important;
     font-size: 0.82rem !important;
 }
 label, [data-testid="stWidgetLabel"] p {
-    color: #38bdf8 !important;
+    color: #c3002f !important;
     font-size: 0.65rem !important; font-weight: 600 !important;
     letter-spacing: 0.1em !important; text-transform: uppercase !important;
     margin-bottom: 2px !important;
 }
 .stNumberInput button {
-    background: rgba(56,189,248,0.07) !important;
-    border: 1px solid rgba(56,189,248,0.14) !important;
-    color: #38bdf8 !important; border-radius: 6px !important;
+    background: #f5f5f5 !important;
+    border: 1px solid #ddd !important;
+    color: #c3002f !important; border-radius: 6px !important;
     padding: 2px 8px !important; width: auto !important; margin: 0 !important;
 }
 div[data-testid="stVerticalBlock"] { gap: 0.28rem !important; }
 
-/* ─── BOTÓN ──────────────────────────────────── */
+/* ─── BOTÓN PRINCIPAL ────────────────────── */
 .stFormSubmitButton > button, .stButton > button {
     width: 100% !important;
-    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 55%, #8b5cf6 100%) !important;
+    background: #c3002f !important;
     color: #fff !important; border: none !important;
     border-radius: 50px !important; padding: 12px 24px !important;
     font-family: 'Rajdhani', sans-serif !important;
     font-size: 0.95rem !important; font-weight: 700 !important;
     letter-spacing: 0.13em !important; text-transform: uppercase !important;
-    box-shadow: 0 0 28px rgba(99,102,241,0.38), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+    box-shadow: 0 4px 20px rgba(195,0,47,0.35) !important;
     margin-top: 6px !important;
-    transition: transform 0.15s, box-shadow 0.15s !important;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s !important;
 }
 .stFormSubmitButton > button:hover, .stButton > button:hover {
+    background: #e8001a !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 0 40px rgba(99,102,241,0.5) !important;
+    box-shadow: 0 6px 28px rgba(195,0,47,0.5) !important;
 }
 
-/* ─── EXPANDER — fix definitivo encimado ──────── */
+/* ─── ALERTS ──────────────────────────────── */
+.stSuccess > div {
+    background: #f0fdf4 !important; border: 1px solid #bbf7d0 !important;
+    border-radius: 9px !important; color: #166534 !important; font-size: 0.82rem !important;
+}
+.stWarning > div {
+    background: #fffbeb !important; border: 1px solid #fde68a !important;
+    border-radius: 9px !important; color: #92400e !important; font-size: 0.82rem !important;
+}
+.stError > div {
+    background: #fff1f2 !important; border: 1px solid #fecdd3 !important;
+    border-radius: 9px !important; color: #9f1239 !important; font-size: 0.82rem !important;
+}
+.stInfo > div {
+    background: #f8f9fa !important; border: 1px solid #e2e8f0 !important;
+    border-radius: 9px !important; color: #334155 !important; font-size: 0.82rem !important;
+}
+
+hr { border:none !important; border-top:1px solid #1a1a1a !important; margin:8px 0 !important; }
+.stCaption p { color:#c3002f !important; font-size:0.72rem !important; }
+
+.stLinkButton a {
+    background: #1a1a1a !important; border: 1px solid #333 !important;
+    color: #fff !important; border-radius: 8px !important;
+    font-weight: 600 !important; font-size: 0.8rem !important;
+    width: 100% !important; display: block !important;
+    text-align: center !important; padding: 9px !important;
+}
+.stDownloadButton > button {
+    background: #1a1a1a !important; border: 1px solid #c3002f !important;
+    color: #c3002f !important; border-radius: 8px !important;
+    font-weight: 600 !important; font-size: 0.8rem !important;
+    width: 100% !important; padding: 9px !important;
+}
+
+/* ─── EXPANDER ────────────────────────────── */
 [data-testid="stExpander"] {
-    background: rgba(3,9,22,0.92) !important;
-    border: 1px solid rgba(56,189,248,0.14) !important;
-    border-radius: 10px !important;
-    overflow: visible !important;
+    background: #111 !important;
+    border: 1px solid #222 !important;
+    border-radius: 10px !important; overflow: visible !important;
 }
-/* Header del expander */
-[data-testid="stExpander"] details {
-    background: transparent !important;
-}
+[data-testid="stExpander"] details { background: transparent !important; }
 [data-testid="stExpander"] details summary {
-    background: rgba(3,9,22,0.92) !important;
-    border-radius: 10px !important;
-    padding: 10px 14px !important;
-    cursor: pointer !important;
-    position: relative !important;
-    z-index: 1 !important;
+    background: #111 !important; border-radius: 10px !important;
+    padding: 10px 14px !important; cursor: pointer !important;
+    position: relative !important; z-index: 1 !important;
 }
 [data-testid="stExpander"] details summary::marker,
 [data-testid="stExpander"] details summary::-webkit-details-marker {
-    display: none !important;
-    content: "" !important;
+    display: none !important; content: "" !important;
 }
-/* Texto del summary */
 [data-testid="stExpander"] details summary p,
 [data-testid="stExpander"] details summary div,
 [data-testid="stExpander"] details summary span {
-    color: #7dd3fc !important;
-    font-size: 0.78rem !important;
-    font-weight: 600 !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+    color: #888 !important; font-size: 0.78rem !important;
+    font-weight: 600 !important; background: transparent !important;
+    border: none !important; box-shadow: none !important;
 }
-/* Contenido expandido */
 [data-testid="stExpander"] details > div {
-    background: rgba(3,9,22,0.96) !important;
-    border-top: 1px solid rgba(56,189,248,0.08) !important;
+    background: #0d0d0d !important;
+    border-top: 1px solid #222 !important;
     padding: 12px 14px !important;
     border-radius: 0 0 10px 10px !important;
-    position: relative !important;
-    z-index: 0 !important;
+    position: relative !important; z-index: 0 !important;
 }
-[data-testid="stExpander"] details > div * {
-    background: transparent !important;
-    box-shadow: none !important;
-}
-/* Ícono flecha del expander */
-[data-testid="stExpander"] svg {
-    color: #7dd3fc !important;
-    fill: #7dd3fc !important;
-}
+[data-testid="stExpander"] details > div * { background: transparent !important; box-shadow: none !important; }
+[data-testid="stExpander"] svg { color: #555 !important; fill: #555 !important; }
 
-/* ─── ALERTS ──────────────────────────────────  */
-.stSuccess > div { background:rgba(34,197,94,0.08)!important; border:1px solid rgba(34,197,94,0.28)!important; border-radius:9px!important; color:#86efac!important; font-size:0.82rem!important; }
-.stWarning > div { background:rgba(245,158,11,0.07)!important; border:1px solid rgba(245,158,11,0.25)!important; border-radius:9px!important; color:#fcd34d!important; font-size:0.82rem!important; }
-.stError   > div { background:rgba(239,68,68,0.07)!important;  border:1px solid rgba(239,68,68,0.25)!important;  border-radius:9px!important; color:#fca5a5!important; font-size:0.82rem!important; }
-.stInfo    > div { background:rgba(56,189,248,0.06)!important; border:1px solid rgba(56,189,248,0.2)!important;  border-radius:9px!important; color:#7dd3fc!important;  font-size:0.82rem!important; }
-
-hr { border:none!important; border-top:1px solid rgba(56,189,248,0.09)!important; margin:8px 0!important; }
-.stCaption p { color:#f59e0b!important; font-size:0.72rem!important; }
-
-.stLinkButton a {
-    background:rgba(56,189,248,0.08)!important; border:1px solid rgba(56,189,248,0.22)!important;
-    color:#7dd3fc!important; border-radius:8px!important; font-weight:600!important;
-    font-size:0.8rem!important; width:100%!important; display:block!important;
-    text-align:center!important; padding:9px!important;
-}
-.stDownloadButton > button {
-    background:rgba(56,189,248,0.08)!important; border:1px solid rgba(56,189,248,0.22)!important;
-    color:#7dd3fc!important; border-radius:8px!important; font-weight:600!important;
-    font-size:0.8rem!important; width:100%!important; padding:9px!important;
-}
-
-/* ─── RESULTADO UI ────────────────────────────── */
-
-/* PROBABILIDAD GRANDE */
+/* ─── RESULTADO UI ────────────────────────── */
 .prob-hero {
     display: flex; align-items: flex-end; gap: 10px;
     padding: 16px 20px 12px;
-    background: linear-gradient(135deg, rgba(8,18,40,0.98), rgba(4,10,24,0.99));
-    border: 1px solid rgba(56,189,248,0.2);
+    background: #000;
+    border: 1px solid #1a1a1a;
     border-radius: 14px; margin-bottom: 10px;
     position: relative; overflow: hidden;
 }
 .prob-hero::before {
     content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, #38bdf8, #6366f1, #8b5cf6);
+    background: #c3002f;
 }
-.prob-number {
-    font-family: 'Rajdhani', sans-serif !important;
-    font-size: 3.8rem; font-weight: 700; line-height: 1;
-}
-.prob-label {
-    font-size: 0.7rem; color: #475569; text-transform: uppercase;
-    letter-spacing: 0.1em; margin-bottom: 8px;
-}
-.prob-sublabel {
-    font-family: 'Rajdhani', sans-serif !important;
-    font-size: 0.82rem; color: #64748b; letter-spacing: 0.04em;
-}
+.prob-label { font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+.prob-sublabel { font-family: 'Rajdhani', sans-serif !important; font-size: 0.82rem; color: #444; letter-spacing: 0.04em; }
 
-/* SCORE BADGE */
 .score-badge {
     display: inline-flex; align-items: center; gap: 10px;
-    padding: 10px 16px; border-radius: 12px;
-    margin: 6px 0; width: 100%;
+    padding: 10px 16px; border-radius: 12px; margin: 6px 0; width: 100%;
 }
 .score-badge .score-em  { font-size: 1.5rem; }
-.score-badge .score-lbl {
-    font-family: 'Rajdhani', sans-serif !important;
-    font-size: 1.1rem; font-weight: 700; letter-spacing: 0.06em;
-}
-.score-badge .score-sub { font-size: 0.72rem; color: #64748b; margin-top: 1px; }
+.score-badge .score-lbl { font-family: 'Rajdhani', sans-serif !important; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.06em; }
+.score-badge .score-sub { font-size: 0.72rem; color: #444; margin-top: 1px; }
 
-/* MÉTRICAS 2 COL */
 .metrics-2 { display: flex; gap: 10px; margin: 8px 0; }
-.metric-tile {
-    flex: 1; border-radius: 10px; padding: 10px 14px;
-}
-.metric-tile.blue   { background:rgba(56,189,248,0.07); border:1px solid rgba(56,189,248,0.16); }
-.metric-tile.purple { background:rgba(99,102,241,0.07); border:1px solid rgba(99,102,241,0.16); }
-.metric-tile .mt-lbl {
-    font-size: 0.62rem; text-transform: uppercase;
-    letter-spacing: 0.08em; margin-bottom: 4px; font-weight: 600;
-}
-.metric-tile.blue   .mt-lbl { color: #7dd3fc; }
-.metric-tile.purple .mt-lbl { color: #a5b4fc; }
-.metric-tile .mt-val {
-    font-family: 'Rajdhani', sans-serif !important;
-    font-size: 1.35rem; font-weight: 700; color: #e2e8f0; line-height: 1;
-}
+.metric-tile { flex: 1; border-radius: 10px; padding: 10px 14px; }
+.metric-tile.blue   { background: #000; border: 1px solid #1a1a1a; }
+.metric-tile.purple { background: #1a0006; border: 1px solid rgba(195,0,47,0.25); }
+.metric-tile .mt-lbl { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; font-weight: 600; }
+.metric-tile.blue   .mt-lbl { color: #555; }
+.metric-tile.purple .mt-lbl { color: #c3002f; }
+.metric-tile .mt-val { font-family: 'Rajdhani', sans-serif !important; font-size: 1.35rem; font-weight: 700; color: #fff; line-height: 1; }
 
-/* SEMÁFORO DECISIÓN */
 .semaforo {
     display: flex; align-items: center; justify-content: center;
     gap: 10px; padding: 10px 16px; border-radius: 10px;
@@ -278,87 +254,77 @@ hr { border:none!important; border-top:1px solid rgba(56,189,248,0.09)!important
     font-size: 1rem; font-weight: 700;
     letter-spacing: 0.08em; text-transform: uppercase; margin: 8px 0;
 }
-.semaforo.verde    { background:rgba(34,197,94,0.11);  border:1px solid rgba(34,197,94,0.3);  color:#4ade80; }
-.semaforo.amarillo { background:rgba(234,179,8,0.09);  border:1px solid rgba(234,179,8,0.26); color:#facc15; }
-.semaforo.naranja  { background:rgba(249,115,22,0.09); border:1px solid rgba(249,115,22,0.26);color:#fb923c; }
-.semaforo.rojo     { background:rgba(239,68,68,0.09);  border:1px solid rgba(239,68,68,0.26); color:#f87171; }
+.semaforo.verde    { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
+.semaforo.amarillo { background:#fffbeb; border:1px solid #fde68a; color:#92400e; }
+.semaforo.naranja  { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; }
+.semaforo.rojo     { background:#fff1f2; border:1px solid #fecdd3; color:#9f1239; }
 
-/* MSG CLIENTE */
 .msg-cliente {
-    background: rgba(56,189,248,0.05);
-    border: 1px solid rgba(56,189,248,0.12);
-    border-left: 3px solid #38bdf8;
-    border-radius: 0 9px 9px 0;
-    padding: 10px 14px; color: #cbd5e1;
+    background: #0d0d0d; border: 1px solid #1a1a1a;
+    border-left: 3px solid #c3002f; border-radius: 0 9px 9px 0;
+    padding: 10px 14px; color: #aaa;
     font-size: 0.8rem; line-height: 1.6; margin: 6px 0;
 }
 
-/* ESTRATEGIA INTERNA */
 .estrategia-box {
-    background: rgba(239,68,68,0.07);
-    border: 1px solid rgba(239,68,68,0.18);
-    border-left: 3px solid #ef4444;
-    border-radius: 0 9px 9px 0;
-    padding: 10px 14px; color: #fca5a5;
+    background: #1a0006; border: 1px solid rgba(195,0,47,0.25);
+    border-left: 3px solid #c3002f; border-radius: 0 9px 9px 0;
+    padding: 10px 14px; color: #f87171;
     font-size: 0.78rem; line-height: 1.6;
 }
 
-/* ALERTA CHIP */
+.sec-label-result {
+    font-family: 'Rajdhani', sans-serif !important;
+    font-size: 0.68rem; font-weight: 700; color: #555;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    margin: 10px 0 5px; display: flex; align-items: center; gap: 7px;
+    padding-bottom: 5px; border-bottom: 1px solid #1a1a1a;
+}
+
 .alerta-chip {
     display: flex; align-items: center; gap: 8px;
     padding: 6px 11px; border-radius: 7px;
     font-size: 0.74rem; font-weight: 600;
     margin: 3px 0; letter-spacing: 0.02em;
 }
-.alerta-chip.warn { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); color:#fcd34d; }
-.alerta-chip.ok   { background:rgba(34,197,94,0.06);  border:1px solid rgba(34,197,94,0.16); color:#86efac; }
-.alerta-chip.bad  { background:rgba(239,68,68,0.08);  border:1px solid rgba(239,68,68,0.2);  color:#fca5a5; }
+.alerta-chip.ok  { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
+.alerta-chip.bad { background:#fff1f2; border:1px solid #fecdd3; color:#9f1239; }
 
-/* CONDICIONAMIENTOS */
 .cond-box {
-    background: rgba(234,179,8,0.07);
-    border: 1px solid rgba(234,179,8,0.22);
+    background: #fffbeb; border: 1px solid #fde68a;
     border-radius: 9px; padding: 10px 14px;
-    color: #fde68a; font-size: 0.76rem;
+    color: #92400e; font-size: 0.76rem;
     line-height: 1.75; margin: 4px 0; font-weight: 500;
 }
 
-/* CUENTA */
 .cuenta-box {
-    background: rgba(8,18,38,0.9);
-    border: 1px solid rgba(56,189,248,0.14);
+    background: #000; border: 1px solid #1a1a1a;
+    border-top: 2px solid #c3002f;
     border-radius: 9px; padding: 10px 14px; margin: 4px 0;
 }
 
 .security-line {
-    text-align:center; color:#1e3a4a; font-size:0.68rem; letter-spacing:0.06em;
-    margin-top:8px; display:flex; align-items:center; justify-content:center; gap:5px;
+    text-align: center; color: #333; font-size: 0.68rem;
+    letter-spacing: 0.06em; margin-top: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
 }
 
 /* Botón discreto estrategia interna */
-div[data-testid="stButton"]:has(button[key="btn_estrategia"]) > button,
-[data-testid="stButton"] button[kind="secondary"] {
+div[data-testid="stButton"]:has(button[key="btn_estrategia"]) > button {
     background: transparent !important;
-    border: 1px solid rgba(56,189,248,0.18) !important;
-    color: #334155 !important;
-    border-radius: 6px !important;
-    padding: 4px 12px !important;
-    font-size: 0.68rem !important;
-    font-weight: 500 !important;
-    letter-spacing: 0.06em !important;
-    text-transform: none !important;
-    box-shadow: none !important;
-    width: auto !important;
-    margin: 4px 0 !important;
+    border: 1px solid #222 !important;
+    color: #444 !important; border-radius: 6px !important;
+    padding: 4px 12px !important; font-size: 0.68rem !important;
+    font-weight: 500 !important; letter-spacing: 0.06em !important;
+    text-transform: none !important; box-shadow: none !important;
+    width: auto !important; margin: 4px 0 !important;
 }
 div[data-testid="stButton"]:has(button[key="btn_estrategia"]) > button:hover {
-    border-color: rgba(56,189,248,0.3) !important;
-    color: #475569 !important;
+    border-color: #c3002f !important; color: #c3002f !important;
     transform: none !important;
 }
 
-/* separador vertical panel */
-.panel-left  { border-right: 1px solid rgba(56,189,248,0.09); padding-right: 16px; }
+.panel-left  { border-right: 1px solid #1a1a1a; padding-right: 16px; }
 .panel-right { padding-left: 16px; }
 </style>
 """, unsafe_allow_html=True)
@@ -374,9 +340,16 @@ for k, v in {
 # ── TOPBAR — título centrado, sin imagen problemática ──────────────
 st.markdown("""
 <div style="display:flex;align-items:center;gap:14px;padding:10px 0 8px;">
+  <div style="width:36px;height:36px;background:#c3002f;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+    <div style="width:22px;height:22px;background:#fff;border-radius:50%;
+        display:flex;align-items:center;justify-content:center;">
+      <div style="width:10px;height:10px;background:#c3002f;border-radius:50%;"></div>
+    </div>
+  </div>
   <div>
     <div class="topbar-title">AutoScore AI</div>
-    <div class="topbar-sub">Aprobación Inteligente</div>
+    <div class="topbar-sub">Nissan · Aprobación Inteligente</div>
   </div>
   <span class="topbar-divider"></span>
   <div class="topbar-desc">Herramienta de Pre-Análisis de Crédito Automotriz</div>
@@ -384,9 +357,7 @@ st.markdown("""
     <span class="topbar-badge">🔒 Datos protegidos</span>
   </div>
 </div>
-<div style="height:1px;margin:2px 0 14px;
-background:linear-gradient(90deg,transparent,#38bdf8 25%,#8b5cf6 75%,transparent);
-box-shadow:0 0 14px rgba(56,189,248,0.28);"></div>
+<div style="height:2px;margin:2px 0 14px;background:#c3002f;"></div>
 """, unsafe_allow_html=True)
 
 # ── DOS COLUMNAS ───────────────────────────────────────────────────
@@ -432,7 +403,7 @@ with col_izq:
         q1, q2, q3 = st.columns(3)
         with q1: negocio_casa  = st.selectbox("Negocio en domicilio", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         with q2: domicilio     = st.selectbox("Antigüedad domicilio", [1,2,3], format_func=lambda x:["<1 año","1-3 años","+3 años"][x-1])
-        with q3: domicilio_buro= st.selectbox("Domicilio coincide con ID", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
+        with q3: domicilio_buro= st.selectbox("Domicilio = ID", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         if tipo_ingreso == "Independiente":
             st.caption("⚠️ Solo aplica para independientes")
 
@@ -447,13 +418,13 @@ with col_izq:
         # HISTORIAL
         st.markdown('<div class="sec-label">🏦 Historial Crediticio</div>', unsafe_allow_html=True)
         h1, h2, h3 = st.columns(3)
-        with h1: auto        = st.selectbox("Crédito automotriz", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
+        with h1: auto        = st.selectbox("Crédito auto previo", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         with h2: credinissan = st.selectbox("CrediNissan", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         with h3: hipotecario = st.selectbox("Hipotecario", [1,2,3], format_func=lambda x:["Bancario","Infonavit","No tiene"][x-1])
 
         i1, i2, i3 = st.columns(3)
-        with i1: tarjeta_alta = st.selectbox("Tarjetas may 100mil", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
-        with i2: tarjeta_baja = st.selectbox("Tarjetas menor $100mil", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
+        with i1: tarjeta_alta = st.selectbox("Tarjetas >$100K", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
+        with i2: tarjeta_baja = st.selectbox("Tarjetas <$100K", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         with i3: atrasos      = st.selectbox("Atrasos en buró", [1,2,3], format_func=lambda x:["1-30d","31-60d","+61d"][x-1])
 
         # PERFIL COMPRA
@@ -714,7 +685,7 @@ with col_der:
         """, unsafe_allow_html=True)
 
         # ── 5. ALERTAS ────────────────────────────────────────
-        st.markdown('<div class="sec-label">⚠️ Riesgos detectados</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-label-result">⚠️ Riesgos detectados</div>', unsafe_allow_html=True)
         st.markdown(f"""
         <div class="alerta-chip {'bad' if r['alerta_cotitular'] else 'ok'}">
             {'🔴' if r['alerta_cotitular'] else '🟢'} COTITULAR &nbsp;—&nbsp;
@@ -751,17 +722,17 @@ with col_der:
 
         # ── 7. CONDICIONAMIENTOS ──────────────────────────────
         if r["condicionamientos"]:
-            st.markdown('<div class="sec-label">📋 Condicionamientos</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-label-result">📋 Condicionamientos</div>', unsafe_allow_html=True)
             cond_items = "".join([f"• {c}<br>" for c in r["condicionamientos"]])
             st.markdown(f'<div class="cond-box">{cond_items}</div>', unsafe_allow_html=True)
 
         # ── 8. DOCUMENTACIÓN ─────────────────────────────────
-        st.markdown('<div class="sec-label">📄 Documentación requerida</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-label-result">📄 Documentación requerida</div>', unsafe_allow_html=True)
         docs_chips = " &nbsp;·&nbsp; ".join([f"📎 {d}" for d in r["docs"]])
         st.markdown(f'<div style="color:#64748b;font-size:0.76rem;padding:4px 2px;">{docs_chips}</div>', unsafe_allow_html=True)
 
         # ── 9. SIGUIENTE PASO + CUENTA ────────────────────────
-        st.markdown('<div class="sec-label">💰 Siguiente paso</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-label-result">💰 Siguiente paso</div>', unsafe_allow_html=True)
         anticipo = "Solicitar ENGANCHE COMPLETO" if r["plan"]=="DIRECTO" else "Solicitar APARTADO $5,000"
         st.markdown(f"""
         <div class="cuenta-box">
@@ -783,7 +754,7 @@ with col_der:
 
         # ── COTITULAR ─────────────────────────────────────────
         if st.session_state.cotitular_activo:
-            st.markdown('<div class="sec-label">👥 Análisis de Cotitular</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-label-result">👥 Análisis de Cotitular</div>', unsafe_allow_html=True)
             with st.form("formulario_cotitular"):
                 ct1, ct2 = st.columns(2)
                 with ct1: tipo_cot    = st.selectbox("Tipo", ["Línea directa","Conocido"])
@@ -824,46 +795,20 @@ with col_der:
                 {st.session_state.cotitular_resultado}
             </div>""", unsafe_allow_html=True)
 
-        # ── PDF ───────────────────────────────────────────────
+
+        # ── PDF CLIENTE ─────────────────────────────────────────────
         st.markdown("<div style='margin:8px 0'></div>", unsafe_allow_html=True)
         ok = all([r.get("asesor","").strip(), r.get("nombre","").strip(), r.get("telefono","").strip()])
         if not ok:
             st.warning("⚠️ Completa datos de asesor y cliente para generar PDF")
         else:
-            buf = BytesIO()
-            doc = SimpleDocTemplate(buf)
-            sty = getSampleStyleSheet()
-            content = [
-                Paragraph("SOLICITUD DE PERFILAMIENTO CREDITICIO", sty["Title"]),
-                Paragraph(" ", sty["Normal"]),
-                Paragraph(f"<b>Cliente:</b> {r.get('nombre','')}", sty["Normal"]),
-                Paragraph(f"<b>Teléfono:</b> {r.get('telefono','')}", sty["Normal"]),
-                Paragraph(f"<b>Correo:</b> {r.get('correo','')}", sty["Normal"]),
-                Paragraph(" ", sty["Normal"]),
-                Paragraph("<b>RESULTADO DE PERFIL</b>", sty["Heading2"]),
-                Paragraph(f"Probabilidad de aprobación: {r['prob']}%", sty["Normal"]),
-                Paragraph(f"Score crediticio: {lbl}", sty["Normal"]),
-                Paragraph(f"Estatus: {r['decision']}", sty["Normal"]),
-                Paragraph(f"Mensualidad estimada: ${r.get('mensualidad',0):,.0f}", sty["Normal"]),
-                Paragraph(f"Capacidad de pago: ${r.get('cap_pago',0):,.0f}", sty["Normal"]),
-                Paragraph(f"Condicionamientos: {', '.join(r.get('condicionamientos',[]))}", sty["Normal"]),
-                Paragraph(" ", sty["Normal"]),
-                Paragraph(r.get("msg_c",""), sty["Normal"]),
-                Paragraph(" ", sty["Normal"]),
-                Paragraph("<b>ASEGURA TU UNIDAD</b>", sty["Heading2"]),
-                Paragraph("BBVA · DAOSA SA DE CV · 012320001250476847", sty["Normal"]),
-                Paragraph(" ", sty["Normal"]),
-                Paragraph("<b>Contacto</b>", sty["Heading2"]),
-                Paragraph(f"Asesor: {r.get('asesor','')}", sty["Normal"]),
-                Paragraph(f"Teléfono: {r.get('telefono_asesor','')}", sty["Normal"]),
-                Paragraph(f"Correo: {r.get('correo_asesor','')}", sty["Normal"]),
-                Paragraph(f"RFC: {r.get('rfc','')}", sty["Normal"]),
-                Paragraph(" ", sty["Normal"]),
-                Paragraph("La aprobación final dependerá de la evaluación de la financiera conforme a buró de crédito.", sty["Normal"]),
-            ]
-            doc.build(content)
-            st.download_button("📄 Descargar PDF del perfil",
-                data=buf.getvalue(), file_name="perfil_autoscore.pdf",
-                mime="application/pdf", use_container_width=True)
+            buf_pdf = generar_pdf_cliente(r)
+            st.download_button(
+                "📄 Descargar PDF para el cliente",
+                data=buf_pdf.getvalue(),
+                file_name=f"autoscore_{(r.get('nombre','cliente') or 'cliente').replace(' ','_')}.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
 
         st.markdown('<div class="security-line">🛡️ Datos protegidos y seguros</div>', unsafe_allow_html=True)
