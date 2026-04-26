@@ -1,5 +1,15 @@
 import streamlit as st
 from io import BytesIO
+import base64
+import os
+
+def get_logo_b64():
+    """Carga el logo como base64 para usar en HTML."""
+    for name in ["AUTOSCOREIA.png", "logo_new.png", "logo.png"]:
+        if os.path.exists(name):
+            with open(name, "rb") as f:
+                return "data:image/png;base64," + base64.b64encode(f.read()).decode()
+    return ""
 
 # ══════════════════════════════════════════
 # PDF CLIENTE — incluido directamente
@@ -456,9 +466,10 @@ html, body, .stApp,
 /* ─── TOPBAR ────────────────────────────── */
 .topbar-wrap {
     background: #000;
-    padding: 8px 24px;
+    padding: 10px 24px;
     display: flex; align-items: center; gap: 14px;
     margin: 0 -1.5rem;
+    min-height: 72px;
 }
 .topbar-title {
     font-family: 'Rajdhani', sans-serif !important;
@@ -487,12 +498,12 @@ html, body, .stApp,
     font-family: 'Rajdhani', sans-serif !important;
     font-size: 0.68rem; font-weight: 700;
     color: #c3002f; text-transform: uppercase;
-    letter-spacing: 0.14em; margin: 18px 0 8px;
+    letter-spacing: 0.14em; margin: 22px 0 10px;
     display: flex; align-items: center; gap: 7px;
     padding-bottom: 6px;
     border-bottom: 1px solid rgba(195,0,47,0.2);
 }
-.sec-label:first-child { margin-top: 4px; }
+.sec-label:first-child { margin-top: 16px; }
 
 /* ─── PANEL FORMULARIO — gris claro ──────── */
 /* Panel izquierdo — blanco */
@@ -774,6 +785,9 @@ div[data-testid="stButton"]:has(button[key="btn_estrategia"]) > button:hover {
 </style>
 """, unsafe_allow_html=True)
 
+# ── LOGO BASE64 ────────────────────────────────────────────────────
+_LOGO_SRC = get_logo_b64()
+
 # ── SESSION STATE ──────────────────────────────────────────────────
 for k, v in {
     "resultado": None, "cotitular_activo": False,
@@ -783,16 +797,16 @@ for k, v in {
         st.session_state[k] = v
 
 # ── TOPBAR — título centrado, sin imagen problemática ──────────────
-st.markdown("""
+st.markdown(f"""
 <div class="topbar-wrap">
-  <img src="AUTOSCOREIA.png" height="60" style="flex-shrink:0;object-fit:contain;">
-  <span class="topbar-divider"></span>
-  <div class="topbar-desc">Herramienta de Pre-Análisis de Crédito Automotriz</div>
-  <div style="margin-left:auto;">
+  <img src="{_LOGO_SRC}" height="52"
+       style="flex-shrink:0;object-fit:contain;margin-left:8px;">
+  <div style="margin-left:auto;display:flex;align-items:center;gap:20px;">
+    <span style="color:#555;font-size:0.72rem;letter-spacing:0.04em;">Herramienta de Pre-Análisis de Crédito Automotriz</span>
     <span class="topbar-badge">🔒 Datos protegidos</span>
   </div>
 </div>
-<div style="height:2px;margin:0 -1.5rem 14px;background:#c3002f;"></div>
+<div style="height:2px;margin:0 -1.5rem 0;background:#c3002f;"></div>
 """, unsafe_allow_html=True)
 
 # ── DOS COLUMNAS ───────────────────────────────────────────────────
@@ -1042,12 +1056,17 @@ with col_der:
     if not st.session_state.resultado:
         st.markdown("""
         <div style="display:flex;flex-direction:column;align-items:center;
-            justify-content:center;min-height:55vh;gap:12px;opacity:0.28;">
-          <div style="font-size:3.2rem;">📊</div>
-          <div style="font-family:'Rajdhani',sans-serif;font-size:0.82rem;color:#38bdf8;
-              text-transform:uppercase;letter-spacing:0.12em;text-align:center;line-height:1.8;">
-              Resultado del Análisis<br>
-              <span style="font-size:0.62rem;opacity:0.7;">Completa el formulario y presiona Analizar</span>
+            justify-content:center;min-height:55vh;gap:20px;padding:20px 0;">
+          <img src="" + _LOGO_SRC + ""
+               style="width:260px;max-width:90%;object-fit:contain;"
+               onerror="this.style.display='none'"/>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;
+              color:#111;text-transform:uppercase;letter-spacing:0.12em;text-align:center;">
+              Resultado del Análisis
+          </div>
+          <div style="font-size:0.72rem;color:#999;letter-spacing:0.08em;
+              text-transform:uppercase;text-align:center;margin-top:-12px;">
+              Completa el formulario y presiona Analizar
           </div>
         </div>""", unsafe_allow_html=True)
 
