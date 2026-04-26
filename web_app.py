@@ -427,8 +427,8 @@ st.markdown("""
 html, body, .stApp,
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"], section.main {
-    background: #0d0d0d !important;
-    color: #f0f0f0 !important;
+    background: #f5f5f5 !important;
+    color: #111 !important;
 }
 [data-testid="stAppViewContainer"]::before {
     content: ""; position: fixed; inset: 0;
@@ -449,25 +449,31 @@ html, body, .stApp,
 }
 
 /* ─── TOPBAR ────────────────────────────── */
+.topbar-wrap {
+    background: #000;
+    padding: 8px 24px;
+    display: flex; align-items: center; gap: 14px;
+    margin: 0 -1.5rem;
+}
 .topbar-title {
     font-family: 'Rajdhani', sans-serif !important;
-    font-size: 1.5rem; font-weight: 700;
+    font-size: 1.4rem; font-weight: 700;
     color: #ffffff; letter-spacing: 0.1em; line-height: 1;
 }
 .topbar-sub {
-    color: #c3002f; font-size: 0.65rem;
-    letter-spacing: 0.18em; text-transform: uppercase; margin-top: 3px;
+    color: #c3002f; font-size: 0.6rem;
+    letter-spacing: 0.18em; text-transform: uppercase; margin-top: 2px;
 }
 .topbar-divider {
-    display: inline-block; width: 1px; height: 38px;
-    background: #2a2a2a; margin: 0 16px; vertical-align: middle;
+    display: inline-block; width: 1px; height: 34px;
+    background: #222; margin: 0 14px; vertical-align: middle;
 }
-.topbar-desc { color: #444; font-size: 0.7rem; letter-spacing: 0.04em; }
+.topbar-desc { color: #555; font-size: 0.68rem; letter-spacing: 0.04em; }
 .topbar-badge {
-    background: rgba(195,0,47,0.1);
+    background: rgba(195,0,47,0.12);
     border: 1px solid rgba(195,0,47,0.3);
     border-radius: 50px; padding: 4px 12px;
-    font-size: 0.62rem; color: #c3002f;
+    font-size: 0.6rem; color: #c3002f;
     letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;
 }
 
@@ -483,8 +489,9 @@ html, body, .stApp,
 }
 
 /* ─── PANEL FORMULARIO — gris claro ──────── */
+/* Panel izquierdo — blanco */
 [data-testid="column"]:first-child {
-    background: #f5f5f5 !important;
+    background: #ffffff !important;
     border-right: 1px solid #e0e0e0 !important;
     padding: 0 16px 16px 0 !important;
 }
@@ -495,6 +502,15 @@ html, body, .stApp,
 [data-testid="column"]:first-child label,
 [data-testid="column"]:first-child [data-testid="stWidgetLabel"] p {
     color: #c3002f !important;
+}
+/* Panel derecho — negro */
+[data-testid="column"]:last-child {
+    background: #0d0d0d !important;
+    padding: 0 0 16px 16px !important;
+}
+[data-testid="column"]:last-child label,
+[data-testid="column"]:last-child [data-testid="stWidgetLabel"] p {
+    color: #555 !important;
 }
 
 /* ─── INPUTS ────────────────────────────── */
@@ -534,6 +550,8 @@ label, [data-testid="stWidgetLabel"] p {
     color: #c3002f !important; border-radius: 6px !important;
     padding: 2px 8px !important; width: auto !important; margin: 0 !important;
 }
+/* Grid pattern solo en fondo gris — no en panels */
+[data-testid="stAppViewContainer"]::before { display: none !important; }
 div[data-testid="stVerticalBlock"] { gap: 0.28rem !important; }
 
 /* ─── BOTÓN PRINCIPAL ────────────────────── */
@@ -718,19 +736,29 @@ hr { border:none !important; border-top:1px solid #1a1a1a !important; margin:8px
     display: flex; align-items: center; justify-content: center; gap: 5px;
 }
 
-/* Botón discreto estrategia interna */
+/* Botón discreto estrategia interna — sobrescribe el estilo del botón principal */
 div[data-testid="stButton"]:has(button[key="btn_estrategia"]) > button {
     background: transparent !important;
-    border: 1px solid #222 !important;
-    color: #444 !important; border-radius: 6px !important;
-    padding: 4px 12px !important; font-size: 0.68rem !important;
-    font-weight: 500 !important; letter-spacing: 0.06em !important;
-    text-transform: none !important; box-shadow: none !important;
-    width: auto !important; margin: 4px 0 !important;
+    border: 1px solid #333 !important;
+    color: #555 !important;
+    border-radius: 6px !important;
+    padding: 3px 10px !important;
+    font-size: 0.65rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.05em !important;
+    text-transform: none !important;
+    box-shadow: none !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 4px 0 2px 0 !important;
+    display: inline-block !important;
 }
 div[data-testid="stButton"]:has(button[key="btn_estrategia"]) > button:hover {
-    border-color: #c3002f !important; color: #c3002f !important;
+    border-color: #c3002f !important;
+    color: #c3002f !important;
+    background: transparent !important;
     transform: none !important;
+    box-shadow: none !important;
 }
 
 .panel-left  { border-right: 1px solid #1a1a1a; padding-right: 16px; }
@@ -748,12 +776,12 @@ for k, v in {
 
 # ── TOPBAR — título centrado, sin imagen problemática ──────────────
 st.markdown("""
-<div style="display:flex;align-items:center;gap:14px;padding:10px 0 8px;">
-  <div style="width:36px;height:36px;background:#c3002f;border-radius:50%;
+<div class="topbar-wrap">
+  <div style="width:34px;height:34px;background:#c3002f;border-radius:50%;
       display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-    <div style="width:22px;height:22px;background:#fff;border-radius:50%;
+    <div style="width:21px;height:21px;background:#fff;border-radius:50%;
         display:flex;align-items:center;justify-content:center;">
-      <div style="width:10px;height:10px;background:#c3002f;border-radius:50%;"></div>
+      <div style="width:9px;height:9px;background:#c3002f;border-radius:50%;"></div>
     </div>
   </div>
   <div>
@@ -766,7 +794,7 @@ st.markdown("""
     <span class="topbar-badge">🔒 Datos protegidos</span>
   </div>
 </div>
-<div style="height:2px;margin:2px 0 14px;background:#c3002f;"></div>
+<div style="height:2px;margin:0 -1.5rem 14px;background:#c3002f;"></div>
 """, unsafe_allow_html=True)
 
 # ── DOS COLUMNAS ───────────────────────────────────────────────────
@@ -1114,8 +1142,8 @@ with col_der:
             st.session_state.mostrar_estrategia = False
 
         lbl_btn = "🔒 Notas internas" if not st.session_state.mostrar_estrategia else "🔒 Cerrar notas"
-        col_btn, _ = st.columns([1, 3])
-        with col_btn:
+        _bc1, _bc2, _bc3 = st.columns([1, 2, 3])
+        with _bc1:
             if st.button(lbl_btn, key="btn_estrategia"):
                 st.session_state.mostrar_estrategia = not st.session_state.mostrar_estrategia
 
