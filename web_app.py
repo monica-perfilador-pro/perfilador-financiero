@@ -654,8 +654,8 @@ hr { border:none !important; border-top:1px solid #1a1a1a !important; margin:8px
     content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
     background: #c3002f;
 }
-.prob-label { font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
-.prob-sublabel { font-family: 'Rajdhani', sans-serif !important; font-size: 0.82rem; color: #444; letter-spacing: 0.04em; }
+.prob-label { font-size: 0.75rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+.prob-sublabel { font-family: 'Rajdhani', sans-serif !important; font-size: 0.88rem; color: #cbd5e1; letter-spacing: 0.04em; }
 
 .score-badge {
     display: inline-flex; align-items: center; gap: 10px;
@@ -663,14 +663,14 @@ hr { border:none !important; border-top:1px solid #1a1a1a !important; margin:8px
 }
 .score-badge .score-em  { font-size: 1.5rem; }
 .score-badge .score-lbl { font-family: 'Rajdhani', sans-serif !important; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.06em; }
-.score-badge .score-sub { font-size: 0.72rem; color: #444; margin-top: 1px; }
+.score-badge .score-sub { font-size: 0.75rem; color: #94a3b8; margin-top: 1px; }
 
 .metrics-2 { display: flex; gap: 10px; margin: 8px 0; }
 .metric-tile { flex: 1; border-radius: 10px; padding: 10px 14px; }
 .metric-tile.blue   { background: #000; border: 1px solid #1a1a1a; }
 .metric-tile.purple { background: #1a0006; border: 1px solid rgba(195,0,47,0.25); }
 .metric-tile .mt-lbl { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; font-weight: 600; }
-.metric-tile.blue   .mt-lbl { color: #555; }
+.metric-tile.blue   .mt-lbl { color: #7dd3fc; }
 .metric-tile.purple .mt-lbl { color: #c3002f; }
 .metric-tile .mt-val { font-family: 'Rajdhani', sans-serif !important; font-size: 1.35rem; font-weight: 700; color: #fff; line-height: 1; }
 
@@ -689,8 +689,8 @@ hr { border:none !important; border-top:1px solid #1a1a1a !important; margin:8px
 .msg-cliente {
     background: #0d0d0d; border: 1px solid #1a1a1a;
     border-left: 3px solid #c3002f; border-radius: 0 9px 9px 0;
-    padding: 10px 14px; color: #aaa;
-    font-size: 0.8rem; line-height: 1.6; margin: 6px 0;
+    padding: 10px 14px; color: #cbd5e1;
+    font-size: 0.85rem; line-height: 1.6; margin: 6px 0;
 }
 
 .estrategia-box {
@@ -811,7 +811,12 @@ col_izq, col_der = st.columns([1, 1], gap="medium")
 # ╚══════════════════════════════════╝
 with col_izq:
 
-    # LOGO arriba del formulario — izquierda
+    # LOGO arriba del formulario
+    _fl1, _fl2, _fl3 = st.columns([1, 3, 1])
+    with _fl2:
+        st.image("AUTOSCOREIA.png", use_container_width=True)
+    st.markdown("<div style='margin-bottom:8px;'></div>", unsafe_allow_html=True)
+
     with st.form("formulario"):
 
         # ASESOR — ahora dentro del form para alineación consistente
@@ -1169,7 +1174,7 @@ with col_der:
         # ── 8. DOCUMENTACIÓN ─────────────────────────────────
         st.markdown('<div class="sec-label-result">📄 Documentación requerida</div>', unsafe_allow_html=True)
         docs_chips = " &nbsp;·&nbsp; ".join([f"📎 {d}" for d in r["docs"]])
-        st.markdown(f'<div style="color:#64748b;font-size:0.76rem;padding:4px 2px;">{docs_chips}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="color:#cbd5e1;font-size:0.8rem;padding:4px 2px;">{docs_chips}</div>', unsafe_allow_html=True)
 
         # ── 9. SIGUIENTE PASO + CUENTA ────────────────────────
         st.markdown('<div class="sec-label-result">💰 Siguiente paso</div>', unsafe_allow_html=True)
