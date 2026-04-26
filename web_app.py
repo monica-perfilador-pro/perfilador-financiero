@@ -443,6 +443,11 @@ html, body, .stApp,
     padding: 0 1.5rem 2rem 1.5rem !important;
     max-width: 100% !important;
 }
+/* Separación entre sec-label y primer input */
+.sec-label + div,
+.sec-label + [data-testid="stHorizontalBlock"] {
+    margin-top: 8px !important;
+}
 *, *::before, *::after {
     font-family: 'Exo 2', sans-serif !important;
     box-sizing: border-box;
@@ -482,11 +487,12 @@ html, body, .stApp,
     font-family: 'Rajdhani', sans-serif !important;
     font-size: 0.68rem; font-weight: 700;
     color: #c3002f; text-transform: uppercase;
-    letter-spacing: 0.14em; margin: 10px 0 5px;
+    letter-spacing: 0.14em; margin: 18px 0 8px;
     display: flex; align-items: center; gap: 7px;
-    padding-bottom: 5px;
+    padding-bottom: 6px;
     border-bottom: 1px solid rgba(195,0,47,0.2);
 }
+.sec-label:first-child { margin-top: 4px; }
 
 /* ─── PANEL FORMULARIO — gris claro ──────── */
 /* Panel izquierdo — blanco */
@@ -779,17 +785,7 @@ for k, v in {
 # ── TOPBAR — título centrado, sin imagen problemática ──────────────
 st.markdown("""
 <div class="topbar-wrap">
-  <div style="width:34px;height:34px;background:#c3002f;border-radius:50%;
-      display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-    <div style="width:21px;height:21px;background:#fff;border-radius:50%;
-        display:flex;align-items:center;justify-content:center;">
-      <div style="width:9px;height:9px;background:#c3002f;border-radius:50%;"></div>
-    </div>
-  </div>
-  <div>
-    <div class="topbar-title">AutoScore AI</div>
-    <div class="topbar-sub">Nissan · Aprobación Inteligente</div>
-  </div>
+  <img src="AUTOSCOREIA.png" height="60" style="flex-shrink:0;object-fit:contain;">
   <span class="topbar-divider"></span>
   <div class="topbar-desc">Herramienta de Pre-Análisis de Crédito Automotriz</div>
   <div style="margin-left:auto;">
@@ -808,12 +804,6 @@ col_izq, col_der = st.columns([1, 1], gap="medium")
 with col_izq:
 
     # LOGO arriba del formulario — izquierda
-    _lc1, _lc2, _lc3 = st.columns([1, 2, 1])
-    with _lc2:
-        st.image("logo_new.png", use_container_width=True)
-
-    st.markdown("<div style='margin:2px 0 10px'></div>", unsafe_allow_html=True)
-
     with st.form("formulario"):
 
         # ASESOR — ahora dentro del form para alineación consistente
