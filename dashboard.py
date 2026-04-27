@@ -298,7 +298,6 @@ if filtrados:
 
     # ── DESCARGAR EXCEL ───────────────────────────────────────────
     st.markdown("<div style='margin-top:12px;'></div>", unsafe_allow_html=True)
-    buf_excel = pd.ExcelWriter.__new__(pd.ExcelWriter)
     from io import BytesIO
     buf_xl = BytesIO()
     with pd.ExcelWriter(buf_xl, engine='openpyxl') as writer:
