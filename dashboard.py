@@ -293,7 +293,7 @@ if filtrados:
         }
         return colores.get(val, "")
 
-    styled = df.style.applymap(color_score, subset=["Score"])
+    styled = df.style.map(color_score, subset=["Score"])
     st.dataframe(styled, use_container_width=True, height=480)
 
     # ── DESCARGAR EXCEL ───────────────────────────────────────────
