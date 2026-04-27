@@ -40,6 +40,47 @@ def guardar_perfil_sheets(datos: dict):
         ).execute()
     except Exception:
         pass  # No interrumpir el análisis si Sheets falla
+
+
+def guardar_solicitud_sheets(datos: dict):
+    """Guarda solicitud completa en hoja 'Solicitudes' del mismo Sheet."""
+    try:
+        from google.oauth2.service_account import Credentials
+        from googleapiclient.discovery import build
+        import datetime, json
+
+        SHEET_ID    = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
+        SHEET_SOL   = "Solicitudes"
+        scopes = ["https://www.googleapis.com/auth/spreadsheets",
+                  "https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]), scopes=scopes)
+        service = build("sheets", "v4", credentials=creds)
+
+        ahora = datetime.datetime.now()
+        fila = [
+            ahora.strftime("%d/%m/%Y"), ahora.strftime("%H:%M:%S"),
+            datos.get("asesor",""), datos.get("rfc_asesor",""), datos.get("fuente_venta",""),
+            datos.get("nombre_completo",""), datos.get("rfc_cliente",""), datos.get("curp",""),
+            datos.get("celular",""), datos.get("correo_cliente",""),
+            datos.get("score_sc",""), datos.get("score_prob",0), datos.get("decision",""),
+            datos.get("tipo_credito",""), datos.get("tipo_persona",""),
+            datos.get("estado_civil",""), datos.get("vivienda",""),
+            datos.get("ciudad",""), datos.get("estado",""),
+            datos.get("ocupacion",""), datos.get("empresa",""),
+            datos.get("ingreso_fijo",""), datos.get("antiguedad_empleo",""),
+            # Guardar el JSON completo para regenerar el PDF
+            json.dumps(datos, ensure_ascii=False)
+        ]
+        service.spreadsheets().values().append(
+            spreadsheetId=SHEET_ID,
+            range=f"'{SHEET_SOL}'!A1",
+            valueInputOption="USER_ENTERED",
+            insertDataOption="INSERT_ROWS",
+            body={"values": [fila]}
+        ).execute()
+    except Exception:
+        pass  # Silencioso
 import base64
 import os
 
@@ -374,6 +415,336 @@ def generar_pdf_cliente(datos: dict) -> BytesIO:
 
     # Línea bottom roja
     frect(cv, 0, 0, W, 4, ROJO)
+
+    cv.showPage()
+    cv.save()
+    buf.seek(0)
+    return buf
+
+
+
+# ════════════════════════════════════════════
+# PDF SOLICITUD DE CREDITO — 1 hoja editable
+# ════════════════════════════════════════════
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib.colors import HexColor, black, white
+from io import BytesIO
+import datetime
+
+W, H = letter  # 612 x 792 pts
+
+# ── PALETA ────────────────────────────────────────────────────────
+ROJO        = HexColor("#c3002f")
+NEGRO       = HexColor("#111111")
+GRIS_OSCURO = HexColor("#333333")
+GRIS_MEDIO  = HexColor("#666666")
+GRIS_CLARO  = HexColor("#cccccc")
+GRIS_FONDO  = HexColor("#f5f5f5")
+GRIS_BLOCK  = HexColor("#e8e8e8")  # franjas de seccion
+
+def frect(c, x, y, w, h, color, lw=0):
+    c.setFillColor(color)
+    c.rect(x, y, w, h, fill=1, stroke=0)
+
+def srect(c, x, y, w, h, color=GRIS_CLARO, lw=0.4):
+    c.setStrokeColor(color)
+    c.setLineWidth(lw)
+    c.rect(x, y, w, h, fill=0, stroke=1)
+
+def txt(c, s, x, y, font, size, color, align="left"):
+    c.setFont(font, size)
+    c.setFillColor(color)
+    if align=="center": c.drawCentredString(x, y, s)
+    elif align=="right": c.drawRightString(x, y, s)
+    else: c.drawString(x, y, s)
+
+def hline(c, x1, x2, y, color=GRIS_CLARO, lw=0.4):
+    c.setStrokeColor(color); c.setLineWidth(lw)
+    c.line(x1, y, x2, y)
+
+def section_band(c, y, label, w_total=552):
+    """Banda gris con titulo de seccion."""
+    frect(c, 30, y-12, w_total, 14, GRIS_BLOCK)
+    txt(c, label, 36, y-3, "Helvetica-Bold", 7, NEGRO)
+
+def field(c, x, y, w, h, label, value="", show_border=True):
+    """Campo del formulario con etiqueta arriba y valor adentro."""
+    if show_border:
+        srect(c, x, y-h, w, h, GRIS_CLARO, 0.4)
+    # Etiqueta
+    txt(c, label, x+3, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    # Valor
+    if value:
+        txt(c, str(value)[:60], x+4, y-h+4, "Helvetica-Bold", 7, NEGRO)
+
+def checkbox(c, x, y, label, marked=False, size=6):
+    """Checkbox con etiqueta."""
+    srect(c, x, y, size, size, NEGRO, 0.5)
+    if marked:
+        txt(c, "x", x+1.2, y+1, "Helvetica-Bold", 6, NEGRO)
+    txt(c, label, x+size+3, y+1, "Helvetica", 6, NEGRO)
+    return c.stringWidth(label, "Helvetica", 6) + size + 8
+
+def generar_pdf_solicitud(d: dict) -> BytesIO:
+    """
+    Genera el PDF de solicitud de credito persona fisica.
+    Recibe dict con todos los campos del formulario expandido.
+    """
+    buf = BytesIO()
+    cv  = canvas.Canvas(buf, pagesize=letter)
+    cv.setTitle("Solicitud de Credito - AutoScore AI")
+
+    fecha = datetime.date.today().strftime("%d / %m / %Y")
+
+    # ════════════════════════════════════════════════════════════
+    # PAGINA 1
+    # ════════════════════════════════════════════════════════════
+
+    # ── HEADER ───────────────────────────────────────────────────
+    txt(cv, "SOLICITUD DE CREDITO PERSONA FISICA", 30, H-30, "Helvetica-Bold", 12, NEGRO)
+    txt(cv, f"Fecha: {fecha}", W-30, H-30, "Helvetica", 9, NEGRO, "right")
+    frect(cv, 30, H-36, 552, 1.5, ROJO)
+
+    # ── DATOS DEL ASESOR Y FUENTE DE VENTA ────────────────────────
+    section_band(cv, H-50, "DATOS DEL ASESOR Y FUENTE DE VENTA")
+    y = H-54
+    field(cv, 30,  y, 220, 18, "Nombre del Asesor",   d.get("asesor",""))
+    field(cv, 250, y, 130, 18, "RFC del Asesor",      d.get("rfc_asesor",""))
+    # Fuente de venta con checkboxes
+    srect(cv, 380, y-18, 202, 18, GRIS_CLARO, 0.4)
+    txt(cv, "Fuente de Venta", 383, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    cx = 386
+    cx += checkbox(cv, cx, y-14, "BDC",      d.get("fuente_venta")=="BDC")
+    cx += checkbox(cv, cx, y-14, "PISO",     d.get("fuente_venta")=="PISO")
+    cx += checkbox(cv, cx, y-14, "CARTERA",  d.get("fuente_venta")=="CARTERA")
+
+    # ── TIPO DE SOLICITUD ────────────────────────────────────────
+    y -= 28
+    section_band(cv, y, "TIPO DE SOLICITUD")
+    y -= 16
+    cx = 36
+    cx += checkbox(cv, cx, y, "Credito Simple",      d.get("tipo_credito")=="Simple")
+    cx += checkbox(cv, cx, y, "Arrendamiento",        d.get("tipo_credito")=="Arrendamiento")
+    cx += checkbox(cv, cx, y, "Credi Taxi",           d.get("tipo_credito")=="Credi Taxi")
+    cx += checkbox(cv, cx, y, "Subete",               d.get("tipo_credito")=="Subete")
+    cx += checkbox(cv, cx, y, "Correo electronico",   d.get("tipo_credito")=="Correo")
+    cx += checkbox(cv, cx, y, "Redes Sociales",       d.get("tipo_credito")=="Redes")
+
+    # ── IDENTIFICACION DEL CLIENTE ───────────────────────────────
+    y -= 14
+    section_band(cv, y, "IDENTIFICACION DEL CLIENTE")
+    y -= 16
+    cx = 36
+    cx += checkbox(cv, cx, y, "Persona Fisica",                  d.get("tipo_persona")=="PF")
+    cx += checkbox(cv, cx, y, "Persona Fisica Actividad Empr.",  d.get("tipo_persona")=="PFAE")
+    cx += checkbox(cv, cx, y+0, "Cliente Recompra:",  False, 0)
+    cx += checkbox(cv, cx, y, "SI",  d.get("recompra")=="SI")
+    cx += checkbox(cv, cx, y, "NO",  d.get("recompra")=="NO")
+    cx += checkbox(cv, cx, y+0, "Empleado:", False, 0)
+    cx += checkbox(cv, cx, y, "SI",  d.get("empleado")=="SI")
+    cx += checkbox(cv, cx, y, "NO",  d.get("empleado")=="NO")
+
+    # ── DATOS DEL ACREDITADO ─────────────────────────────────────
+    y -= 14
+    section_band(cv, y, "DATOS DEL ACREDITADO")
+    y -= 4
+
+    # Fila 1: Apellidos y nombres (4 cols)
+    field(cv, 30,  y,  138, 18, "Apellido Paterno",  d.get("apellido_paterno",""))
+    field(cv, 168, y,  138, 18, "Apellido Materno",  d.get("apellido_materno",""))
+    field(cv, 306, y,  138, 18, "Primer Nombre",     d.get("primer_nombre",""))
+    field(cv, 444, y,  138, 18, "Segundo Nombre",    d.get("segundo_nombre",""))
+
+    y -= 22
+    # Fila 2: Fecha nacimiento, RFC, CURP, Pais, Estado, Sexo
+    field(cv, 30,  y, 78, 18, "Fecha de Nacimiento", d.get("fecha_nacimiento",""))
+    field(cv, 108, y, 90, 18, "RFC (con Homoclave)", d.get("rfc_cliente",""))
+    field(cv, 198, y, 86, 18, "CURP",                 d.get("curp",""))
+    field(cv, 284, y, 90, 18, "Pais de nacimiento",   d.get("pais_nacimiento","Mexico"))
+    field(cv, 374, y, 100,18, "Estado de nacimiento", d.get("estado_nacimiento",""))
+    # Sexo con checkboxes
+    srect(cv, 474, y-18, 108, 18, GRIS_CLARO, 0.4)
+    txt(cv, "Sexo", 477, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    cx = 480
+    cx += checkbox(cv, cx, y-14, "F",  d.get("sexo")=="F")
+    cx += checkbox(cv, cx, y-14, "M",  d.get("sexo")=="M")
+
+    y -= 22
+    # Fila 3: Nacionalidad, Numero celular, Correo
+    srect(cv, 30, y-18, 130, 18, GRIS_CLARO, 0.4)
+    txt(cv, "Nacionalidad", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    cx = 36
+    cx += checkbox(cv, cx, y-14, "Mexicana",   d.get("nacionalidad")=="Mexicana")
+    cx += checkbox(cv, cx, y-14, "Extranjera", d.get("nacionalidad")=="Extranjera")
+
+    field(cv, 160, y, 120, 18, "Numero de Celular",  d.get("celular",""))
+    field(cv, 280, y, 302, 18, "Correo electronico",  d.get("correo_cliente",""))
+
+    y -= 22
+    # Fila 4: Estado civil
+    srect(cv, 30, y-18, 552, 18, GRIS_CLARO, 0.4)
+    txt(cv, "Estado Civil", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    cx = 36
+    cx += checkbox(cv, cx, y-14, "Soltero",   d.get("estado_civil")=="Soltero")
+    cx += checkbox(cv, cx, y-14, "Casado",    d.get("estado_civil")=="Casado")
+    cx += checkbox(cv, cx, y-14, "Divorciado",d.get("estado_civil")=="Divorciado")
+    cx += checkbox(cv, cx, y-14, "Viudo",     d.get("estado_civil")=="Viudo")
+    cx += checkbox(cv, cx, y-14, "Union Libre",d.get("estado_civil")=="Union Libre")
+    cx += 10
+    txt(cv, "Regimen:", cx, y-13, "Helvetica-Bold", 5.5, GRIS_OSCURO)
+    cx += 30
+    cx += checkbox(cv, cx, y-14, "Bienes Separados",  d.get("regimen")=="Bienes Separados")
+    cx += checkbox(cv, cx, y-14, "Sociedad Conyugal", d.get("regimen")=="Sociedad Conyugal")
+
+    y -= 22
+    # Fila 5: Identificacion
+    srect(cv, 30, y-18, 432, 18, GRIS_CLARO, 0.4)
+    txt(cv, "Tipo de identificacion", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    cx = 36
+    cx += checkbox(cv, cx, y-14, "Credencial Votar", d.get("tipo_id")=="INE")
+    cx += checkbox(cv, cx, y-14, "Pasaporte",         d.get("tipo_id")=="Pasaporte")
+    cx += checkbox(cv, cx, y-14, "Forma Migratoria",  d.get("tipo_id")=="Forma Migratoria")
+    cx += checkbox(cv, cx, y-14, "Cedula Profesional",d.get("tipo_id")=="Cedula")
+    field(cv, 462, y, 120, 18, "No. de Identificacion", d.get("num_id",""))
+
+    # ── CONYUGE ──────────────────────────────────────────────────
+    y -= 32
+    section_band(cv, y, "CONYUGE O CONCUBINO(A)")
+    y -= 4
+    field(cv, 30,  y, 138, 18, "Apellido Paterno",       d.get("c_apellido_paterno",""))
+    field(cv, 168, y, 138, 18, "Apellido Materno",       d.get("c_apellido_materno",""))
+    field(cv, 306, y, 138, 18, "Primer Nombre",          d.get("c_primer_nombre",""))
+    field(cv, 444, y, 80,  18, "Segundo Nombre",         d.get("c_segundo_nombre",""))
+    field(cv, 524, y, 58,  18, "Dependientes",           str(d.get("dependientes","")))
+
+    # ── DATOS DEL DOMICILIO ──────────────────────────────────────
+    y -= 32
+    section_band(cv, y, "DATOS DEL DOMICILIO")
+    y -= 4
+    # Situacion vivienda
+    srect(cv, 30, y-18, 200, 18, GRIS_CLARO, 0.4)
+    txt(cv, "Situacion de Vivienda", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    cx = 36
+    cx += checkbox(cv, cx, y-14, "Propia",      d.get("vivienda")=="Propia")
+    cx += checkbox(cv, cx, y-14, "Renta",       d.get("vivienda")=="Renta")
+    cx += checkbox(cv, cx, y-14, "Hipoteca",    d.get("vivienda")=="Hipoteca")
+    cx += checkbox(cv, cx, y-14, "Familiar",    d.get("vivienda")=="Familiar")
+
+    field(cv, 230, y, 90, 18, "Valor Aproximado",        d.get("valor_vivienda",""))
+    field(cv, 320, y, 90, 18, "Valor Renta/Hipoteca",    d.get("valor_renta",""))
+    field(cv, 410, y, 86, 18, "Telefono Fijo",           d.get("tel_fijo",""))
+    field(cv, 496, y, 86, 18, "Tel. Recados",            d.get("tel_recados",""))
+
+    y -= 22
+    # Direccion completa
+    field(cv, 30,  y, 250, 18, "Calle, Av. o Via",       d.get("calle",""))
+    field(cv, 280, y, 60,  18, "No. Ext.",               d.get("num_ext",""))
+    field(cv, 340, y, 60,  18, "No. Int.",               d.get("num_int",""))
+    field(cv, 400, y, 110, 18, "Colonia",                d.get("colonia",""))
+    field(cv, 510, y, 72,  18, "Pais Residencia",        d.get("pais_residencia","Mexico"))
+
+    y -= 22
+    field(cv, 30,  y, 130, 18, "Entre calles",           d.get("entre_calles",""))
+    field(cv, 160, y, 100, 18, "Delegacion/Municipio",   d.get("municipio",""))
+    field(cv, 260, y, 90,  18, "Ciudad",                 d.get("ciudad",""))
+    field(cv, 350, y, 80,  18, "Estado",                 d.get("estado",""))
+    field(cv, 430, y, 50,  18, "C.P.",                   d.get("cp",""))
+    field(cv, 480, y, 102, 18, "Tiempo Residencia",      d.get("tiempo_residencia",""))
+
+    # ── OCUPACION ────────────────────────────────────────────────
+    y -= 32
+    section_band(cv, y, "OCUPACION DEL ACREDITADO")
+    y -= 4
+    srect(cv, 30, y-18, 552, 18, GRIS_CLARO, 0.4)
+    txt(cv, "Ocupacion", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    cx = 36
+    cx += checkbox(cv, cx, y-14, "Empleado S. Privado",      d.get("ocupacion")=="Privado")
+    cx += checkbox(cv, cx, y-14, "Empleado S. Publico",      d.get("ocupacion")=="Publico")
+    cx += checkbox(cv, cx, y-14, "Independiente",            d.get("ocupacion")=="Independiente")
+    cx += checkbox(cv, cx, y-14, "Jubilado",                 d.get("ocupacion")=="Jubilado")
+    cx += checkbox(cv, cx, y-14, "Ama de casa",              d.get("ocupacion")=="Ama de casa")
+    cx += checkbox(cv, cx, y-14, "Estudiante",               d.get("ocupacion")=="Estudiante")
+    cx += checkbox(cv, cx, y-14, "Otro",                     d.get("ocupacion")=="Otro")
+
+    y -= 22
+    # Tipo contrato + ingresos
+    srect(cv, 30, y-18, 200, 18, GRIS_CLARO, 0.4)
+    txt(cv, "Tipo de Contrato", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    cx = 36
+    cx += checkbox(cv, cx, y-14, "Fijo",      d.get("contrato")=="Fijo")
+    cx += checkbox(cv, cx, y-14, "Temporal",  d.get("contrato")=="Temporal")
+    field(cv, 230, y, 100, 18, "Ingreso Fijo $",     d.get("ingreso_fijo",""))
+    field(cv, 330, y, 90,  18, "Variable $",          d.get("ingreso_variable",""))
+    field(cv, 420, y, 80,  18, "Ahorro/Cheques $",    d.get("ahorro",""))
+    field(cv, 500, y, 82,  18, "Ingreso Acumulable",  d.get("ingreso_acumulable",""))
+
+    y -= 22
+    field(cv, 30,  y, 270, 18, "Nombre de la Empresa",  d.get("empresa",""))
+    field(cv, 300, y, 90,  18, "Fecha de Ingreso",       d.get("fecha_ingreso",""))
+    srect(cv, 390, y-18, 96, 18, GRIS_CLARO, 0.4)
+    txt(cv, "Nacionalidad Empresa", 393, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    cx = 396
+    cx += checkbox(cv, cx, y-14, "Mex",  d.get("nac_empresa")=="Mexicana")
+    cx += checkbox(cv, cx, y-14, "Ext",  d.get("nac_empresa")=="Extranjera")
+    srect(cv, 486, y-18, 96, 18, GRIS_CLARO, 0.4)
+    txt(cv, "Tipo Empresa", 489, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    cx = 492
+    cx += checkbox(cv, cx, y-14, "Priv",  d.get("tipo_empresa")=="Privada")
+    cx += checkbox(cv, cx, y-14, "Pub",   d.get("tipo_empresa")=="Publica")
+
+    y -= 22
+    field(cv, 30,  y, 552, 18, "Descripcion del empleo o actividad",  d.get("descripcion_empleo",""))
+
+    y -= 22
+    field(cv, 30,  y, 280, 18, "Actividad Especifica de la Empresa", d.get("actividad_empresa",""))
+    field(cv, 310, y, 136, 18, "Telefono Empresa",                    d.get("tel_empresa",""))
+    field(cv, 446, y, 136, 18, "Telefono Alterno",                    d.get("tel_alterno",""))
+
+    y -= 22
+    field(cv, 30,  y, 200, 18, "Domicilio Empresa - Calle",         d.get("dom_empresa",""))
+    field(cv, 230, y, 50,  18, "No. Ext.",                            d.get("emp_num_ext",""))
+    field(cv, 280, y, 50,  18, "No. Int.",                            d.get("emp_num_int",""))
+    field(cv, 330, y, 90,  18, "Colonia",                             d.get("emp_colonia",""))
+    field(cv, 420, y, 80,  18, "Municipio",                           d.get("emp_municipio",""))
+    field(cv, 500, y, 50,  18, "Estado",                              d.get("emp_estado",""))
+    field(cv, 550, y, 32,  18, "C.P.",                                d.get("emp_cp",""))
+
+    y -= 22
+    field(cv, 30,  y, 300, 18, "Antiguedad en el empleo",  d.get("antiguedad_empleo",""))
+    field(cv, 330, y, 252, 18, "Nombre del Jefe Inmediato", d.get("jefe_inmediato",""))
+
+    # ── REFERENCIAS PERSONALES ───────────────────────────────────
+    y -= 32
+    section_band(cv, y, "DATOS GENERALES DE REFERENCIAS")
+    y -= 4
+
+    for i in range(1, 4):
+        prefijo = f"ref{i}_"
+        ref_y = y
+        # Numero de referencia
+        frect(cv, 30, ref_y-12, 14, 14, ROJO)
+        txt(cv, str(i), 37, ref_y-3, "Helvetica-Bold", 8, white, "center")
+        # Datos
+        field(cv, 46,  ref_y, 110, 14, "Apellido Paterno",  d.get(prefijo+"ap",""))
+        field(cv, 156, ref_y, 110, 14, "Apellido Materno",  d.get(prefijo+"am",""))
+        field(cv, 266, ref_y, 110, 14, "Primer Nombre",     d.get(prefijo+"nom",""))
+        field(cv, 376, ref_y, 110, 14, "Segundo Nombre",    d.get(prefijo+"nom2",""))
+        field(cv, 486, ref_y, 96,  14, "Parentesco",        d.get(prefijo+"parentesco",""))
+
+        ref_y -= 14
+        field(cv, 46,  ref_y, 86, 14, "Tel. Fijo",         d.get(prefijo+"tel_fijo",""))
+        field(cv, 132, ref_y, 86, 14, "Tel. Oficina",      d.get(prefijo+"tel_ofi",""))
+        field(cv, 218, ref_y, 86, 14, "Tel. Celular",      d.get(prefijo+"tel_cel",""))
+        field(cv, 304, ref_y, 100, 14,"Horario Localizar",  d.get(prefijo+"horario",""))
+        field(cv, 404, ref_y, 178, 14, "Lugar Localizacion",d.get(prefijo+"lugar",""))
+        y = ref_y - 16
+
+    # Footer pagina 1
+    txt(cv, "* Los numeros telefonicos deben ser de 10 digitos", 30, 28, "Helvetica-Oblique", 6.5, GRIS_MEDIO)
+    txt(cv, "Pagina 1 de 1", 30, 16, "Helvetica-Bold", 7, NEGRO)
+    txt(cv, "AutoScore AI · Aprobacion Inteligente", W-30, 16, "Helvetica-Bold", 7, ROJO, "right")
+    frect(cv, 30, 10, 552, 1, ROJO)
 
     cv.showPage()
     cv.save()
@@ -1265,4 +1636,189 @@ with col_der:
                 use_container_width=True
             )
 
+        # ── GENERAR SOLICITUD DE CREDITO ─────────────────────────────
+        st.markdown("<div style='margin:8px 0'></div>", unsafe_allow_html=True)
+        if "mostrar_solicitud" not in st.session_state:
+            st.session_state.mostrar_solicitud = False
+        lbl_sol = "📋 Generar Solicitud de Credito" if not st.session_state.mostrar_solicitud else "✖ Cerrar formulario de solicitud"
+        if st.button(lbl_sol, key="btn_solicitud", use_container_width=True):
+            st.session_state.mostrar_solicitud = not st.session_state.mostrar_solicitud
+            st.rerun()
+
         st.markdown('<div class="security-line">🛡️ Datos protegidos y seguros</div>', unsafe_allow_html=True)
+
+# ── FORMULARIO EXPANDIDO DE SOLICITUD ─────────────────────────────
+if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud"):
+    r = st.session_state.resultado
+    st.markdown("---")
+    st.markdown("""
+    <div style="background:#000;color:#fff;padding:14px 20px;margin:0 -1rem 16px;
+        border-top:3px solid #c3002f;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;
+          letter-spacing:0.08em;">📋 SOLICITUD DE CREDITO — DATOS COMPLEMENTARIOS</div>
+      <div style="font-size:0.7rem;color:#888;letter-spacing:0.06em;margin-top:2px;">
+          Completa los campos para generar el PDF de solicitud que llegara automaticamente al F&I
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    with st.form("form_solicitud"):
+        # ─── DATOS DEL ASESOR Y FUENTE DE VENTA ───
+        st.markdown('<div class="sec-label">👔 Datos del Asesor y Fuente de Venta</div>', unsafe_allow_html=True)
+        sa1, sa2, sa3 = st.columns([2,1,1])
+        with sa1: nom_asesor_sol = st.text_input("Nombre asesor", value=r.get("asesor",""))
+        with sa2: rfc_asesor_sol = st.text_input("RFC asesor", placeholder="XAXX010101000")
+        with sa3: fuente_venta = st.selectbox("Fuente de venta", ["BDC","PISO","CARTERA"])
+
+        # ─── TIPO DE SOLICITUD Y CLIENTE ───
+        st.markdown('<div class="sec-label">📝 Tipo de Solicitud</div>', unsafe_allow_html=True)
+        tc1, tc2, tc3, tc4 = st.columns(4)
+        with tc1: tipo_credito = st.selectbox("Tipo de credito", ["Simple","Arrendamiento","Credi Taxi","Subete"])
+        with tc2: tipo_persona = st.selectbox("Tipo persona", ["PF","PFAE"])
+        with tc3: recompra     = st.selectbox("Recompra",     ["NO","SI"])
+        with tc4: empleado     = st.selectbox("Empleado",     ["NO","SI"])
+
+        # ─── DATOS DEL ACREDITADO ───
+        st.markdown('<div class="sec-label">👤 Datos del Acreditado</div>', unsafe_allow_html=True)
+        a1, a2, a3, a4 = st.columns(4)
+        nombre_partes = (r.get("nombre","")+" ").split()
+        with a1: ap_paterno = st.text_input("Apellido paterno", value=nombre_partes[0] if len(nombre_partes)>0 else "")
+        with a2: ap_materno = st.text_input("Apellido materno", value=nombre_partes[1] if len(nombre_partes)>1 else "")
+        with a3: pn_nombre  = st.text_input("Primer nombre",    value=nombre_partes[2] if len(nombre_partes)>2 else "")
+        with a4: sn_nombre  = st.text_input("Segundo nombre",   value=nombre_partes[3] if len(nombre_partes)>3 else "")
+
+        b1, b2, b3, b4 = st.columns(4)
+        with b1: fecha_nac = st.text_input("Fecha nacimiento", placeholder="DD/MM/AAAA")
+        with b2: rfc_cli   = st.text_input("RFC cliente",       placeholder="XXXX000000XXX")
+        with b3: curp      = st.text_input("CURP",              placeholder="XXXX000000XXXXXX00")
+        with b4: sexo      = st.selectbox("Sexo",               ["M","F"])
+
+        c1, c2, c3 = st.columns(3)
+        with c1: pais_nac     = st.text_input("Pais nacimiento", value="Mexico")
+        with c2: estado_nac   = st.text_input("Estado nacimiento")
+        with c3: nacionalidad = st.selectbox("Nacionalidad",     ["Mexicana","Extranjera"])
+
+        d1, d2, d3 = st.columns(3)
+        with d1: estado_civil = st.selectbox("Estado civil", ["Soltero","Casado","Divorciado","Viudo","Union Libre"])
+        with d2: regimen      = st.selectbox("Regimen",      ["N/A","Bienes Separados","Sociedad Conyugal"])
+        with d3: tipo_id      = st.selectbox("Tipo ID",      ["INE","Pasaporte","Forma Migratoria","Cedula"])
+        num_id = st.text_input("Numero de identificacion")
+
+        # ─── DOMICILIO ───
+        st.markdown('<div class="sec-label">🏠 Domicilio</div>', unsafe_allow_html=True)
+        v1, v2 = st.columns([1,2])
+        with v1: vivienda = st.selectbox("Situacion vivienda", ["Propia","Renta","Hipoteca","Familiar"])
+        with v2: tiempo_res = st.text_input("Tiempo de residencia", placeholder="Ej: 5 anos 3 meses")
+
+        d1, d2, d3 = st.columns([3,1,1])
+        with d1: calle    = st.text_input("Calle / Avenida")
+        with d2: num_ext  = st.text_input("No. Ext")
+        with d3: num_int  = st.text_input("No. Int")
+
+        e1, e2, e3 = st.columns(3)
+        with e1: colonia       = st.text_input("Colonia")
+        with e2: entre_calles  = st.text_input("Entre calles")
+        with e3: municipio     = st.text_input("Delegacion/Municipio")
+
+        f1, f2, f3 = st.columns(3)
+        with f1: ciudad = st.text_input("Ciudad")
+        with f2: estado = st.text_input("Estado")
+        with f3: cp     = st.text_input("C.P.")
+
+        g1, g2 = st.columns(2)
+        with g1: tel_fijo    = st.text_input("Telefono fijo")
+        with g2: tel_recados = st.text_input("Telefono para recados")
+
+        # ─── OCUPACION ───
+        st.markdown('<div class="sec-label">💼 Ocupacion</div>', unsafe_allow_html=True)
+        o1, o2, o3 = st.columns(3)
+        with o1: ocupacion = st.selectbox("Ocupacion", ["Privado","Publico","Independiente","Jubilado","Ama de casa","Estudiante","Otro"])
+        with o2: contrato  = st.selectbox("Tipo contrato", ["Fijo","Temporal"])
+        with o3: antiguedad_emp = st.text_input("Antiguedad empleo")
+
+        emp1, emp2 = st.columns(2)
+        with emp1: empresa = st.text_input("Nombre de la empresa")
+        with emp2: jefe_inm = st.text_input("Jefe inmediato")
+
+        ing1, ing2, ing3 = st.columns(3)
+        with ing1: ing_fijo     = st.text_input("Ingreso fijo $", value=str(r.get("ingreso","")))
+        with ing2: ing_variable = st.text_input("Ingreso variable $")
+        with ing3: ahorro       = st.text_input("Ahorro/Cheques $")
+
+        tel_emp1, tel_emp2 = st.columns(2)
+        with tel_emp1: tel_empresa = st.text_input("Telefono empresa")
+        with tel_emp2: tel_alterno = st.text_input("Telefono alterno")
+
+        descripcion_empleo = st.text_input("Descripcion del empleo o actividad")
+
+        # ─── REFERENCIAS PERSONALES ───
+        st.markdown('<div class="sec-label">👥 Referencias Personales (3 obligatorias)</div>', unsafe_allow_html=True)
+        refs = {}
+        for i in range(1, 4):
+            st.markdown(f"<div style='font-size:0.72rem;color:#c3002f;font-weight:600;margin-top:8px;'>Referencia #{i}</div>", unsafe_allow_html=True)
+            r1, r2, r3, r4 = st.columns(4)
+            with r1: refs[f"ref{i}_ap"]   = st.text_input(f"Apellido paterno #{i}", key=f"ref_ap_{i}")
+            with r2: refs[f"ref{i}_am"]   = st.text_input(f"Apellido materno #{i}", key=f"ref_am_{i}")
+            with r3: refs[f"ref{i}_nom"]  = st.text_input(f"Primer nombre #{i}",     key=f"ref_nom_{i}")
+            with r4: refs[f"ref{i}_parentesco"] = st.text_input(f"Parentesco #{i}",  key=f"ref_par_{i}")
+            t1, t2, t3 = st.columns(3)
+            with t1: refs[f"ref{i}_tel_fijo"] = st.text_input(f"Tel fijo #{i}",     key=f"ref_tf_{i}")
+            with t2: refs[f"ref{i}_tel_cel"]  = st.text_input(f"Tel celular #{i}",   key=f"ref_tc_{i}")
+            with t3: refs[f"ref{i}_horario"]  = st.text_input(f"Horario localizar #{i}", key=f"ref_hr_{i}")
+
+        # ─── BOTON GENERAR ───
+        st.markdown("<div style='margin:14px 0'></div>", unsafe_allow_html=True)
+        submit_sol = st.form_submit_button("📋 GENERAR PDF DE SOLICITUD", use_container_width=True)
+
+        if submit_sol:
+            datos_sol = {
+                # Asesor
+                "asesor": nom_asesor_sol, "rfc_asesor": rfc_asesor_sol, "fuente_venta": fuente_venta,
+                # Tipo
+                "tipo_credito": tipo_credito, "tipo_persona": tipo_persona,
+                "recompra": recompra, "empleado": empleado,
+                # Acreditado
+                "apellido_paterno": ap_paterno, "apellido_materno": ap_materno,
+                "primer_nombre": pn_nombre, "segundo_nombre": sn_nombre,
+                "nombre_completo": f"{ap_paterno} {ap_materno} {pn_nombre} {sn_nombre}".strip(),
+                "fecha_nacimiento": fecha_nac, "rfc_cliente": rfc_cli, "curp": curp,
+                "sexo": sexo, "pais_nacimiento": pais_nac, "estado_nacimiento": estado_nac,
+                "nacionalidad": nacionalidad, "estado_civil": estado_civil,
+                "regimen": regimen, "tipo_id": tipo_id, "num_id": num_id,
+                "celular": r.get("telefono",""), "correo_cliente": r.get("correo",""),
+                # Domicilio
+                "vivienda": vivienda, "tiempo_residencia": tiempo_res,
+                "calle": calle, "num_ext": num_ext, "num_int": num_int,
+                "colonia": colonia, "entre_calles": entre_calles, "municipio": municipio,
+                "ciudad": ciudad, "estado": estado, "cp": cp,
+                "tel_fijo": tel_fijo, "tel_recados": tel_recados,
+                # Ocupacion
+                "ocupacion": ocupacion, "contrato": contrato,
+                "empresa": empresa, "jefe_inmediato": jefe_inm,
+                "antiguedad_empleo": antiguedad_emp,
+                "ingreso_fijo": ing_fijo, "ingreso_variable": ing_variable, "ahorro": ahorro,
+                "tel_empresa": tel_empresa, "tel_alterno": tel_alterno,
+                "descripcion_empleo": descripcion_empleo,
+                # Referencias
+                **refs,
+            }
+            buf_sol = generar_pdf_solicitud(datos_sol)
+            st.session_state.pdf_solicitud_buf = buf_sol.getvalue()
+            st.session_state.pdf_solicitud_nombre = f"solicitud_{ap_paterno}_{pn_nombre}".replace(" ","_") + ".pdf"
+            # Guardar datos en Sheets
+            try:
+                guardar_solicitud_sheets({**datos_sol, "score_sc": r.get("sc",""),
+                                          "score_prob": r.get("prob",0), "decision": r.get("decision","")})
+            except: pass
+            st.success("✅ PDF de solicitud generado correctamente")
+
+    # Botón de descarga fuera del form
+    if st.session_state.get("pdf_solicitud_buf"):
+        st.download_button(
+            "📥 Descargar PDF de Solicitud",
+            data=st.session_state.pdf_solicitud_buf,
+            file_name=st.session_state.pdf_solicitud_nombre,
+            mime="application/pdf",
+            use_container_width=True,
+            key="dl_solicitud"
+        )
