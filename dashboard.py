@@ -17,15 +17,7 @@ html,body,.stApp,[data-testid="stAppViewContainer"],[data-testid="stMain"] {
 }
 .block-container { padding: 1.5rem 2rem !important; max-width: 100% !important; }
 /* Header */
-.dash-header {
-    background: #111; padding: 14px 24px; margin: -1.5rem -2rem 1.5rem;
-    display: flex; align-items: center; gap: 16px;
-}
-.dash-title { font-family:'Rajdhani',sans-serif; font-size:1.4rem;
-    font-weight:700; color:#fff; letter-spacing:0.08em; }
-.dash-sub { font-size:0.65rem; color:#c3002f; letter-spacing:0.16em;
-    text-transform:uppercase; margin-top:2px; }
-.red-line { height:2px; background:#c3002f; margin: 0 -2rem 1.5rem; }
+/* header limpio */
 /* Métricas */
 .metric-row { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px; }
 .metric-card { background:#fff; border:0.5px solid #e0e0e0; border-radius:10px;
@@ -137,13 +129,15 @@ def cargar_datos():
 
 # ── HEADER ────────────────────────────────────────────────────────
 st.markdown("""
-<div class="dash-header">
+<div style="display:flex;align-items:center;gap:14px;padding:10px 0 8px;">
   <div>
-    <div class="dash-title">AutoScore AI — Dashboard</div>
-    <div class="dash-sub">Panel F&amp;I · Solo uso interno</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;
+        color:#111;letter-spacing:0.08em;">AutoScore <span style="color:#c3002f;">AI</span></div>
+    <div style="font-size:0.65rem;color:#c3002f;letter-spacing:0.16em;
+        text-transform:uppercase;">Dashboard F&amp;I · Solo uso interno</div>
   </div>
 </div>
-<div class="red-line"></div>
+<div style="height:2px;background:#c3002f;margin-bottom:16px;"></div>
 """, unsafe_allow_html=True)
 
 # ── CARGAR Y VALIDAR ──────────────────────────────────────────────
