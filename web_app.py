@@ -42,8 +42,256 @@ def guardar_perfil_sheets(datos: dict):
         pass  # No interrumpir el análisis si Sheets falla
 
 
-def guardar_solicitud_sheets(datos: dict):
-    """Guarda solicitud completa en hoja 'Solicitudes' del mismo Sheet."""
+def generar_folio_unico() -> str:
+    """Genera un folio unico tipo SOL-AAAA-NNNN consultando el Sheet."""
+    import datetime
+    año = datetime.datetime.now().year
+    try:
+        from google.oauth2.service_account import Credentials
+        from googleapiclient.discovery import build
+        SHEET_ID  = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
+        scopes = ["https://www.googleapis.com/auth/spreadsheets",
+                  "https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]), scopes=scopes)
+        service = build("sheets", "v4", credentials=creds)
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID,
+            range="'Solicitudes'!A2:A10000"
+        ).execute()
+        valores = result.get("values", [])
+        # Contar folios del año actual
+        prefijo = f"SOL-{año}-"
+        contador = sum(1 for r in valores if r and r[0].startswith(prefijo))
+        return f"{prefijo}{contador+1:04d}"
+    except Exception:
+        # Fallback: timestamp si falla Sheets
+        ts = datetime.datetime.now().strftime("%H%M%S")
+        return f"SOL-{año}-{ts}"
+
+
+def buscar_solicitud_por_folio(folio: str) -> dict:
+    """Busca una solicitud por folio y retorna los datos para precargar el form."""
+    import json
+    try:
+        from google.oauth2.service_account import Credentials
+        from googleapiclient.discovery import build
+        SHEET_ID  = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
+        scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly",
+                  "https://www.googleapis.com/auth/drive.readonly"]
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]), scopes=scopes)
+        service = build("sheets", "v4", credentials=creds)
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID,
+            range="'Solicitudes'!A1:Z10000"
+        ).execute()
+        valores = result.get("values", [])
+        if len(valores) < 2:
+            return None
+        headers = valores[0]
+        for row in valores[1:]:
+            while len(row) < len(headers):
+                row.append("")
+            registro = dict(zip(headers, row))
+            if registro.get("Folio","").strip().upper() == folio.strip().upper():
+                # Parsear el JSON con todos los datos
+                try:
+                    datos = json.loads(registro.get("Datos_JSON","{}"))
+                    datos["__folio"]    = registro.get("Folio","")
+                    datos["__fecha"]    = registro.get("Fecha","")
+                    datos["__hora"]     = registro.get("Hora","")
+                    datos["__row_idx"]  = valores.index(row) + 1
+                    return datos
+                except Exception:
+                    return None
+        return None
+    except Exception:
+        return None
+
+
+def actualizar_solicitud_sheets(folio: str, datos: dict) -> bool:
+    """Actualiza una solicitud existente identificada por folio."""
+    try:
+        from google.oauth2.service_account import Credentials
+        from googleapiclient.discovery import build
+        import datetime, json
+        SHEET_ID  = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
+        scopes = ["https://www.googleapis.com/auth/spreadsheets",
+                  "https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]), scopes=scopes)
+        service = build("sheets", "v4", credentials=creds)
+
+        # Buscar la fila del folio
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID, range="'Solicitudes'!A1:A10000"
+        ).execute()
+        valores = result.get("values", [])
+        row_idx = None
+        for i, row in enumerate(valores):
+            if row and row[0].strip().upper() == folio.strip().upper():
+                row_idx = i + 1
+                break
+        if not row_idx:
+            return False
+
+        ahora = datetime.datetime.now()
+        fila = [
+            folio,
+            ahora.strftime("%d/%m/%Y"), ahora.strftime("%H:%M:%S"),
+            datos.get("asesor",""), datos.get("rfc_asesor",""), datos.get("fuente_venta",""),
+            datos.get("nombre_completo",""), datos.get("rfc_cliente",""), datos.get("curp",""),
+            datos.get("celular",""), datos.get("correo_cliente",""),
+            datos.get("score_sc",""), datos.get("score_prob",0), datos.get("decision",""),
+            datos.get("tipo_credito",""), datos.get("tipo_persona",""),
+            datos.get("estado_civil",""), datos.get("vivienda",""),
+            datos.get("ciudad",""), datos.get("estado",""),
+            datos.get("ocupacion",""), datos.get("empresa",""),
+            datos.get("ingreso_fijo",""), datos.get("antiguedad_empleo",""),
+            json.dumps(datos, ensure_ascii=False)
+        ]
+        service.spreadsheets().values().update(
+            spreadsheetId=SHEET_ID,
+            range=f"'Solicitudes'!A{row_idx}",
+            valueInputOption="USER_ENTERED",
+            body={"values": [fila]}
+        ).execute()
+        return True
+    except Exception:
+        return False
+
+
+def generar_folio_perfil() -> str:
+    """Genera folio unico tipo PER-AAAA-NNNN para analisis."""
+    import datetime
+    año = datetime.datetime.now().year
+    try:
+        from google.oauth2.service_account import Credentials
+        from googleapiclient.discovery import build
+        SHEET_ID  = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
+        scopes = ["https://www.googleapis.com/auth/spreadsheets",
+                  "https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]), scopes=scopes)
+        service = build("sheets", "v4", credentials=creds)
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID,
+            range="\'AutoScore Perfiles\'!A2:A10000"
+        ).execute()
+        valores = result.get("values", [])
+        prefijo = f"PER-{año}-"
+        contador = sum(1 for r in valores if r and r[0].startswith(prefijo))
+        return f"{prefijo}{contador+1:04d}"
+    except Exception:
+        ts = datetime.datetime.now().strftime("%H%M%S")
+        return f"PER-{año}-{ts}"
+
+
+def buscar_perfil_duplicado(telefono: str, nombre: str) -> dict:
+    """Busca si existe perfil del mismo cliente en las ultimas 24h."""
+    import datetime
+    try:
+        from google.oauth2.service_account import Credentials
+        from googleapiclient.discovery import build
+        SHEET_ID  = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
+        scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly",
+                  "https://www.googleapis.com/auth/drive.readonly"]
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]), scopes=scopes)
+        service = build("sheets", "v4", credentials=creds)
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID, range="\'AutoScore Perfiles\'!A1:S10000"
+        ).execute()
+        valores = result.get("values", [])
+        if len(valores) < 2:
+            return None
+        headers = valores[0]
+        hoy = datetime.date.today()
+        ayer = hoy - datetime.timedelta(days=1)
+
+        # Buscar de mas reciente a mas antiguo
+        for row in reversed(valores[1:]):
+            while len(row) < len(headers):
+                row.append("")
+            registro = dict(zip(headers, row))
+            tel_reg = (registro.get("Tel_Cliente","") or "").strip()
+            nom_reg = (registro.get("Cliente","") or "").strip().upper()
+            fecha_reg = registro.get("Fecha","")
+
+            # Coincide por telefono o por nombre
+            coincide = False
+            if telefono and tel_reg and telefono.strip() == tel_reg:
+                coincide = True
+            elif nombre and nom_reg and nombre.strip().upper() == nom_reg:
+                coincide = True
+
+            if coincide:
+                # Verificar si es de las ultimas 24h
+                try:
+                    f_parts = fecha_reg.split("/")
+                    f_obj = datetime.date(int(f_parts[2]), int(f_parts[1]), int(f_parts[0]))
+                    if f_obj >= ayer:
+                        return registro
+                except Exception:
+                    pass
+        return None
+    except Exception:
+        return None
+
+
+def actualizar_perfil_sheets(folio: str, datos: dict) -> bool:
+    """Actualiza un perfil existente identificado por folio."""
+    try:
+        from google.oauth2.service_account import Credentials
+        from googleapiclient.discovery import build
+        import datetime
+        SHEET_ID  = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
+        scopes = ["https://www.googleapis.com/auth/spreadsheets",
+                  "https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]), scopes=scopes)
+        service = build("sheets", "v4", credentials=creds)
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID, range="\'AutoScore Perfiles\'!A1:A10000"
+        ).execute()
+        valores = result.get("values", [])
+        row_idx = None
+        for i, row in enumerate(valores):
+            if row and row[0].strip().upper() == folio.strip().upper():
+                row_idx = i + 1
+                break
+        if not row_idx:
+            return False
+
+        ahora = datetime.datetime.now()
+        fila = [
+            folio,
+            ahora.strftime("%d/%m/%Y"), ahora.strftime("%H:%M:%S"),
+            datos.get("asesor",""), datos.get("telefono_asesor",""),
+            datos.get("nombre",""), datos.get("telefono",""),
+            datos.get("sc",""), datos.get("prob",0),
+            datos.get("decision",""), datos.get("cap_pago",0),
+            datos.get("mensualidad",0),
+            round(float(datos.get("enganche_pct",0) or 0), 1),
+            datos.get("temp",""), datos.get("inv",""),
+            ", ".join(datos.get("condicionamientos",[])),
+            datos.get("plan",""),
+            datos.get("ingreso",0), datos.get("tipo_ingreso",""),
+        ]
+        service.spreadsheets().values().update(
+            spreadsheetId=SHEET_ID,
+            range=f"\'AutoScore Perfiles\'!A{row_idx}",
+            valueInputOption="USER_ENTERED",
+            body={"values": [fila]}
+        ).execute()
+        return True
+    except Exception:
+        return False
+
+
+def guardar_solicitud_sheets(datos: dict, folio: str = None):
+    """Guarda solicitud nueva en hoja 'Solicitudes' con folio unico."""
     try:
         from google.oauth2.service_account import Credentials
         from googleapiclient.discovery import build
@@ -57,8 +305,12 @@ def guardar_solicitud_sheets(datos: dict):
             dict(st.secrets["gcp_service_account"]), scopes=scopes)
         service = build("sheets", "v4", credentials=creds)
 
+        if not folio:
+            folio = generar_folio_unico()
+
         ahora = datetime.datetime.now()
         fila = [
+            folio,
             ahora.strftime("%d/%m/%Y"), ahora.strftime("%H:%M:%S"),
             datos.get("asesor",""), datos.get("rfc_asesor",""), datos.get("fuente_venta",""),
             datos.get("nombre_completo",""), datos.get("rfc_cliente",""), datos.get("curp",""),
@@ -69,7 +321,6 @@ def guardar_solicitud_sheets(datos: dict):
             datos.get("ciudad",""), datos.get("estado",""),
             datos.get("ocupacion",""), datos.get("empresa",""),
             datos.get("ingreso_fijo",""), datos.get("antiguedad_empleo",""),
-            # Guardar el JSON completo para regenerar el PDF
             json.dumps(datos, ensure_ascii=False)
         ]
         service.spreadsheets().values().append(
@@ -79,8 +330,9 @@ def guardar_solicitud_sheets(datos: dict):
             insertDataOption="INSERT_ROWS",
             body={"values": [fila]}
         ).execute()
+        return folio
     except Exception:
-        pass  # Silencioso
+        return None
 import base64
 import os
 
@@ -1388,10 +1640,87 @@ if submitted:
     st.session_state.cotitular_activo    = (plan=="COTITULAR")
     st.session_state.cotitular_resultado = None
 
-    # Guardar en Google Sheets automáticamente
-    guardar_perfil_sheets({**st.session_state.resultado,
+    # Detectar perfil duplicado del mismo cliente en últimas 24h
+    datos_perfil = {**st.session_state.resultado,
         "ingreso": ingreso, "tipo_ingreso": tipo_ingreso,
-        "enganche_pct": enganche_pct})
+        "enganche_pct": enganche_pct}
+
+    perfil_dup = buscar_perfil_duplicado(telefono, nombre_cliente)
+    if perfil_dup and not st.session_state.get("decision_duplicado_tomada"):
+        # Guardar info para mostrar el aviso
+        st.session_state.perfil_duplicado     = perfil_dup
+        st.session_state.datos_perfil_pending = datos_perfil
+        st.session_state.decision_duplicado_tomada = False
+    else:
+        # Guardar normal
+        folio_nuevo = guardar_perfil_sheets(datos_perfil)
+        if folio_nuevo:
+            st.session_state.folio_perfil_actual = folio_nuevo
+        # Reset flag
+        st.session_state.decision_duplicado_tomada = False
+        st.session_state.perfil_duplicado = None
+
+# ── AVISO DE PERFIL DUPLICADO ─────────────────────────────────────
+if st.session_state.get("perfil_duplicado"):
+    pd_info = st.session_state.perfil_duplicado
+    st.markdown(f"""
+    <div style="background:#fffbeb;border:2px solid #f59e0b;border-left:5px solid #c3002f;
+        border-radius:10px;padding:14px 18px;margin:10px 0;">
+      <div style="font-size:0.9rem;color:#92400e;font-weight:700;margin-bottom:6px;">
+        ⚠️ Perfil duplicado detectado
+      </div>
+      <div style="font-size:0.78rem;color:#78350f;line-height:1.6;">
+        Ya existe un análisis reciente de este cliente:<br>
+        <b>Folio:</b> {pd_info.get('Folio','-')} &nbsp;·&nbsp;
+        <b>Fecha:</b> {pd_info.get('Fecha','-')} {pd_info.get('Hora','')} &nbsp;·&nbsp;
+        <b>Score:</b> {pd_info.get('Score','-')} ({pd_info.get('Probabilidad','-')}%)
+      </div>
+      <div style="font-size:0.74rem;color:#a16207;margin-top:8px;font-style:italic;">
+        ¿Es el mismo cliente con datos actualizados o un análisis distinto?
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+    cdup1, cdup2, cdup3 = st.columns([1,1,1])
+    with cdup1:
+        if st.button("💾 Actualizar el existente", use_container_width=True, key="btn_actualizar_dup"):
+            folio_existente = pd_info.get("Folio","")
+            if folio_existente:
+                ok = actualizar_perfil_sheets(folio_existente, st.session_state.datos_perfil_pending)
+                if ok:
+                    st.session_state.folio_perfil_actual = folio_existente
+                    st.success(f"✅ Análisis {folio_existente} actualizado")
+                else:
+                    st.error("No se pudo actualizar")
+            st.session_state.perfil_duplicado = None
+            st.session_state.decision_duplicado_tomada = True
+            st.rerun()
+    with cdup2:
+        if st.button("➕ Crear análisis nuevo", use_container_width=True, key="btn_crear_dup"):
+            folio_nuevo = guardar_perfil_sheets(st.session_state.datos_perfil_pending)
+            if folio_nuevo:
+                st.session_state.folio_perfil_actual = folio_nuevo
+                st.success(f"✅ Nuevo análisis creado: {folio_nuevo}")
+            st.session_state.perfil_duplicado = None
+            st.session_state.decision_duplicado_tomada = True
+            st.rerun()
+    with cdup3:
+        if st.button("✖ Descartar", use_container_width=True, key="btn_descartar_dup"):
+            st.session_state.perfil_duplicado = None
+            st.session_state.datos_perfil_pending = None
+            st.session_state.decision_duplicado_tomada = True
+            st.info("Análisis no guardado en el sistema")
+            st.rerun()
+
+# Mostrar folio del análisis actual si existe
+if st.session_state.get("folio_perfil_actual"):
+    st.markdown(f"""
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:3px solid #22c55e;
+        border-radius:7px;padding:7px 14px;margin:8px 0;font-size:0.78rem;color:#166534;">
+      📋 Análisis registrado con folio:
+      <b style="font-family:'Rajdhani',sans-serif;color:#c3002f;letter-spacing:0.04em;">
+      {st.session_state.folio_perfil_actual}</b>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ╔══════════════════════════════════════╗
 # ║   DERECHA — RESULTADO REESTRUCTURADO ║
@@ -1662,94 +1991,150 @@ if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud
     </div>
     """, unsafe_allow_html=True)
 
+    # ── BUSCADOR DE FOLIO ──────────────────────────────────────────
+    if "datos_precargados" not in st.session_state:
+        st.session_state.datos_precargados = {}
+    if "folio_actual" not in st.session_state:
+        st.session_state.folio_actual = None
+
+    st.markdown("""
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #c3002f;
+        border-radius:9px;padding:10px 14px;margin:8px 0 14px;">
+      <div style="font-size:0.78rem;color:#92400e;font-weight:600;">
+        🔍 ¿Editar una solicitud existente?
+      </div>
+      <div style="font-size:0.7rem;color:#a16207;margin-top:2px;">
+        Ingresa el folio (ej: SOL-2026-0001) para cargar los datos del cliente y solo modificar lo necesario.
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    bf1, bf2, bf3 = st.columns([3,1,1])
+    with bf1:
+        folio_input = st.text_input("Folio de solicitud", placeholder="SOL-2026-0001",
+                                     value=st.session_state.folio_actual or "", key="folio_buscar")
+    with bf2:
+        st.markdown("<div style='margin-top:22px'></div>", unsafe_allow_html=True)
+        if st.button("🔍 Buscar", key="btn_buscar_folio", use_container_width=True):
+            if folio_input.strip():
+                datos_enc = buscar_solicitud_por_folio(folio_input.strip())
+                if datos_enc:
+                    st.session_state.datos_precargados = datos_enc
+                    st.session_state.folio_actual = folio_input.strip().upper()
+                    st.success(f"✅ Solicitud {st.session_state.folio_actual} cargada — modifica los campos necesarios y guarda")
+                    st.rerun()
+                else:
+                    st.error(f"❌ Folio no encontrado: {folio_input}")
+            else:
+                st.warning("Ingresa un folio")
+    with bf3:
+        st.markdown("<div style='margin-top:22px'></div>", unsafe_allow_html=True)
+        if st.button("➕ Nueva", key="btn_nueva", use_container_width=True):
+            st.session_state.datos_precargados = {}
+            st.session_state.folio_actual = None
+            st.rerun()
+
+    if st.session_state.folio_actual:
+        st.markdown(f"""
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:3px solid #22c55e;
+            border-radius:9px;padding:8px 14px;margin:8px 0 14px;">
+          <div style="font-size:0.78rem;color:#166534;font-weight:600;">
+            ✏️ Editando: {st.session_state.folio_actual}
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Atajo a datos precargados
+    p = st.session_state.datos_precargados or {}
+
     with st.form("form_solicitud"):
         # ─── DATOS DEL ASESOR Y FUENTE DE VENTA ───
         st.markdown('<div class="sec-label">👔 Datos del Asesor y Fuente de Venta</div>', unsafe_allow_html=True)
         sa1, sa2, sa3 = st.columns([2,1,1])
-        with sa1: nom_asesor_sol = st.text_input("Nombre asesor", value=r.get("asesor",""))
-        with sa2: rfc_asesor_sol = st.text_input("RFC asesor", placeholder="XAXX010101000")
-        with sa3: fuente_venta = st.selectbox("Fuente de venta", ["BDC","PISO","CARTERA"])
+        with sa1: nom_asesor_sol = st.text_input("Nombre asesor", value=p.get("asesor",r.get("asesor","")))
+        with sa2: rfc_asesor_sol = st.text_input("RFC asesor", value=p.get("rfc_asesor",""), placeholder="XAXX010101000")
+        with sa3: fuente_venta = st.selectbox("Fuente de venta", ["BDC","PISO","CARTERA"], index=["BDC","PISO","CARTERA"].index(p.get("fuente_venta","BDC")) if p.get("fuente_venta") in ["BDC","PISO","CARTERA"] else 0)
 
         # ─── TIPO DE SOLICITUD Y CLIENTE ───
         st.markdown('<div class="sec-label">📝 Tipo de Solicitud</div>', unsafe_allow_html=True)
         tc1, tc2, tc3, tc4 = st.columns(4)
-        with tc1: tipo_credito = st.selectbox("Tipo de credito", ["Simple","Arrendamiento","Credi Taxi","Subete"])
-        with tc2: tipo_persona = st.selectbox("Tipo persona", ["PF","PFAE"])
-        with tc3: recompra     = st.selectbox("Recompra",     ["NO","SI"])
-        with tc4: empleado     = st.selectbox("Empleado",     ["NO","SI"])
+        with tc1: tipo_credito = st.selectbox("Tipo de credito", ["Simple","Arrendamiento","Credi Taxi","Subete"], index=["Simple","Arrendamiento","Credi Taxi","Subete"].index(p.get("tipo_credito","Simple")) if p.get("tipo_credito") in ["Simple","Arrendamiento","Credi Taxi","Subete"] else 0)
+        with tc2: tipo_persona = st.selectbox("Tipo persona", ["PF","PFAE"], index=0 if p.get("tipo_persona","PF")=="PF" else 1)
+        with tc3: recompra     = st.selectbox("Recompra",     ["NO","SI"], index=1 if p.get("recompra")=="SI" else 0)
+        with tc4: empleado     = st.selectbox("Empleado",     ["NO","SI"], index=1 if p.get("empleado")=="SI" else 0)
 
         # ─── DATOS DEL ACREDITADO ───
         st.markdown('<div class="sec-label">👤 Datos del Acreditado</div>', unsafe_allow_html=True)
         a1, a2, a3, a4 = st.columns(4)
         nombre_partes = (r.get("nombre","")+" ").split()
-        with a1: ap_paterno = st.text_input("Apellido paterno", value=nombre_partes[0] if len(nombre_partes)>0 else "")
-        with a2: ap_materno = st.text_input("Apellido materno", value=nombre_partes[1] if len(nombre_partes)>1 else "")
-        with a3: pn_nombre  = st.text_input("Primer nombre",    value=nombre_partes[2] if len(nombre_partes)>2 else "")
-        with a4: sn_nombre  = st.text_input("Segundo nombre",   value=nombre_partes[3] if len(nombre_partes)>3 else "")
+        with a1: ap_paterno = st.text_input("Apellido paterno", value=p.get("apellido_paterno", nombre_partes[0] if len(nombre_partes)>0 else ""))
+        with a2: ap_materno = st.text_input("Apellido materno", value=p.get("apellido_materno", nombre_partes[1] if len(nombre_partes)>1 else ""))
+        with a3: pn_nombre  = st.text_input("Primer nombre",    value=p.get("primer_nombre", nombre_partes[2] if len(nombre_partes)>2 else ""))
+        with a4: sn_nombre  = st.text_input("Segundo nombre",   value=p.get("segundo_nombre", nombre_partes[3] if len(nombre_partes)>3 else ""))
 
         b1, b2, b3, b4 = st.columns(4)
-        with b1: fecha_nac = st.text_input("Fecha nacimiento", placeholder="DD/MM/AAAA")
-        with b2: rfc_cli   = st.text_input("RFC cliente",       placeholder="XXXX000000XXX")
-        with b3: curp      = st.text_input("CURP",              placeholder="XXXX000000XXXXXX00")
-        with b4: sexo      = st.selectbox("Sexo",               ["M","F"])
+        with b1: fecha_nac = st.text_input("Fecha nacimiento", value=p.get("fecha_nacimiento",""), placeholder="DD/MM/AAAA")
+        with b2: rfc_cli   = st.text_input("RFC cliente", value=p.get("rfc_cliente",""), placeholder="XXXX000000XXX")
+        with b3: curp      = st.text_input("CURP", value=p.get("curp",""), placeholder="XXXX000000XXXXXX00")
+        with b4: sexo      = st.selectbox("Sexo", ["M","F"], index=1 if p.get("sexo")=="F" else 0)
 
         c1, c2, c3 = st.columns(3)
-        with c1: pais_nac     = st.text_input("Pais nacimiento", value="Mexico")
-        with c2: estado_nac   = st.text_input("Estado nacimiento")
-        with c3: nacionalidad = st.selectbox("Nacionalidad",     ["Mexicana","Extranjera"])
+        with c1: pais_nac     = st.text_input("Pais nacimiento", value=p.get("pais_nacimiento","Mexico"))
+        with c2: estado_nac   = st.text_input("Estado nacimiento", value=p.get("estado_nacimiento",""))
+        with c3: nacionalidad = st.selectbox("Nacionalidad", ["Mexicana","Extranjera"], index=1 if p.get("nacionalidad")=="Extranjera" else 0)
 
         d1, d2, d3 = st.columns(3)
-        with d1: estado_civil = st.selectbox("Estado civil", ["Soltero","Casado","Divorciado","Viudo","Union Libre"])
-        with d2: regimen      = st.selectbox("Regimen",      ["N/A","Bienes Separados","Sociedad Conyugal"])
-        with d3: tipo_id      = st.selectbox("Tipo ID",      ["INE","Pasaporte","Forma Migratoria","Cedula"])
-        num_id = st.text_input("Numero de identificacion")
+        with d1: estado_civil = st.selectbox("Estado civil", ["Soltero","Casado","Divorciado","Viudo","Union Libre"], index=["Soltero","Casado","Divorciado","Viudo","Union Libre"].index(p.get("estado_civil","Soltero")) if p.get("estado_civil") in ["Soltero","Casado","Divorciado","Viudo","Union Libre"] else 0)
+        with d2: regimen      = st.selectbox("Regimen", ["N/A","Bienes Separados","Sociedad Conyugal"], index=["N/A","Bienes Separados","Sociedad Conyugal"].index(p.get("regimen","N/A")) if p.get("regimen") in ["N/A","Bienes Separados","Sociedad Conyugal"] else 0)
+        with d3: tipo_id      = st.selectbox("Tipo ID", ["INE","Pasaporte","Forma Migratoria","Cedula"], index=["INE","Pasaporte","Forma Migratoria","Cedula"].index(p.get("tipo_id","INE")) if p.get("tipo_id") in ["INE","Pasaporte","Forma Migratoria","Cedula"] else 0)
+        num_id = st.text_input("Numero de identificacion", value=p.get("num_id",""))
 
         # ─── DOMICILIO ───
         st.markdown('<div class="sec-label">🏠 Domicilio</div>', unsafe_allow_html=True)
         v1, v2 = st.columns([1,2])
-        with v1: vivienda = st.selectbox("Situacion vivienda", ["Propia","Renta","Hipoteca","Familiar"])
-        with v2: tiempo_res = st.text_input("Tiempo de residencia", placeholder="Ej: 5 anos 3 meses")
+        with v1: vivienda = st.selectbox("Situacion vivienda", ["Propia","Renta","Hipoteca","Familiar"], index=["Propia","Renta","Hipoteca","Familiar"].index(p.get("vivienda","Propia")) if p.get("vivienda") in ["Propia","Renta","Hipoteca","Familiar"] else 0)
+        with v2: tiempo_res = st.text_input("Tiempo de residencia", value=p.get("tiempo_residencia",""), placeholder="Ej: 5 anos 3 meses")
 
         d1, d2, d3 = st.columns([3,1,1])
-        with d1: calle    = st.text_input("Calle / Avenida")
-        with d2: num_ext  = st.text_input("No. Ext")
-        with d3: num_int  = st.text_input("No. Int")
+        with d1: calle    = st.text_input("Calle / Avenida", value=p.get("calle",""))
+        with d2: num_ext  = st.text_input("No. Ext", value=p.get("num_ext",""))
+        with d3: num_int  = st.text_input("No. Int", value=p.get("num_int",""))
 
         e1, e2, e3 = st.columns(3)
-        with e1: colonia       = st.text_input("Colonia")
-        with e2: entre_calles  = st.text_input("Entre calles")
-        with e3: municipio     = st.text_input("Delegacion/Municipio")
+        with e1: colonia       = st.text_input("Colonia", value=p.get("colonia",""))
+        with e2: entre_calles  = st.text_input("Entre calles", value=p.get("entre_calles",""))
+        with e3: municipio     = st.text_input("Delegacion/Municipio", value=p.get("municipio",""))
 
         f1, f2, f3 = st.columns(3)
-        with f1: ciudad = st.text_input("Ciudad")
-        with f2: estado = st.text_input("Estado")
-        with f3: cp     = st.text_input("C.P.")
+        with f1: ciudad = st.text_input("Ciudad", value=p.get("ciudad",""))
+        with f2: estado = st.text_input("Estado", value=p.get("estado",""))
+        with f3: cp     = st.text_input("C.P.", value=p.get("cp",""))
 
         g1, g2 = st.columns(2)
-        with g1: tel_fijo    = st.text_input("Telefono fijo")
-        with g2: tel_recados = st.text_input("Telefono para recados")
+        with g1: tel_fijo    = st.text_input("Telefono fijo", value=p.get("tel_fijo",""))
+        with g2: tel_recados = st.text_input("Telefono para recados", value=p.get("tel_recados",""))
 
         # ─── OCUPACION ───
         st.markdown('<div class="sec-label">💼 Ocupacion</div>', unsafe_allow_html=True)
         o1, o2, o3 = st.columns(3)
-        with o1: ocupacion = st.selectbox("Ocupacion", ["Privado","Publico","Independiente","Jubilado","Ama de casa","Estudiante","Otro"])
-        with o2: contrato  = st.selectbox("Tipo contrato", ["Fijo","Temporal"])
-        with o3: antiguedad_emp = st.text_input("Antiguedad empleo")
+        with o1: ocupacion = st.selectbox("Ocupacion", ["Privado","Publico","Independiente","Jubilado","Ama de casa","Estudiante","Otro"], index=["Privado","Publico","Independiente","Jubilado","Ama de casa","Estudiante","Otro"].index(p.get("ocupacion","Privado")) if p.get("ocupacion") in ["Privado","Publico","Independiente","Jubilado","Ama de casa","Estudiante","Otro"] else 0)
+        with o2: contrato  = st.selectbox("Tipo contrato", ["Fijo","Temporal"], index=1 if p.get("contrato")=="Temporal" else 0)
+        with o3: antiguedad_emp = st.text_input("Antiguedad empleo", value=p.get("antiguedad_empleo",""))
 
         emp1, emp2 = st.columns(2)
-        with emp1: empresa = st.text_input("Nombre de la empresa")
-        with emp2: jefe_inm = st.text_input("Jefe inmediato")
+        with emp1: empresa = st.text_input("Nombre de la empresa", value=p.get("empresa",""))
+        with emp2: jefe_inm = st.text_input("Jefe inmediato", value=p.get("jefe_inmediato",""))
 
         ing1, ing2, ing3 = st.columns(3)
-        with ing1: ing_fijo     = st.text_input("Ingreso fijo $", value=str(r.get("ingreso","")))
-        with ing2: ing_variable = st.text_input("Ingreso variable $")
-        with ing3: ahorro       = st.text_input("Ahorro/Cheques $")
+        with ing1: ing_fijo     = st.text_input("Ingreso fijo $", value=p.get("ingreso_fijo", str(r.get("ingreso",""))))
+        with ing2: ing_variable = st.text_input("Ingreso variable $", value=p.get("ingreso_variable",""))
+        with ing3: ahorro       = st.text_input("Ahorro/Cheques $", value=p.get("ahorro",""))
 
         tel_emp1, tel_emp2 = st.columns(2)
-        with tel_emp1: tel_empresa = st.text_input("Telefono empresa")
-        with tel_emp2: tel_alterno = st.text_input("Telefono alterno")
+        with tel_emp1: tel_empresa = st.text_input("Telefono empresa", value=p.get("tel_empresa",""))
+        with tel_emp2: tel_alterno = st.text_input("Telefono alterno", value=p.get("tel_alterno",""))
 
-        descripcion_empleo = st.text_input("Descripcion del empleo o actividad")
+        descripcion_empleo = st.text_input("Descripcion del empleo o actividad", value=p.get("descripcion_empleo",""))
 
         # ─── REFERENCIAS PERSONALES ───
         st.markdown('<div class="sec-label">👥 Referencias Personales (3 obligatorias)</div>', unsafe_allow_html=True)
@@ -1757,27 +2142,26 @@ if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud
         for i in range(1, 4):
             st.markdown(f"<div style='font-size:0.72rem;color:#c3002f;font-weight:600;margin-top:8px;'>Referencia #{i}</div>", unsafe_allow_html=True)
             r1, r2, r3, r4 = st.columns(4)
-            with r1: refs[f"ref{i}_ap"]   = st.text_input(f"Apellido paterno #{i}", key=f"ref_ap_{i}")
-            with r2: refs[f"ref{i}_am"]   = st.text_input(f"Apellido materno #{i}", key=f"ref_am_{i}")
-            with r3: refs[f"ref{i}_nom"]  = st.text_input(f"Primer nombre #{i}",     key=f"ref_nom_{i}")
-            with r4: refs[f"ref{i}_parentesco"] = st.text_input(f"Parentesco #{i}",  key=f"ref_par_{i}")
+            with r1: refs[f"ref{i}_ap"]   = st.text_input(f"Apellido paterno #{i}", value=p.get(f"ref{i}_ap",""), key=f"ref_ap_{i}")
+            with r2: refs[f"ref{i}_am"]   = st.text_input(f"Apellido materno #{i}", value=p.get(f"ref{i}_am",""), key=f"ref_am_{i}")
+            with r3: refs[f"ref{i}_nom"]  = st.text_input(f"Primer nombre #{i}",     value=p.get(f"ref{i}_nom",""), key=f"ref_nom_{i}")
+            with r4: refs[f"ref{i}_parentesco"] = st.text_input(f"Parentesco #{i}",  value=p.get(f"ref{i}_parentesco",""), key=f"ref_par_{i}")
             t1, t2, t3 = st.columns(3)
-            with t1: refs[f"ref{i}_tel_fijo"] = st.text_input(f"Tel fijo #{i}",     key=f"ref_tf_{i}")
-            with t2: refs[f"ref{i}_tel_cel"]  = st.text_input(f"Tel celular #{i}",   key=f"ref_tc_{i}")
-            with t3: refs[f"ref{i}_horario"]  = st.text_input(f"Horario localizar #{i}", key=f"ref_hr_{i}")
+            with t1: refs[f"ref{i}_tel_fijo"] = st.text_input(f"Tel fijo #{i}",     value=p.get(f"ref{i}_tel_fijo",""), key=f"ref_tf_{i}")
+            with t2: refs[f"ref{i}_tel_cel"]  = st.text_input(f"Tel celular #{i}",   value=p.get(f"ref{i}_tel_cel",""), key=f"ref_tc_{i}")
+            with t3: refs[f"ref{i}_horario"]  = st.text_input(f"Horario localizar #{i}", value=p.get(f"ref{i}_horario",""), key=f"ref_hr_{i}")
 
-        # ─── BOTON GENERAR ───
+        # ─── BOTON GENERAR / ACTUALIZAR ───
         st.markdown("<div style='margin:14px 0'></div>", unsafe_allow_html=True)
-        submit_sol = st.form_submit_button("📋 GENERAR PDF DE SOLICITUD", use_container_width=True)
+        es_actualizacion = bool(st.session_state.folio_actual)
+        lbl_submit = "💾 ACTUALIZAR SOLICITUD" if es_actualizacion else "📋 GENERAR PDF DE SOLICITUD"
+        submit_sol = st.form_submit_button(lbl_submit, use_container_width=True)
 
         if submit_sol:
             datos_sol = {
-                # Asesor
                 "asesor": nom_asesor_sol, "rfc_asesor": rfc_asesor_sol, "fuente_venta": fuente_venta,
-                # Tipo
                 "tipo_credito": tipo_credito, "tipo_persona": tipo_persona,
                 "recompra": recompra, "empleado": empleado,
-                # Acreditado
                 "apellido_paterno": ap_paterno, "apellido_materno": ap_materno,
                 "primer_nombre": pn_nombre, "segundo_nombre": sn_nombre,
                 "nombre_completo": f"{ap_paterno} {ap_materno} {pn_nombre} {sn_nombre}".strip(),
@@ -1786,31 +2170,46 @@ if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud
                 "nacionalidad": nacionalidad, "estado_civil": estado_civil,
                 "regimen": regimen, "tipo_id": tipo_id, "num_id": num_id,
                 "celular": r.get("telefono",""), "correo_cliente": r.get("correo",""),
-                # Domicilio
                 "vivienda": vivienda, "tiempo_residencia": tiempo_res,
                 "calle": calle, "num_ext": num_ext, "num_int": num_int,
                 "colonia": colonia, "entre_calles": entre_calles, "municipio": municipio,
                 "ciudad": ciudad, "estado": estado, "cp": cp,
                 "tel_fijo": tel_fijo, "tel_recados": tel_recados,
-                # Ocupacion
                 "ocupacion": ocupacion, "contrato": contrato,
                 "empresa": empresa, "jefe_inmediato": jefe_inm,
                 "antiguedad_empleo": antiguedad_emp,
                 "ingreso_fijo": ing_fijo, "ingreso_variable": ing_variable, "ahorro": ahorro,
                 "tel_empresa": tel_empresa, "tel_alterno": tel_alterno,
                 "descripcion_empleo": descripcion_empleo,
-                # Referencias
                 **refs,
+                "score_sc": r.get("sc",""), "score_prob": r.get("prob",0),
+                "decision": r.get("decision",""),
             }
             buf_sol = generar_pdf_solicitud(datos_sol)
             st.session_state.pdf_solicitud_buf = buf_sol.getvalue()
-            st.session_state.pdf_solicitud_nombre = f"solicitud_{ap_paterno}_{pn_nombre}".replace(" ","_") + ".pdf"
-            # Guardar datos en Sheets
-            try:
-                guardar_solicitud_sheets({**datos_sol, "score_sc": r.get("sc",""),
-                                          "score_prob": r.get("prob",0), "decision": r.get("decision","")})
-            except: pass
-            st.success("✅ PDF de solicitud generado correctamente")
+
+            if es_actualizacion:
+                # Actualizar fila existente
+                ok = actualizar_solicitud_sheets(st.session_state.folio_actual, datos_sol)
+                if ok:
+                    st.session_state.pdf_solicitud_nombre = f"solicitud_{st.session_state.folio_actual}_{ap_paterno}".replace(" ","_") + ".pdf"
+                    st.success(f"✅ Solicitud {st.session_state.folio_actual} ACTUALIZADA correctamente")
+                else:
+                    st.warning("⚠️ No se pudo actualizar — se creará una nueva solicitud")
+                    folio_nuevo = guardar_solicitud_sheets(datos_sol)
+                    if folio_nuevo:
+                        st.session_state.folio_actual = folio_nuevo
+                        st.session_state.pdf_solicitud_nombre = f"solicitud_{folio_nuevo}.pdf"
+            else:
+                # Crear nueva solicitud
+                folio_nuevo = guardar_solicitud_sheets(datos_sol)
+                if folio_nuevo:
+                    st.session_state.folio_actual = folio_nuevo
+                    st.session_state.pdf_solicitud_nombre = f"solicitud_{folio_nuevo}.pdf"
+                    st.success(f"✅ Solicitud creada con folio {folio_nuevo}")
+                else:
+                    st.session_state.pdf_solicitud_nombre = f"solicitud_{ap_paterno}_{pn_nombre}".replace(" ","_") + ".pdf"
+                    st.warning("⚠️ PDF generado pero no se pudo guardar en el sistema")
 
     # Botón de descarga fuera del form
     if st.session_state.get("pdf_solicitud_buf"):
