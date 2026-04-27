@@ -443,47 +443,47 @@ GRIS_CLARO  = HexColor("#cccccc")
 GRIS_FONDO  = HexColor("#f5f5f5")
 GRIS_BLOCK  = HexColor("#e8e8e8")  # franjas de seccion
 
-def frect(c, x, y, w, h, color, lw=0):
+def s_frect(c, x, y, w, h, color, lw=0):
     c.setFillColor(color)
     c.rect(x, y, w, h, fill=1, stroke=0)
 
-def srect(c, x, y, w, h, color=GRIS_CLARO, lw=0.4):
+def s_srect(c, x, y, w, h, color=GRIS_CLARO, lw=0.4):
     c.setStrokeColor(color)
     c.setLineWidth(lw)
     c.rect(x, y, w, h, fill=0, stroke=1)
 
-def txt(c, s, x, y, font, size, color, align="left"):
+def s_txt(c, s, x, y, font, size, color, align="left"):
     c.setFont(font, size)
     c.setFillColor(color)
     if align=="center": c.drawCentredString(x, y, s)
     elif align=="right": c.drawRightString(x, y, s)
     else: c.drawString(x, y, s)
 
-def hline(c, x1, x2, y, color=GRIS_CLARO, lw=0.4):
+def s_hline(c, x1, x2, y, color=GRIS_CLARO, lw=0.4):
     c.setStrokeColor(color); c.setLineWidth(lw)
     c.line(x1, y, x2, y)
 
-def section_band(c, y, label, w_total=552):
+def s_section_band(c, y, label, w_total=552):
     """Banda gris con titulo de seccion."""
-    frect(c, 30, y-12, w_total, 14, GRIS_BLOCK)
-    txt(c, label, 36, y-3, "Helvetica-Bold", 7, NEGRO)
+    s_frect(c, 30, y-12, w_total, 14, GRIS_BLOCK)
+    s_txt(c, label, 36, y-3, "Helvetica-Bold", 7, NEGRO)
 
-def field(c, x, y, w, h, label, value="", show_border=True):
+def s_field(c, x, y, w, h, label, value="", show_border=True):
     """Campo del formulario con etiqueta arriba y valor adentro."""
     if show_border:
-        srect(c, x, y-h, w, h, GRIS_CLARO, 0.4)
+        s_srect(c, x, y-h, w, h, GRIS_CLARO, 0.4)
     # Etiqueta
-    txt(c, label, x+3, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    s_txt(c, label, x+3, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
     # Valor
     if value:
-        txt(c, str(value)[:60], x+4, y-h+4, "Helvetica-Bold", 7, NEGRO)
+        s_txt(c, str(value)[:60], x+4, y-h+4, "Helvetica-Bold", 7, NEGRO)
 
-def checkbox(c, x, y, label, marked=False, size=6):
+def s_checkbox(c, x, y, label, marked=False, size=6):
     """Checkbox con etiqueta."""
-    srect(c, x, y, size, size, NEGRO, 0.5)
+    s_srect(c, x, y, size, size, NEGRO, 0.5)
     if marked:
-        txt(c, "x", x+1.2, y+1, "Helvetica-Bold", 6, NEGRO)
-    txt(c, label, x+size+3, y+1, "Helvetica", 6, NEGRO)
+        s_txt(c, "x", x+1.2, y+1, "Helvetica-Bold", 6, NEGRO)
+    s_txt(c, label, x+size+3, y+1, "Helvetica", 6, NEGRO)
     return c.stringWidth(label, "Helvetica", 6) + size + 8
 
 def generar_pdf_solicitud(d: dict) -> BytesIO:
@@ -502,249 +502,249 @@ def generar_pdf_solicitud(d: dict) -> BytesIO:
     # ════════════════════════════════════════════════════════════
 
     # ── HEADER ───────────────────────────────────────────────────
-    txt(cv, "SOLICITUD DE CREDITO PERSONA FISICA", 30, H-30, "Helvetica-Bold", 12, NEGRO)
-    txt(cv, f"Fecha: {fecha}", W-30, H-30, "Helvetica", 9, NEGRO, "right")
-    frect(cv, 30, H-36, 552, 1.5, ROJO)
+    s_txt(cv, "SOLICITUD DE CREDITO PERSONA FISICA", 30, H-30, "Helvetica-Bold", 12, NEGRO)
+    s_txt(cv, f"Fecha: {fecha}", W-30, H-30, "Helvetica", 9, NEGRO, "right")
+    s_frect(cv, 30, H-36, 552, 1.5, ROJO)
 
     # ── DATOS DEL ASESOR Y FUENTE DE VENTA ────────────────────────
-    section_band(cv, H-50, "DATOS DEL ASESOR Y FUENTE DE VENTA")
+    s_section_band(cv, H-50, "DATOS DEL ASESOR Y FUENTE DE VENTA")
     y = H-54
-    field(cv, 30,  y, 220, 18, "Nombre del Asesor",   d.get("asesor",""))
-    field(cv, 250, y, 130, 18, "RFC del Asesor",      d.get("rfc_asesor",""))
+    s_field(cv, 30,  y, 220, 18, "Nombre del Asesor",   d.get("asesor",""))
+    s_field(cv, 250, y, 130, 18, "RFC del Asesor",      d.get("rfc_asesor",""))
     # Fuente de venta con checkboxes
-    srect(cv, 380, y-18, 202, 18, GRIS_CLARO, 0.4)
-    txt(cv, "Fuente de Venta", 383, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    s_srect(cv, 380, y-18, 202, 18, GRIS_CLARO, 0.4)
+    s_txt(cv, "Fuente de Venta", 383, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
     cx = 386
-    cx += checkbox(cv, cx, y-14, "BDC",      d.get("fuente_venta")=="BDC")
-    cx += checkbox(cv, cx, y-14, "PISO",     d.get("fuente_venta")=="PISO")
-    cx += checkbox(cv, cx, y-14, "CARTERA",  d.get("fuente_venta")=="CARTERA")
+    cx += s_checkbox(cv, cx, y-14, "BDC",      d.get("fuente_venta")=="BDC")
+    cx += s_checkbox(cv, cx, y-14, "PISO",     d.get("fuente_venta")=="PISO")
+    cx += s_checkbox(cv, cx, y-14, "CARTERA",  d.get("fuente_venta")=="CARTERA")
 
     # ── TIPO DE SOLICITUD ────────────────────────────────────────
     y -= 28
-    section_band(cv, y, "TIPO DE SOLICITUD")
+    s_section_band(cv, y, "TIPO DE SOLICITUD")
     y -= 16
     cx = 36
-    cx += checkbox(cv, cx, y, "Credito Simple",      d.get("tipo_credito")=="Simple")
-    cx += checkbox(cv, cx, y, "Arrendamiento",        d.get("tipo_credito")=="Arrendamiento")
-    cx += checkbox(cv, cx, y, "Credi Taxi",           d.get("tipo_credito")=="Credi Taxi")
-    cx += checkbox(cv, cx, y, "Subete",               d.get("tipo_credito")=="Subete")
-    cx += checkbox(cv, cx, y, "Correo electronico",   d.get("tipo_credito")=="Correo")
-    cx += checkbox(cv, cx, y, "Redes Sociales",       d.get("tipo_credito")=="Redes")
+    cx += s_checkbox(cv, cx, y, "Credito Simple",      d.get("tipo_credito")=="Simple")
+    cx += s_checkbox(cv, cx, y, "Arrendamiento",        d.get("tipo_credito")=="Arrendamiento")
+    cx += s_checkbox(cv, cx, y, "Credi Taxi",           d.get("tipo_credito")=="Credi Taxi")
+    cx += s_checkbox(cv, cx, y, "Subete",               d.get("tipo_credito")=="Subete")
+    cx += s_checkbox(cv, cx, y, "Correo electronico",   d.get("tipo_credito")=="Correo")
+    cx += s_checkbox(cv, cx, y, "Redes Sociales",       d.get("tipo_credito")=="Redes")
 
     # ── IDENTIFICACION DEL CLIENTE ───────────────────────────────
     y -= 14
-    section_band(cv, y, "IDENTIFICACION DEL CLIENTE")
+    s_section_band(cv, y, "IDENTIFICACION DEL CLIENTE")
     y -= 16
     cx = 36
-    cx += checkbox(cv, cx, y, "Persona Fisica",                  d.get("tipo_persona")=="PF")
-    cx += checkbox(cv, cx, y, "Persona Fisica Actividad Empr.",  d.get("tipo_persona")=="PFAE")
-    cx += checkbox(cv, cx, y+0, "Cliente Recompra:",  False, 0)
-    cx += checkbox(cv, cx, y, "SI",  d.get("recompra")=="SI")
-    cx += checkbox(cv, cx, y, "NO",  d.get("recompra")=="NO")
-    cx += checkbox(cv, cx, y+0, "Empleado:", False, 0)
-    cx += checkbox(cv, cx, y, "SI",  d.get("empleado")=="SI")
-    cx += checkbox(cv, cx, y, "NO",  d.get("empleado")=="NO")
+    cx += s_checkbox(cv, cx, y, "Persona Fisica",                  d.get("tipo_persona")=="PF")
+    cx += s_checkbox(cv, cx, y, "Persona Fisica Actividad Empr.",  d.get("tipo_persona")=="PFAE")
+    cx += s_checkbox(cv, cx, y+0, "Cliente Recompra:",  False, 0)
+    cx += s_checkbox(cv, cx, y, "SI",  d.get("recompra")=="SI")
+    cx += s_checkbox(cv, cx, y, "NO",  d.get("recompra")=="NO")
+    cx += s_checkbox(cv, cx, y+0, "Empleado:", False, 0)
+    cx += s_checkbox(cv, cx, y, "SI",  d.get("empleado")=="SI")
+    cx += s_checkbox(cv, cx, y, "NO",  d.get("empleado")=="NO")
 
     # ── DATOS DEL ACREDITADO ─────────────────────────────────────
     y -= 14
-    section_band(cv, y, "DATOS DEL ACREDITADO")
+    s_section_band(cv, y, "DATOS DEL ACREDITADO")
     y -= 4
 
     # Fila 1: Apellidos y nombres (4 cols)
-    field(cv, 30,  y,  138, 18, "Apellido Paterno",  d.get("apellido_paterno",""))
-    field(cv, 168, y,  138, 18, "Apellido Materno",  d.get("apellido_materno",""))
-    field(cv, 306, y,  138, 18, "Primer Nombre",     d.get("primer_nombre",""))
-    field(cv, 444, y,  138, 18, "Segundo Nombre",    d.get("segundo_nombre",""))
+    s_field(cv, 30,  y,  138, 18, "Apellido Paterno",  d.get("apellido_paterno",""))
+    s_field(cv, 168, y,  138, 18, "Apellido Materno",  d.get("apellido_materno",""))
+    s_field(cv, 306, y,  138, 18, "Primer Nombre",     d.get("primer_nombre",""))
+    s_field(cv, 444, y,  138, 18, "Segundo Nombre",    d.get("segundo_nombre",""))
 
     y -= 22
     # Fila 2: Fecha nacimiento, RFC, CURP, Pais, Estado, Sexo
-    field(cv, 30,  y, 78, 18, "Fecha de Nacimiento", d.get("fecha_nacimiento",""))
-    field(cv, 108, y, 90, 18, "RFC (con Homoclave)", d.get("rfc_cliente",""))
-    field(cv, 198, y, 86, 18, "CURP",                 d.get("curp",""))
-    field(cv, 284, y, 90, 18, "Pais de nacimiento",   d.get("pais_nacimiento","Mexico"))
-    field(cv, 374, y, 100,18, "Estado de nacimiento", d.get("estado_nacimiento",""))
+    s_field(cv, 30,  y, 78, 18, "Fecha de Nacimiento", d.get("fecha_nacimiento",""))
+    s_field(cv, 108, y, 90, 18, "RFC (con Homoclave)", d.get("rfc_cliente",""))
+    s_field(cv, 198, y, 86, 18, "CURP",                 d.get("curp",""))
+    s_field(cv, 284, y, 90, 18, "Pais de nacimiento",   d.get("pais_nacimiento","Mexico"))
+    s_field(cv, 374, y, 100,18, "Estado de nacimiento", d.get("estado_nacimiento",""))
     # Sexo con checkboxes
-    srect(cv, 474, y-18, 108, 18, GRIS_CLARO, 0.4)
-    txt(cv, "Sexo", 477, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    s_srect(cv, 474, y-18, 108, 18, GRIS_CLARO, 0.4)
+    s_txt(cv, "Sexo", 477, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
     cx = 480
-    cx += checkbox(cv, cx, y-14, "F",  d.get("sexo")=="F")
-    cx += checkbox(cv, cx, y-14, "M",  d.get("sexo")=="M")
+    cx += s_checkbox(cv, cx, y-14, "F",  d.get("sexo")=="F")
+    cx += s_checkbox(cv, cx, y-14, "M",  d.get("sexo")=="M")
 
     y -= 22
     # Fila 3: Nacionalidad, Numero celular, Correo
-    srect(cv, 30, y-18, 130, 18, GRIS_CLARO, 0.4)
-    txt(cv, "Nacionalidad", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    s_srect(cv, 30, y-18, 130, 18, GRIS_CLARO, 0.4)
+    s_txt(cv, "Nacionalidad", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
     cx = 36
-    cx += checkbox(cv, cx, y-14, "Mexicana",   d.get("nacionalidad")=="Mexicana")
-    cx += checkbox(cv, cx, y-14, "Extranjera", d.get("nacionalidad")=="Extranjera")
+    cx += s_checkbox(cv, cx, y-14, "Mexicana",   d.get("nacionalidad")=="Mexicana")
+    cx += s_checkbox(cv, cx, y-14, "Extranjera", d.get("nacionalidad")=="Extranjera")
 
-    field(cv, 160, y, 120, 18, "Numero de Celular",  d.get("celular",""))
-    field(cv, 280, y, 302, 18, "Correo electronico",  d.get("correo_cliente",""))
+    s_field(cv, 160, y, 120, 18, "Numero de Celular",  d.get("celular",""))
+    s_field(cv, 280, y, 302, 18, "Correo electronico",  d.get("correo_cliente",""))
 
     y -= 22
     # Fila 4: Estado civil
-    srect(cv, 30, y-18, 552, 18, GRIS_CLARO, 0.4)
-    txt(cv, "Estado Civil", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    s_srect(cv, 30, y-18, 552, 18, GRIS_CLARO, 0.4)
+    s_txt(cv, "Estado Civil", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
     cx = 36
-    cx += checkbox(cv, cx, y-14, "Soltero",   d.get("estado_civil")=="Soltero")
-    cx += checkbox(cv, cx, y-14, "Casado",    d.get("estado_civil")=="Casado")
-    cx += checkbox(cv, cx, y-14, "Divorciado",d.get("estado_civil")=="Divorciado")
-    cx += checkbox(cv, cx, y-14, "Viudo",     d.get("estado_civil")=="Viudo")
-    cx += checkbox(cv, cx, y-14, "Union Libre",d.get("estado_civil")=="Union Libre")
+    cx += s_checkbox(cv, cx, y-14, "Soltero",   d.get("estado_civil")=="Soltero")
+    cx += s_checkbox(cv, cx, y-14, "Casado",    d.get("estado_civil")=="Casado")
+    cx += s_checkbox(cv, cx, y-14, "Divorciado",d.get("estado_civil")=="Divorciado")
+    cx += s_checkbox(cv, cx, y-14, "Viudo",     d.get("estado_civil")=="Viudo")
+    cx += s_checkbox(cv, cx, y-14, "Union Libre",d.get("estado_civil")=="Union Libre")
     cx += 10
-    txt(cv, "Regimen:", cx, y-13, "Helvetica-Bold", 5.5, GRIS_OSCURO)
+    s_txt(cv, "Regimen:", cx, y-13, "Helvetica-Bold", 5.5, GRIS_OSCURO)
     cx += 30
-    cx += checkbox(cv, cx, y-14, "Bienes Separados",  d.get("regimen")=="Bienes Separados")
-    cx += checkbox(cv, cx, y-14, "Sociedad Conyugal", d.get("regimen")=="Sociedad Conyugal")
+    cx += s_checkbox(cv, cx, y-14, "Bienes Separados",  d.get("regimen")=="Bienes Separados")
+    cx += s_checkbox(cv, cx, y-14, "Sociedad Conyugal", d.get("regimen")=="Sociedad Conyugal")
 
     y -= 22
     # Fila 5: Identificacion
-    srect(cv, 30, y-18, 432, 18, GRIS_CLARO, 0.4)
-    txt(cv, "Tipo de identificacion", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    s_srect(cv, 30, y-18, 432, 18, GRIS_CLARO, 0.4)
+    s_txt(cv, "Tipo de identificacion", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
     cx = 36
-    cx += checkbox(cv, cx, y-14, "Credencial Votar", d.get("tipo_id")=="INE")
-    cx += checkbox(cv, cx, y-14, "Pasaporte",         d.get("tipo_id")=="Pasaporte")
-    cx += checkbox(cv, cx, y-14, "Forma Migratoria",  d.get("tipo_id")=="Forma Migratoria")
-    cx += checkbox(cv, cx, y-14, "Cedula Profesional",d.get("tipo_id")=="Cedula")
-    field(cv, 462, y, 120, 18, "No. de Identificacion", d.get("num_id",""))
+    cx += s_checkbox(cv, cx, y-14, "Credencial Votar", d.get("tipo_id")=="INE")
+    cx += s_checkbox(cv, cx, y-14, "Pasaporte",         d.get("tipo_id")=="Pasaporte")
+    cx += s_checkbox(cv, cx, y-14, "Forma Migratoria",  d.get("tipo_id")=="Forma Migratoria")
+    cx += s_checkbox(cv, cx, y-14, "Cedula Profesional",d.get("tipo_id")=="Cedula")
+    s_field(cv, 462, y, 120, 18, "No. de Identificacion", d.get("num_id",""))
 
     # ── CONYUGE ──────────────────────────────────────────────────
     y -= 32
-    section_band(cv, y, "CONYUGE O CONCUBINO(A)")
+    s_section_band(cv, y, "CONYUGE O CONCUBINO(A)")
     y -= 4
-    field(cv, 30,  y, 138, 18, "Apellido Paterno",       d.get("c_apellido_paterno",""))
-    field(cv, 168, y, 138, 18, "Apellido Materno",       d.get("c_apellido_materno",""))
-    field(cv, 306, y, 138, 18, "Primer Nombre",          d.get("c_primer_nombre",""))
-    field(cv, 444, y, 80,  18, "Segundo Nombre",         d.get("c_segundo_nombre",""))
-    field(cv, 524, y, 58,  18, "Dependientes",           str(d.get("dependientes","")))
+    s_field(cv, 30,  y, 138, 18, "Apellido Paterno",       d.get("c_apellido_paterno",""))
+    s_field(cv, 168, y, 138, 18, "Apellido Materno",       d.get("c_apellido_materno",""))
+    s_field(cv, 306, y, 138, 18, "Primer Nombre",          d.get("c_primer_nombre",""))
+    s_field(cv, 444, y, 80,  18, "Segundo Nombre",         d.get("c_segundo_nombre",""))
+    s_field(cv, 524, y, 58,  18, "Dependientes",           str(d.get("dependientes","")))
 
     # ── DATOS DEL DOMICILIO ──────────────────────────────────────
     y -= 32
-    section_band(cv, y, "DATOS DEL DOMICILIO")
+    s_section_band(cv, y, "DATOS DEL DOMICILIO")
     y -= 4
     # Situacion vivienda
-    srect(cv, 30, y-18, 200, 18, GRIS_CLARO, 0.4)
-    txt(cv, "Situacion de Vivienda", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    s_srect(cv, 30, y-18, 200, 18, GRIS_CLARO, 0.4)
+    s_txt(cv, "Situacion de Vivienda", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
     cx = 36
-    cx += checkbox(cv, cx, y-14, "Propia",      d.get("vivienda")=="Propia")
-    cx += checkbox(cv, cx, y-14, "Renta",       d.get("vivienda")=="Renta")
-    cx += checkbox(cv, cx, y-14, "Hipoteca",    d.get("vivienda")=="Hipoteca")
-    cx += checkbox(cv, cx, y-14, "Familiar",    d.get("vivienda")=="Familiar")
+    cx += s_checkbox(cv, cx, y-14, "Propia",      d.get("vivienda")=="Propia")
+    cx += s_checkbox(cv, cx, y-14, "Renta",       d.get("vivienda")=="Renta")
+    cx += s_checkbox(cv, cx, y-14, "Hipoteca",    d.get("vivienda")=="Hipoteca")
+    cx += s_checkbox(cv, cx, y-14, "Familiar",    d.get("vivienda")=="Familiar")
 
-    field(cv, 230, y, 90, 18, "Valor Aproximado",        d.get("valor_vivienda",""))
-    field(cv, 320, y, 90, 18, "Valor Renta/Hipoteca",    d.get("valor_renta",""))
-    field(cv, 410, y, 86, 18, "Telefono Fijo",           d.get("tel_fijo",""))
-    field(cv, 496, y, 86, 18, "Tel. Recados",            d.get("tel_recados",""))
+    s_field(cv, 230, y, 90, 18, "Valor Aproximado",        d.get("valor_vivienda",""))
+    s_field(cv, 320, y, 90, 18, "Valor Renta/Hipoteca",    d.get("valor_renta",""))
+    s_field(cv, 410, y, 86, 18, "Telefono Fijo",           d.get("tel_fijo",""))
+    s_field(cv, 496, y, 86, 18, "Tel. Recados",            d.get("tel_recados",""))
 
     y -= 22
     # Direccion completa
-    field(cv, 30,  y, 250, 18, "Calle, Av. o Via",       d.get("calle",""))
-    field(cv, 280, y, 60,  18, "No. Ext.",               d.get("num_ext",""))
-    field(cv, 340, y, 60,  18, "No. Int.",               d.get("num_int",""))
-    field(cv, 400, y, 110, 18, "Colonia",                d.get("colonia",""))
-    field(cv, 510, y, 72,  18, "Pais Residencia",        d.get("pais_residencia","Mexico"))
+    s_field(cv, 30,  y, 250, 18, "Calle, Av. o Via",       d.get("calle",""))
+    s_field(cv, 280, y, 60,  18, "No. Ext.",               d.get("num_ext",""))
+    s_field(cv, 340, y, 60,  18, "No. Int.",               d.get("num_int",""))
+    s_field(cv, 400, y, 110, 18, "Colonia",                d.get("colonia",""))
+    s_field(cv, 510, y, 72,  18, "Pais Residencia",        d.get("pais_residencia","Mexico"))
 
     y -= 22
-    field(cv, 30,  y, 130, 18, "Entre calles",           d.get("entre_calles",""))
-    field(cv, 160, y, 100, 18, "Delegacion/Municipio",   d.get("municipio",""))
-    field(cv, 260, y, 90,  18, "Ciudad",                 d.get("ciudad",""))
-    field(cv, 350, y, 80,  18, "Estado",                 d.get("estado",""))
-    field(cv, 430, y, 50,  18, "C.P.",                   d.get("cp",""))
-    field(cv, 480, y, 102, 18, "Tiempo Residencia",      d.get("tiempo_residencia",""))
+    s_field(cv, 30,  y, 130, 18, "Entre calles",           d.get("entre_calles",""))
+    s_field(cv, 160, y, 100, 18, "Delegacion/Municipio",   d.get("municipio",""))
+    s_field(cv, 260, y, 90,  18, "Ciudad",                 d.get("ciudad",""))
+    s_field(cv, 350, y, 80,  18, "Estado",                 d.get("estado",""))
+    s_field(cv, 430, y, 50,  18, "C.P.",                   d.get("cp",""))
+    s_field(cv, 480, y, 102, 18, "Tiempo Residencia",      d.get("tiempo_residencia",""))
 
     # ── OCUPACION ────────────────────────────────────────────────
     y -= 32
-    section_band(cv, y, "OCUPACION DEL ACREDITADO")
+    s_section_band(cv, y, "OCUPACION DEL ACREDITADO")
     y -= 4
-    srect(cv, 30, y-18, 552, 18, GRIS_CLARO, 0.4)
-    txt(cv, "Ocupacion", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    s_srect(cv, 30, y-18, 552, 18, GRIS_CLARO, 0.4)
+    s_txt(cv, "Ocupacion", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
     cx = 36
-    cx += checkbox(cv, cx, y-14, "Empleado S. Privado",      d.get("ocupacion")=="Privado")
-    cx += checkbox(cv, cx, y-14, "Empleado S. Publico",      d.get("ocupacion")=="Publico")
-    cx += checkbox(cv, cx, y-14, "Independiente",            d.get("ocupacion")=="Independiente")
-    cx += checkbox(cv, cx, y-14, "Jubilado",                 d.get("ocupacion")=="Jubilado")
-    cx += checkbox(cv, cx, y-14, "Ama de casa",              d.get("ocupacion")=="Ama de casa")
-    cx += checkbox(cv, cx, y-14, "Estudiante",               d.get("ocupacion")=="Estudiante")
-    cx += checkbox(cv, cx, y-14, "Otro",                     d.get("ocupacion")=="Otro")
+    cx += s_checkbox(cv, cx, y-14, "Empleado S. Privado",      d.get("ocupacion")=="Privado")
+    cx += s_checkbox(cv, cx, y-14, "Empleado S. Publico",      d.get("ocupacion")=="Publico")
+    cx += s_checkbox(cv, cx, y-14, "Independiente",            d.get("ocupacion")=="Independiente")
+    cx += s_checkbox(cv, cx, y-14, "Jubilado",                 d.get("ocupacion")=="Jubilado")
+    cx += s_checkbox(cv, cx, y-14, "Ama de casa",              d.get("ocupacion")=="Ama de casa")
+    cx += s_checkbox(cv, cx, y-14, "Estudiante",               d.get("ocupacion")=="Estudiante")
+    cx += s_checkbox(cv, cx, y-14, "Otro",                     d.get("ocupacion")=="Otro")
 
     y -= 22
     # Tipo contrato + ingresos
-    srect(cv, 30, y-18, 200, 18, GRIS_CLARO, 0.4)
-    txt(cv, "Tipo de Contrato", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    s_srect(cv, 30, y-18, 200, 18, GRIS_CLARO, 0.4)
+    s_txt(cv, "Tipo de Contrato", 33, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
     cx = 36
-    cx += checkbox(cv, cx, y-14, "Fijo",      d.get("contrato")=="Fijo")
-    cx += checkbox(cv, cx, y-14, "Temporal",  d.get("contrato")=="Temporal")
-    field(cv, 230, y, 100, 18, "Ingreso Fijo $",     d.get("ingreso_fijo",""))
-    field(cv, 330, y, 90,  18, "Variable $",          d.get("ingreso_variable",""))
-    field(cv, 420, y, 80,  18, "Ahorro/Cheques $",    d.get("ahorro",""))
-    field(cv, 500, y, 82,  18, "Ingreso Acumulable",  d.get("ingreso_acumulable",""))
+    cx += s_checkbox(cv, cx, y-14, "Fijo",      d.get("contrato")=="Fijo")
+    cx += s_checkbox(cv, cx, y-14, "Temporal",  d.get("contrato")=="Temporal")
+    s_field(cv, 230, y, 100, 18, "Ingreso Fijo $",     d.get("ingreso_fijo",""))
+    s_field(cv, 330, y, 90,  18, "Variable $",          d.get("ingreso_variable",""))
+    s_field(cv, 420, y, 80,  18, "Ahorro/Cheques $",    d.get("ahorro",""))
+    s_field(cv, 500, y, 82,  18, "Ingreso Acumulable",  d.get("ingreso_acumulable",""))
 
     y -= 22
-    field(cv, 30,  y, 270, 18, "Nombre de la Empresa",  d.get("empresa",""))
-    field(cv, 300, y, 90,  18, "Fecha de Ingreso",       d.get("fecha_ingreso",""))
-    srect(cv, 390, y-18, 96, 18, GRIS_CLARO, 0.4)
-    txt(cv, "Nacionalidad Empresa", 393, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    s_field(cv, 30,  y, 270, 18, "Nombre de la Empresa",  d.get("empresa",""))
+    s_field(cv, 300, y, 90,  18, "Fecha de Ingreso",       d.get("fecha_ingreso",""))
+    s_srect(cv, 390, y-18, 96, 18, GRIS_CLARO, 0.4)
+    s_txt(cv, "Nacionalidad Empresa", 393, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
     cx = 396
-    cx += checkbox(cv, cx, y-14, "Mex",  d.get("nac_empresa")=="Mexicana")
-    cx += checkbox(cv, cx, y-14, "Ext",  d.get("nac_empresa")=="Extranjera")
-    srect(cv, 486, y-18, 96, 18, GRIS_CLARO, 0.4)
-    txt(cv, "Tipo Empresa", 489, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
+    cx += s_checkbox(cv, cx, y-14, "Mex",  d.get("nac_empresa")=="Mexicana")
+    cx += s_checkbox(cv, cx, y-14, "Ext",  d.get("nac_empresa")=="Extranjera")
+    s_srect(cv, 486, y-18, 96, 18, GRIS_CLARO, 0.4)
+    s_txt(cv, "Tipo Empresa", 489, y-3.5, "Helvetica", 5.5, GRIS_OSCURO)
     cx = 492
-    cx += checkbox(cv, cx, y-14, "Priv",  d.get("tipo_empresa")=="Privada")
-    cx += checkbox(cv, cx, y-14, "Pub",   d.get("tipo_empresa")=="Publica")
+    cx += s_checkbox(cv, cx, y-14, "Priv",  d.get("tipo_empresa")=="Privada")
+    cx += s_checkbox(cv, cx, y-14, "Pub",   d.get("tipo_empresa")=="Publica")
 
     y -= 22
-    field(cv, 30,  y, 552, 18, "Descripcion del empleo o actividad",  d.get("descripcion_empleo",""))
+    s_field(cv, 30,  y, 552, 18, "Descripcion del empleo o actividad",  d.get("descripcion_empleo",""))
 
     y -= 22
-    field(cv, 30,  y, 280, 18, "Actividad Especifica de la Empresa", d.get("actividad_empresa",""))
-    field(cv, 310, y, 136, 18, "Telefono Empresa",                    d.get("tel_empresa",""))
-    field(cv, 446, y, 136, 18, "Telefono Alterno",                    d.get("tel_alterno",""))
+    s_field(cv, 30,  y, 280, 18, "Actividad Especifica de la Empresa", d.get("actividad_empresa",""))
+    s_field(cv, 310, y, 136, 18, "Telefono Empresa",                    d.get("tel_empresa",""))
+    s_field(cv, 446, y, 136, 18, "Telefono Alterno",                    d.get("tel_alterno",""))
 
     y -= 22
-    field(cv, 30,  y, 200, 18, "Domicilio Empresa - Calle",         d.get("dom_empresa",""))
-    field(cv, 230, y, 50,  18, "No. Ext.",                            d.get("emp_num_ext",""))
-    field(cv, 280, y, 50,  18, "No. Int.",                            d.get("emp_num_int",""))
-    field(cv, 330, y, 90,  18, "Colonia",                             d.get("emp_colonia",""))
-    field(cv, 420, y, 80,  18, "Municipio",                           d.get("emp_municipio",""))
-    field(cv, 500, y, 50,  18, "Estado",                              d.get("emp_estado",""))
-    field(cv, 550, y, 32,  18, "C.P.",                                d.get("emp_cp",""))
+    s_field(cv, 30,  y, 200, 18, "Domicilio Empresa - Calle",         d.get("dom_empresa",""))
+    s_field(cv, 230, y, 50,  18, "No. Ext.",                            d.get("emp_num_ext",""))
+    s_field(cv, 280, y, 50,  18, "No. Int.",                            d.get("emp_num_int",""))
+    s_field(cv, 330, y, 90,  18, "Colonia",                             d.get("emp_colonia",""))
+    s_field(cv, 420, y, 80,  18, "Municipio",                           d.get("emp_municipio",""))
+    s_field(cv, 500, y, 50,  18, "Estado",                              d.get("emp_estado",""))
+    s_field(cv, 550, y, 32,  18, "C.P.",                                d.get("emp_cp",""))
 
     y -= 22
-    field(cv, 30,  y, 300, 18, "Antiguedad en el empleo",  d.get("antiguedad_empleo",""))
-    field(cv, 330, y, 252, 18, "Nombre del Jefe Inmediato", d.get("jefe_inmediato",""))
+    s_field(cv, 30,  y, 300, 18, "Antiguedad en el empleo",  d.get("antiguedad_empleo",""))
+    s_field(cv, 330, y, 252, 18, "Nombre del Jefe Inmediato", d.get("jefe_inmediato",""))
 
     # ── REFERENCIAS PERSONALES ───────────────────────────────────
     y -= 32
-    section_band(cv, y, "DATOS GENERALES DE REFERENCIAS")
+    s_section_band(cv, y, "DATOS GENERALES DE REFERENCIAS")
     y -= 4
 
     for i in range(1, 4):
         prefijo = f"ref{i}_"
         ref_y = y
         # Numero de referencia
-        frect(cv, 30, ref_y-12, 14, 14, ROJO)
-        txt(cv, str(i), 37, ref_y-3, "Helvetica-Bold", 8, white, "center")
+        s_frect(cv, 30, ref_y-12, 14, 14, ROJO)
+        s_txt(cv, str(i), 37, ref_y-3, "Helvetica-Bold", 8, white, "center")
         # Datos
-        field(cv, 46,  ref_y, 110, 14, "Apellido Paterno",  d.get(prefijo+"ap",""))
-        field(cv, 156, ref_y, 110, 14, "Apellido Materno",  d.get(prefijo+"am",""))
-        field(cv, 266, ref_y, 110, 14, "Primer Nombre",     d.get(prefijo+"nom",""))
-        field(cv, 376, ref_y, 110, 14, "Segundo Nombre",    d.get(prefijo+"nom2",""))
-        field(cv, 486, ref_y, 96,  14, "Parentesco",        d.get(prefijo+"parentesco",""))
+        s_field(cv, 46,  ref_y, 110, 14, "Apellido Paterno",  d.get(prefijo+"ap",""))
+        s_field(cv, 156, ref_y, 110, 14, "Apellido Materno",  d.get(prefijo+"am",""))
+        s_field(cv, 266, ref_y, 110, 14, "Primer Nombre",     d.get(prefijo+"nom",""))
+        s_field(cv, 376, ref_y, 110, 14, "Segundo Nombre",    d.get(prefijo+"nom2",""))
+        s_field(cv, 486, ref_y, 96,  14, "Parentesco",        d.get(prefijo+"parentesco",""))
 
         ref_y -= 14
-        field(cv, 46,  ref_y, 86, 14, "Tel. Fijo",         d.get(prefijo+"tel_fijo",""))
-        field(cv, 132, ref_y, 86, 14, "Tel. Oficina",      d.get(prefijo+"tel_ofi",""))
-        field(cv, 218, ref_y, 86, 14, "Tel. Celular",      d.get(prefijo+"tel_cel",""))
-        field(cv, 304, ref_y, 100, 14,"Horario Localizar",  d.get(prefijo+"horario",""))
-        field(cv, 404, ref_y, 178, 14, "Lugar Localizacion",d.get(prefijo+"lugar",""))
+        s_field(cv, 46,  ref_y, 86, 14, "Tel. Fijo",         d.get(prefijo+"tel_fijo",""))
+        s_field(cv, 132, ref_y, 86, 14, "Tel. Oficina",      d.get(prefijo+"tel_ofi",""))
+        s_field(cv, 218, ref_y, 86, 14, "Tel. Celular",      d.get(prefijo+"tel_cel",""))
+        s_field(cv, 304, ref_y, 100, 14,"Horario Localizar",  d.get(prefijo+"horario",""))
+        s_field(cv, 404, ref_y, 178, 14, "Lugar Localizacion",d.get(prefijo+"lugar",""))
         y = ref_y - 16
 
     # Footer pagina 1
-    txt(cv, "* Los numeros telefonicos deben ser de 10 digitos", 30, 28, "Helvetica-Oblique", 6.5, GRIS_MEDIO)
-    txt(cv, "Pagina 1 de 1", 30, 16, "Helvetica-Bold", 7, NEGRO)
-    txt(cv, "AutoScore AI · Aprobacion Inteligente", W-30, 16, "Helvetica-Bold", 7, ROJO, "right")
-    frect(cv, 30, 10, 552, 1, ROJO)
+    s_txt(cv, "* Los numeros telefonicos deben ser de 10 digitos", 30, 28, "Helvetica-Oblique", 6.5, GRIS_MEDIO)
+    s_txt(cv, "Pagina 1 de 1", 30, 16, "Helvetica-Bold", 7, NEGRO)
+    s_txt(cv, "AutoScore AI · Aprobacion Inteligente", W-30, 16, "Helvetica-Bold", 7, ROJO, "right")
+    s_frect(cv, 30, 10, 552, 1, ROJO)
 
     cv.showPage()
     cv.save()
