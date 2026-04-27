@@ -516,6 +516,14 @@ if not datos:
         st.rerun()
     st.stop()
 
+# ── TABS: HOY / HISTÓRICO ─────────────────────────────────────────
+import datetime
+hoy_str = datetime.date.today().strftime("%d/%m/%Y")
+
+tab_hoy, tab_hist = st.tabs(["📅 HOY", "📂 HISTÓRICO"])
+
+vista_actual = "HOY"  # Default
+
 # ── FILTROS ───────────────────────────────────────────────────────
 f1, f2, f3, f4 = st.columns([2, 2, 2, 1])
 
@@ -546,70 +554,71 @@ if filtro_fecha:
                  if q in d.get("Cliente","").lower()
                  or q in d.get("Fecha","").lower()]
 
-# ── MÉTRICAS RESUMEN ──────────────────────────────────────────────
-total    = len(filtrados)
-aprobados= sum(1 for d in filtrados if "APROBADO" in d.get("Decision",""))
-sc_dist  = {}
-for d in filtrados:
-    sc = d.get("Score","")
-    sc_dist[sc] = sc_dist.get(sc, 0) + 1
+# Separar HOY vs HISTÓRICO
+filtrados_hoy = [d for d in filtrados if d.get("Fecha","") == hoy_str]
+filtrados_hist = [d for d in filtrados if d.get("Fecha","") != hoy_str]
 
-prob_vals = []
-for d in filtrados:
-    try: prob_vals.append(float(d.get("Probabilidad",0)))
-    except: pass
-avg_prob = round(sum(prob_vals)/len(prob_vals)) if prob_vals else 0
+# Función para renderizar tabla de perfiles
+def render_perfiles(lista_perfiles, etiqueta):
+    if not lista_perfiles:
+        st.markdown(f"""
+        <div style="text-align:center;padding:40px;color:#aaa;background:#fafafa;
+            border-radius:10px;border:1px dashed #ddd;">
+          <div style="font-size:1.8rem;margin-bottom:8px;">📋</div>
+          <div style="font-size:0.9rem;font-weight:600;">Sin perfiles {etiqueta}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        return
 
-pct_aprob = round(aprobados/total*100) if total > 0 else 0
+    # Métricas para esta vista
+    total_v    = len(lista_perfiles)
+    aprob_v    = sum(1 for d in lista_perfiles if "APROBADO" in d.get("Decision",""))
+    sc_dist_v  = {}
+    for d in lista_perfiles:
+        sc = d.get("Score","")
+        sc_dist_v[sc] = sc_dist_v.get(sc, 0) + 1
+    prob_v = []
+    for d in lista_perfiles:
+        try: prob_v.append(float(d.get("Probabilidad",0)))
+        except: pass
+    avg_v = round(sum(prob_v)/len(prob_v)) if prob_v else 0
+    pct_v = round(aprob_v/total_v*100) if total_v > 0 else 0
 
-st.markdown(f"""
-<div class="metric-row">
-  <div class="metric-card">
-    <div class="metric-label">Total perfiles</div>
-    <div class="metric-value">{total}</div>
-    <div class="metric-sub">analizados</div>
-  </div>
-  <div class="metric-card">
-    <div class="metric-label">Aprobados</div>
-    <div class="metric-value" style="color:#166534;">{aprobados}</div>
-    <div class="metric-sub">{pct_aprob}% del total</div>
-  </div>
-  <div class="metric-card">
-    <div class="metric-label">Prob. promedio</div>
-    <div class="metric-value">{avg_prob}%</div>
-    <div class="metric-sub">de aprobación</div>
-  </div>
-  <div class="metric-card">
-    <div class="metric-label">Score azul/verde</div>
-    <div class="metric-value" style="color:#0369a1;">
-        {sc_dist.get('AZUL',0) + sc_dist.get('VERDE',0)}
+    st.markdown(f"""
+    <div class="metric-row">
+      <div class="metric-card">
+        <div class="metric-label">Total {etiqueta}</div>
+        <div class="metric-value">{total_v}</div>
+        <div class="metric-sub">analizados</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Aprobados</div>
+        <div class="metric-value" style="color:#166534;">{aprob_v}</div>
+        <div class="metric-sub">{pct_v}% del total</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Prob. promedio</div>
+        <div class="metric-value">{avg_v}%</div>
+        <div class="metric-sub">de aprobación</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Score azul/verde</div>
+        <div class="metric-value" style="color:#0369a1;">
+            {sc_dist_v.get('AZUL',0) + sc_dist_v.get('VERDE',0)}
+        </div>
+        <div class="metric-sub">perfiles fuertes</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Requieren acción</div>
+        <div class="metric-value" style="color:#c3002f;">
+            {sc_dist_v.get('NARANJA',0) + sc_dist_v.get('ROJO',0)}
+        </div>
+        <div class="metric-sub">naranja + rojo</div>
+      </div>
     </div>
-    <div class="metric-sub">perfiles fuertes</div>
-  </div>
-  <div class="metric-card">
-    <div class="metric-label">Requieren acción</div>
-    <div class="metric-value" style="color:#c3002f;">
-        {sc_dist.get('NARANJA',0) + sc_dist.get('ROJO',0)}
-    </div>
-    <div class="metric-sub">naranja + rojo</div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-st.markdown("<hr>", unsafe_allow_html=True)
-
-# ── TABLA DE PERFILES ─────────────────────────────────────────────
-st.markdown(f"""
-<div style="font-family:'Rajdhani',sans-serif;font-size:0.8rem;font-weight:700;
-    color:#c3002f;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;">
-    📋 Perfiles analizados — {total} registros
-</div>
-""", unsafe_allow_html=True)
-
-import pandas as pd
-
-if filtrados:
-    # Tabla HTML — siempre legible sin importar el tema
+    # Tabla HTML
     SC_STYLES = {
         "AZUL":     ("background:#eff8ff","color:#0369a1"),
         "VERDE":    ("background:#f0fdf4","color:#166534"),
@@ -617,12 +626,10 @@ if filtrados:
         "NARANJA":  ("background:#fff7ed","color:#9a3412"),
         "ROJO":     ("background:#fff5f5","color:#9f1239"),
     }
-
-    headers = ["Fecha","Hora","Asesor","Cliente","Teléfono","Score",
-               "Prob %","Decisión","Cap. Pago","Mensualidad","Temperatura","Condiciones"]
-
+    headers = ["Folio","Fecha","Hora","Asesor","Cliente","Teléfono","Score",
+               "Prob %","Decisión","Cap. Pago","Mensualidad","Temperatura"]
     rows_html = ""
-    for i, d in enumerate(reversed(filtrados)):
+    for i, d in enumerate(reversed(lista_perfiles)):
         sc = d.get("Score","")
         bg, tc = SC_STYLES.get(sc, ("background:#fff","color:#111"))
         bg_row = "#ffffff" if i % 2 == 0 else "#fafafa"
@@ -630,19 +637,17 @@ if filtrados:
         except: cap = "$0"
         try: men = f'${float(d.get("Mensualidad",0) or 0):,.0f}'
         except: men = "$0"
-
         score_badge = f'<span style="{bg};{tc};padding:2px 10px;border-radius:50px;font-size:0.72rem;font-weight:600;">{sc}</span>'
+        folio_badge = f'<span style="background:#fff5f5;color:#c3002f;padding:2px 8px;border-radius:6px;font-family:Rajdhani,sans-serif;font-weight:700;font-size:0.72rem;border:1px solid #fecdd3;">{d.get("Folio","-")}</span>'
         vals = [
-            d.get("Fecha",""), d.get("Hora",""), d.get("Asesor",""),
+            folio_badge, d.get("Fecha",""), d.get("Hora",""), d.get("Asesor",""),
             d.get("Cliente",""), d.get("Tel_Cliente",""), score_badge,
-            d.get("Probabilidad","") + "%", d.get("Decision",""),
-            cap, men, d.get("Temp",""), d.get("Condicionamientos","")
+            str(d.get("Probabilidad","")) + "%", d.get("Decision",""),
+            cap, men, d.get("Temp",""),
         ]
         tds = "".join([f'<td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;color:#111;font-size:0.78rem;white-space:nowrap;">{v}</td>' for v in vals])
         rows_html += f'<tr style="background:{bg_row};">{tds}</tr>'
-
     ths = "".join([f'<th style="padding:10px;background:#fff;color:#c3002f;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;border-bottom:2px solid #c3002f;white-space:nowrap;">{h}</th>' for h in headers])
-
     tabla_html = f"""
     <div style="overflow-x:auto;border:1px solid #e5e5e5;border-radius:10px;margin-bottom:12px;">
       <table style="width:100%;border-collapse:collapse;background:#fff;">
@@ -653,26 +658,31 @@ if filtrados:
     """
     st.markdown(tabla_html, unsafe_allow_html=True)
 
-    df = pd.DataFrame([{
-        "Fecha": d.get("Fecha",""), "Hora": d.get("Hora",""),
-        "Asesor": d.get("Asesor",""), "Cliente": d.get("Cliente",""),
-        "Score": d.get("Score",""), "Probabilidad": d.get("Probabilidad",""),
-        "Decision": d.get("Decision",""),
-    } for d in filtrados])
+# Renderizar tabs
+with tab_hoy:
+    st.markdown(f"""
+    <div style="font-family:'Rajdhani',sans-serif;font-size:0.85rem;font-weight:700;
+        color:#c3002f;text-transform:uppercase;letter-spacing:0.1em;margin:14px 0 10px;">
+        📅 Perfiles del día — {hoy_str}
+    </div>
+    """, unsafe_allow_html=True)
+    render_perfiles(filtrados_hoy, "hoy")
 
-    # ── DESCARGAR EXCEL ───────────────────────────────────────────
-    st.markdown("<div style='margin-top:12px;'></div>", unsafe_allow_html=True)
-    from io import BytesIO
-    buf_xl = BytesIO()
-    with pd.ExcelWriter(buf_xl, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name="Perfiles AutoScore")
-    st.download_button(
-        "📥 Descargar tabla en Excel",
-        data=buf_xl.getvalue(),
-        file_name=f"autoscore_perfiles_{datetime.date.today()}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        use_container_width=True
-    )
+with tab_hist:
+    st.markdown(f"""
+    <div style="font-family:'Rajdhani',sans-serif;font-size:0.85rem;font-weight:700;
+        color:#c3002f;text-transform:uppercase;letter-spacing:0.1em;margin:14px 0 10px;">
+        📂 Histórico — Días anteriores
+    </div>
+    """, unsafe_allow_html=True)
+    render_perfiles(filtrados_hist, "anteriores")
+
+# ── MÉTRICAS RESUMEN GLOBAL (oculto - ya se muestra en cada tab) ───
+total    = len(filtrados)
+aprobados= sum(1 for d in filtrados if "APROBADO" in d.get("Decision",""))
+st.markdown("<hr>", unsafe_allow_html=True)
+
+import pandas as pd
 
 # ── SOLICITUDES DE CREDITO ────────────────────────────────────────
 st.markdown("<hr>", unsafe_allow_html=True)
@@ -709,6 +719,73 @@ def cargar_solicitudes():
 
 solicitudes = cargar_solicitudes()
 
+def render_solicitudes(lista_sols, etiqueta_vacio):
+    if not lista_sols:
+        st.markdown(f"""
+        <div style="text-align:center;padding:30px;color:#aaa;background:#fafafa;
+            border-radius:10px;border:1px dashed #ddd;">
+          <div style="font-size:1.5rem;margin-bottom:8px;">📋</div>
+          <div style="font-size:0.85rem;">Sin solicitudes {etiqueta_vacio}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        return
+
+    SC_STYLES_SOL = {
+        "AZUL":"background:#eff8ff;color:#0369a1",
+        "VERDE":"background:#f0fdf4;color:#166534",
+        "AMARILLO":"background:#fefce8;color:#854d0e",
+        "NARANJA":"background:#fff7ed;color:#9a3412",
+        "ROJO":"background:#fff5f5;color:#9f1239",
+    }
+    for idx, s in enumerate(reversed(lista_sols)):
+        sc = s.get("Score","")
+        sc_style = SC_STYLES_SOL.get(sc, "background:#fff;color:#111")
+        col0, col1, col2, col3, col4, col5 = st.columns([1.2,2,2,2,1,1])
+        with col0:
+            st.markdown(f"""
+            <div style="font-size:0.72rem;color:#c3002f;font-weight:700;font-family:'Rajdhani',sans-serif;
+                background:#fff5f5;padding:4px 8px;border-radius:6px;border:1px solid #fecdd3;
+                text-align:center;letter-spacing:0.04em;">
+              {s.get('Folio','-')}
+            </div>
+            """, unsafe_allow_html=True)
+        with col1:
+            st.markdown(f"""
+            <div style="font-size:0.78rem;color:#111;font-weight:600;">{s.get('Cliente','-')}</div>
+            <div style="font-size:0.68rem;color:#888;">{s.get('Fecha','-')} · {s.get('Hora','-')}</div>
+            """, unsafe_allow_html=True)
+        with col2:
+            st.markdown(f"""
+            <div style="font-size:0.74rem;color:#111;">{s.get('Asesor','-')}</div>
+            <div style="font-size:0.66rem;color:#888;">RFC: {s.get('RFC_Asesor','-')}</div>
+            """, unsafe_allow_html=True)
+        with col3:
+            st.markdown(f"""
+            <div style="font-size:0.74rem;"><span style="background:#fafafa;padding:2px 8px;border-radius:50px;font-weight:600;color:#c3002f;">{s.get('Fuente_Venta','-')}</span></div>
+            <div style="font-size:0.66rem;color:#888;margin-top:3px;">{s.get('Tipo_Credito','-')}</div>
+            """, unsafe_allow_html=True)
+        with col4:
+            st.markdown(f"""
+            <div style="text-align:center;"><span style="{sc_style};padding:3px 10px;border-radius:50px;font-size:0.7rem;font-weight:600;">{sc or '-'}</span></div>
+            <div style="font-size:0.66rem;color:#888;text-align:center;margin-top:3px;">{s.get('Probabilidad','-')}%</div>
+            """, unsafe_allow_html=True)
+        with col5:
+            try:
+                datos_json = json.loads(s.get("Datos_JSON","{}"))
+                buf_pdf = generar_pdf_solicitud(datos_json)
+                st.download_button(
+                    "📥 PDF",
+                    data=buf_pdf.getvalue(),
+                    file_name=f"solicitud_{s.get('Folio','-')}.pdf",
+                    mime="application/pdf",
+                    key=f"dl_sol_{etiqueta_vacio}_{idx}",
+                    use_container_width=True
+                )
+            except Exception:
+                st.markdown("<div style='font-size:0.65rem;color:#aaa;text-align:center;'>Sin PDF</div>", unsafe_allow_html=True)
+        st.markdown("<div style='border-bottom:1px solid #eee;margin:6px 0;'></div>", unsafe_allow_html=True)
+
+
 if not solicitudes:
     st.markdown("""
     <div style="text-align:center;padding:30px;color:#aaa;background:#fafafa;
@@ -735,57 +812,28 @@ else:
     if filt_fuente != "Todas":
         sols_filtradas = [s for s in sols_filtradas if s.get("Fuente_Venta","")==filt_fuente]
 
-    st.markdown(f"<div style='font-size:0.78rem;color:#666;margin-bottom:8px;'>{len(sols_filtradas)} solicitudes</div>", unsafe_allow_html=True)
+    sols_hoy  = [s for s in sols_filtradas if s.get("Fecha","")==hoy_str]
+    sols_hist = [s for s in sols_filtradas if s.get("Fecha","")!=hoy_str]
 
-    # Tabla con botón descarga por fila
-    SC_STYLES_SOL = {
-        "AZUL":"background:#eff8ff;color:#0369a1",
-        "VERDE":"background:#f0fdf4;color:#166534",
-        "AMARILLO":"background:#fefce8;color:#854d0e",
-        "NARANJA":"background:#fff7ed;color:#9a3412",
-        "ROJO":"background:#fff5f5;color:#9f1239",
-    }
+    sol_tab_hoy, sol_tab_hist = st.tabs([f"📅 HOY ({len(sols_hoy)})", f"📂 HISTÓRICO ({len(sols_hist)})"])
 
-    for idx, s in enumerate(reversed(sols_filtradas)):
-        sc = s.get("Score","")
-        sc_style = SC_STYLES_SOL.get(sc, "background:#fff;color:#111")
-        col1, col2, col3, col4, col5 = st.columns([2,2,2,1,1])
-        with col1:
-            st.markdown(f"""
-            <div style="font-size:0.78rem;color:#111;font-weight:600;">{s.get('Cliente','-')}</div>
-            <div style="font-size:0.68rem;color:#888;">{s.get('Fecha','-')} · {s.get('Hora','-')}</div>
-            """, unsafe_allow_html=True)
-        with col2:
-            st.markdown(f"""
-            <div style="font-size:0.74rem;color:#111;">{s.get('Asesor','-')}</div>
-            <div style="font-size:0.66rem;color:#888;">RFC: {s.get('RFC_Asesor','-')}</div>
-            """, unsafe_allow_html=True)
-        with col3:
-            st.markdown(f"""
-            <div style="font-size:0.74rem;"><span style="background:#fafafa;padding:2px 8px;border-radius:50px;font-weight:600;color:#c3002f;">{s.get('Fuente_Venta','-')}</span></div>
-            <div style="font-size:0.66rem;color:#888;margin-top:3px;">{s.get('Tipo_Credito','-')}</div>
-            """, unsafe_allow_html=True)
-        with col4:
-            st.markdown(f"""
-            <div style="text-align:center;"><span style="{sc_style};padding:3px 10px;border-radius:50px;font-size:0.7rem;font-weight:600;">{sc or '-'}</span></div>
-            <div style="font-size:0.66rem;color:#888;text-align:center;margin-top:3px;">{s.get('Probabilidad','-')}%</div>
-            """, unsafe_allow_html=True)
-        with col5:
-            # Botón regenerar PDF desde JSON guardado
-            try:
-                datos_json = json.loads(s.get("Datos_JSON","{}"))
-                buf_pdf = generar_pdf_solicitud(datos_json)
-                st.download_button(
-                    "📥 PDF",
-                    data=buf_pdf.getvalue(),
-                    file_name=f"solicitud_{s.get('Cliente','cliente').replace(' ','_')}.pdf",
-                    mime="application/pdf",
-                    key=f"dl_sol_{idx}",
-                    use_container_width=True
-                )
-            except Exception:
-                st.markdown("<div style='font-size:0.65rem;color:#aaa;text-align:center;'>Sin PDF</div>", unsafe_allow_html=True)
-        st.markdown("<div style='border-bottom:1px solid #eee;margin:6px 0;'></div>", unsafe_allow_html=True)
+    with sol_tab_hoy:
+        st.markdown(f"""
+        <div style="font-family:'Rajdhani',sans-serif;font-size:0.78rem;font-weight:700;
+            color:#666;letter-spacing:0.06em;margin:10px 0 6px;">
+            Solicitudes generadas hoy — {hoy_str}
+        </div>
+        """, unsafe_allow_html=True)
+        render_solicitudes(sols_hoy, "hoy")
+
+    with sol_tab_hist:
+        st.markdown("""
+        <div style="font-family:'Rajdhani',sans-serif;font-size:0.78rem;font-weight:700;
+            color:#666;letter-spacing:0.06em;margin:10px 0 6px;">
+            Solicitudes anteriores
+        </div>
+        """, unsafe_allow_html=True)
+        render_solicitudes(sols_hist, "anteriores")
 
 # ── CERRAR SESIÓN ─────────────────────────────────────────────────
 st.markdown("<hr>", unsafe_allow_html=True)
