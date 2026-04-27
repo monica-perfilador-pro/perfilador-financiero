@@ -969,24 +969,27 @@ if submitted:
 # ║   DERECHA — RESULTADO REESTRUCTURADO ║
 # ╚══════════════════════════════════════╝
 with col_der:
-    # Spacer que iguala la altura del logo del panel izquierdo
-    st.markdown("""
-    <div style="height:120px;display:flex;align-items:center;justify-content:center;
-        border-bottom:1px solid #1a1a1a;margin-bottom:4px;">
-      <div style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;color:#333;
-          text-transform:uppercase;letter-spacing:0.12em;">
-          AutoScore AI — Panel de Resultados
-      </div>
-    </div>
-    """, unsafe_allow_html=True) if not st.session_state.resultado else st.markdown("""
-    <div style="height:120px;display:flex;align-items:center;padding-left:4px;
-        border-bottom:1px solid #1a1a1a;margin-bottom:8px;">
-      <div style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;color:#444;
-          text-transform:uppercase;letter-spacing:0.12em;">
-          Resultado del análisis
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # Spacer alineado con logo del panel izquierdo
+    if not st.session_state.resultado:
+        st.markdown("""
+        <div style="height:120px;display:flex;align-items:center;
+            justify-content:center;border-bottom:1px solid #1a1a1a;margin-bottom:4px;">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;color:#333;
+              text-transform:uppercase;letter-spacing:0.12em;">
+              AutoScore AI — Panel de Resultados
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div style="height:120px;display:flex;align-items:center;
+            padding-left:4px;border-bottom:1px solid #1a1a1a;margin-bottom:8px;">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;color:#444;
+              text-transform:uppercase;letter-spacing:0.12em;">
+              Resultado del análisis
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     if not st.session_state.resultado:
         _lc1, _lc2, _lc3 = st.columns([1, 3, 1])
