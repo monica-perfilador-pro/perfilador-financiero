@@ -372,8 +372,13 @@ html, body, .stApp,
 }
 .block-container {
     position: relative; z-index: 1;
-    padding: 0 0 2rem 0 !important;
+    padding: 1rem 0 2rem 0 !important;
     max-width: 100% !important;
+}
+/* Panel derecho — scroll independiente para no cortar contenido */
+[data-testid="column"]:last-child {
+    overflow-y: auto !important;
+    max-height: calc(100vh - 60px) !important;
 }
 /* Separación entre sec-label y primer input */
 .sec-label + div,
@@ -524,10 +529,20 @@ hr { border:none !important; border-top:1px solid #1a1a1a !important; margin:8px
     text-align: center !important; padding: 9px !important;
 }
 .stDownloadButton > button {
-    background: #1a1a1a !important; border: 1px solid #c3002f !important;
-    color: #c3002f !important; border-radius: 8px !important;
-    font-weight: 600 !important; font-size: 0.8rem !important;
-    width: 100% !important; padding: 9px !important;
+    background: #c3002f !important;
+    border: 1px solid #c3002f !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+    width: 100% !important;
+    padding: 12px !important;
+    letter-spacing: 0.06em !important;
+    box-shadow: 0 2px 12px rgba(195,0,47,0.3) !important;
+}
+.stDownloadButton > button:hover {
+    background: #e8001a !important;
+    box-shadow: 0 4px 20px rgba(195,0,47,0.5) !important;
 }
 
 /* ─── EXPANDER ────────────────────────────── */
@@ -640,9 +655,9 @@ hr { border:none !important; border-top:1px solid #1a1a1a !important; margin:8px
 .alerta-chip.bad { background:#fff1f2; border:1px solid #fecdd3; color:#9f1239; }
 
 .cond-box {
-    background: #fffbeb; border: 1px solid #fde68a;
+    background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.25);
     border-radius: 9px; padding: 10px 14px;
-    color: #92400e; font-size: 0.76rem;
+    color: #fde68a; font-size: 0.76rem;
     line-height: 1.75; margin: 4px 0; font-weight: 500;
 }
 
@@ -1076,8 +1091,22 @@ with col_der:
 
         # ── 8. DOCUMENTACIÓN ─────────────────────────────────
         st.markdown('<div class="sec-label-result">📄 Documentación requerida</div>', unsafe_allow_html=True)
-        docs_chips = " &nbsp;·&nbsp; ".join([f"📎 {d}" for d in r["docs"]])
-        st.markdown(f'<div style="color:#cbd5e1;font-size:0.8rem;padding:4px 2px;">{docs_chips}</div>', unsafe_allow_html=True)
+        st.markdown("""
+        <style>
+        .doc-chip-list { display:flex; flex-wrap:wrap; gap:6px; margin:4px 0; }
+        .doc-chip-item {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 5px 12px;
+            color: #e2e8f0;
+            font-size: 0.78rem;
+            font-weight: 500;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        docs_html = "".join([f'<span class="doc-chip-item">📎 {d}</span>' for d in r["docs"]])
+        st.markdown(f'<div class="doc-chip-list">{docs_html}</div>', unsafe_allow_html=True)
 
         # ── 9. SIGUIENTE PASO + CUENTA ────────────────────────
         st.markdown('<div class="sec-label-result">💰 Siguiente paso</div>', unsafe_allow_html=True)
