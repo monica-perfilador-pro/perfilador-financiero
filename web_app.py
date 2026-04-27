@@ -34,7 +34,7 @@ def guardar_perfil_sheets(datos: dict):
         service.spreadsheets().values().append(
             spreadsheetId=SHEET_ID,
             range=f"'{SHEET_NAME}'!A1",
-            valueInputOption="USER_ENTERED",
+            valueInputOption="RAW",
             insertDataOption="INSERT_ROWS",
             body={"values": [fila]}
         ).execute()
@@ -154,7 +154,7 @@ def actualizar_solicitud_sheets(folio: str, datos: dict) -> bool:
         service.spreadsheets().values().update(
             spreadsheetId=SHEET_ID,
             range=f"'Solicitudes'!A{row_idx}",
-            valueInputOption="USER_ENTERED",
+            valueInputOption="RAW",
             body={"values": [fila]}
         ).execute()
         return True
@@ -282,7 +282,7 @@ def actualizar_perfil_sheets(folio: str, datos: dict) -> bool:
         service.spreadsheets().values().update(
             spreadsheetId=SHEET_ID,
             range=f"\'AutoScore Perfiles\'!A{row_idx}",
-            valueInputOption="USER_ENTERED",
+            valueInputOption="RAW",
             body={"values": [fila]}
         ).execute()
         return True
@@ -326,7 +326,7 @@ def guardar_solicitud_sheets(datos: dict, folio: str = None):
         service.spreadsheets().values().append(
             spreadsheetId=SHEET_ID,
             range=f"'{SHEET_SOL}'!A1",
-            valueInputOption="USER_ENTERED",
+            valueInputOption="RAW",
             insertDataOption="INSERT_ROWS",
             body={"values": [fila]}
         ).execute()
