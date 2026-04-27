@@ -376,9 +376,9 @@ html, body, .stApp,
     max-width: 100% !important;
 }
 /* Panel derecho — scroll independiente para no cortar contenido */
-[data-testid="column"]:last-child {
-    overflow-y: auto !important;
-    max-height: calc(100vh - 60px) !important;
+/* Ambas columnas arrancan desde el mismo punto vertical */
+[data-testid="stHorizontalBlock"] {
+    align-items: flex-start !important;
 }
 /* Separación entre sec-label y primer input */
 .sec-label + div,
@@ -969,9 +969,26 @@ if submitted:
 # ║   DERECHA — RESULTADO REESTRUCTURADO ║
 # ╚══════════════════════════════════════╝
 with col_der:
+    # Spacer que iguala la altura del logo del panel izquierdo
+    st.markdown("""
+    <div style="height:120px;display:flex;align-items:center;justify-content:center;
+        border-bottom:1px solid #1a1a1a;margin-bottom:4px;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;color:#333;
+          text-transform:uppercase;letter-spacing:0.12em;">
+          AutoScore AI — Panel de Resultados
+      </div>
+    </div>
+    """, unsafe_allow_html=True) if not st.session_state.resultado else st.markdown("""
+    <div style="height:120px;display:flex;align-items:center;padding-left:4px;
+        border-bottom:1px solid #1a1a1a;margin-bottom:8px;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;color:#444;
+          text-transform:uppercase;letter-spacing:0.12em;">
+          Resultado del análisis
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     if not st.session_state.resultado:
-        st.markdown("<br><br>", unsafe_allow_html=True)
         _lc1, _lc2, _lc3 = st.columns([1, 3, 1])
         with _lc2:
             st.image("AUTOSCOREIA.png", use_container_width=True)
