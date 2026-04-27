@@ -1384,6 +1384,55 @@ st.markdown("""
 <div style="height:3px;background:#c3002f;margin-bottom:18px;"></div>
 """, unsafe_allow_html=True)
 
+# ── BUSCADOR GLOBAL DE FOLIO (arriba del formulario) ──────────────
+if "datos_precargados" not in st.session_state:
+    st.session_state.datos_precargados = {}
+if "folio_actual" not in st.session_state:
+    st.session_state.folio_actual = None
+
+with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expanded=False):
+    st.markdown("""
+    <div style="font-size:0.78rem;color:#92400e;margin-bottom:6px;">
+      Si ya generaste una solicitud antes y solo necesitas modificar datos, ingresa el folio aquí.
+      Los datos del cliente se cargarán automáticamente.
+    </div>
+    """, unsafe_allow_html=True)
+    bg1, bg2, bg3 = st.columns([3,1,1])
+    with bg1:
+        folio_global = st.text_input("Folio de solicitud (ej: SOL-2026-0001)",
+                                      value=st.session_state.folio_actual or "",
+                                      key="folio_buscar_global",
+                                      placeholder="SOL-2026-0001")
+    with bg2:
+        st.markdown("<div style='margin-top:22px'></div>", unsafe_allow_html=True)
+        if st.button("🔍 Buscar", key="btn_buscar_global", use_container_width=True):
+            if folio_global.strip():
+                datos_enc = buscar_solicitud_por_folio(folio_global.strip())
+                if datos_enc:
+                    st.session_state.datos_precargados = datos_enc
+                    st.session_state.folio_actual = folio_global.strip().upper()
+                    st.session_state.mostrar_solicitud = True
+                    st.success(f"✅ Solicitud {st.session_state.folio_actual} cargada")
+                    st.rerun()
+                else:
+                    st.error(f"❌ Folio no encontrado: {folio_global}")
+            else:
+                st.warning("Ingresa un folio")
+    with bg3:
+        st.markdown("<div style='margin-top:22px'></div>", unsafe_allow_html=True)
+        if st.button("➕ Nueva", key="btn_nueva_global", use_container_width=True):
+            st.session_state.datos_precargados = {}
+            st.session_state.folio_actual = None
+            st.rerun()
+
+    if st.session_state.folio_actual:
+        st.markdown(f"""
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:3px solid #22c55e;
+            border-radius:7px;padding:7px 14px;margin:8px 0;font-size:0.78rem;color:#166534;">
+          ✏️ Modo edición: <b>{st.session_state.folio_actual}</b> — los datos se cargaron en el formulario de solicitud abajo
+        </div>
+        """, unsafe_allow_html=True)
+
 # ── DOS COLUMNAS ───────────────────────────────────────────────────
 col_izq, col_der = st.columns([1, 1], gap="medium")
 
@@ -1991,60 +2040,7 @@ if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud
     </div>
     """, unsafe_allow_html=True)
 
-    # ── BUSCADOR DE FOLIO ──────────────────────────────────────────
-    if "datos_precargados" not in st.session_state:
-        st.session_state.datos_precargados = {}
-    if "folio_actual" not in st.session_state:
-        st.session_state.folio_actual = None
-
-    st.markdown("""
-    <div style="background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #c3002f;
-        border-radius:9px;padding:10px 14px;margin:8px 0 14px;">
-      <div style="font-size:0.78rem;color:#92400e;font-weight:600;">
-        🔍 ¿Editar una solicitud existente?
-      </div>
-      <div style="font-size:0.7rem;color:#a16207;margin-top:2px;">
-        Ingresa el folio (ej: SOL-2026-0001) para cargar los datos del cliente y solo modificar lo necesario.
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    bf1, bf2, bf3 = st.columns([3,1,1])
-    with bf1:
-        folio_input = st.text_input("Folio de solicitud", placeholder="SOL-2026-0001",
-                                     value=st.session_state.folio_actual or "", key="folio_buscar")
-    with bf2:
-        st.markdown("<div style='margin-top:22px'></div>", unsafe_allow_html=True)
-        if st.button("🔍 Buscar", key="btn_buscar_folio", use_container_width=True):
-            if folio_input.strip():
-                datos_enc = buscar_solicitud_por_folio(folio_input.strip())
-                if datos_enc:
-                    st.session_state.datos_precargados = datos_enc
-                    st.session_state.folio_actual = folio_input.strip().upper()
-                    st.success(f"✅ Solicitud {st.session_state.folio_actual} cargada — modifica los campos necesarios y guarda")
-                    st.rerun()
-                else:
-                    st.error(f"❌ Folio no encontrado: {folio_input}")
-            else:
-                st.warning("Ingresa un folio")
-    with bf3:
-        st.markdown("<div style='margin-top:22px'></div>", unsafe_allow_html=True)
-        if st.button("➕ Nueva", key="btn_nueva", use_container_width=True):
-            st.session_state.datos_precargados = {}
-            st.session_state.folio_actual = None
-            st.rerun()
-
-    if st.session_state.folio_actual:
-        st.markdown(f"""
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:3px solid #22c55e;
-            border-radius:9px;padding:8px 14px;margin:8px 0 14px;">
-          <div style="font-size:0.78rem;color:#166534;font-weight:600;">
-            ✏️ Editando: {st.session_state.folio_actual}
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Atajo a datos precargados
+    # Atajo a datos precargados (el buscador está arriba en la app)
     p = st.session_state.datos_precargados or {}
 
     with st.form("form_solicitud"):
@@ -2206,10 +2202,23 @@ if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud
                 if folio_nuevo:
                     st.session_state.folio_actual = folio_nuevo
                     st.session_state.pdf_solicitud_nombre = f"solicitud_{folio_nuevo}.pdf"
-                    st.success(f"✅ Solicitud creada con folio {folio_nuevo}")
+                    st.markdown(f"""
+                    <div style="background:#f0fdf4;border:2px solid #22c55e;border-left:6px solid #c3002f;
+                        border-radius:10px;padding:14px 18px;margin:12px 0;">
+                      <div style="font-size:0.78rem;color:#166534;font-weight:600;margin-bottom:4px;">
+                        ✅ Solicitud creada exitosamente
+                      </div>
+                      <div style="font-size:1.1rem;color:#111;font-weight:700;font-family:'Rajdhani',sans-serif;letter-spacing:0.06em;">
+                        Folio asignado: <span style="color:#c3002f;">{folio_nuevo}</span>
+                      </div>
+                      <div style="font-size:0.72rem;color:#666;margin-top:6px;">
+                        Anota este folio. Sirve para volver a editar esta misma solicitud sin crear una nueva.
+                      </div>
+                    </div>
+                    """, unsafe_allow_html=True)
                 else:
                     st.session_state.pdf_solicitud_nombre = f"solicitud_{ap_paterno}_{pn_nombre}".replace(" ","_") + ".pdf"
-                    st.warning("⚠️ PDF generado pero no se pudo guardar en el sistema")
+                    st.warning("⚠️ PDF generado pero no se pudo guardar en Google Sheets — verifica que la pestaña 'Solicitudes' tenga la columna 'Folio' al inicio")
 
     # Botón de descarga fuera del form
     if st.session_state.get("pdf_solicitud_buf"):
