@@ -3,6 +3,9 @@ import datetime
 
 st.set_page_config(page_title="AutoScore AI — Dashboard F&I", page_icon="📊", layout="wide")
 
+# Forzar tema claro
+st.markdown('<style>[data-testid="stAppViewContainer"]{background:#fff!important;} iframe{color-scheme:light!important;}</style>', unsafe_allow_html=True)
+
 SHEET_ID   = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
 SHEET_NAME = "AutoScore Perfiles"
 PASSWORD   = "autoscore2024"
@@ -11,9 +14,27 @@ PASSWORD   = "autoscore2024"
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap');
-html,body,.stApp,[data-testid="stAppViewContainer"],[data-testid="stMain"] {
-    background: #f8f8f8 !important; color: #111 !important;
+html,body,.stApp,[data-testid="stAppViewContainer"],[data-testid="stMain"],
+[data-testid="stDataFrame"], [data-testid="stDataFrameResizable"] {
+    background: #ffffff !important; color: #111111 !important;
     font-family: 'Exo 2', sans-serif !important;
+}
+/* Forzar tabla blanca con texto negro */
+[data-testid="stDataFrame"] * {
+    color: #111111 !important;
+    background-color: #ffffff !important;
+}
+[data-testid="stDataFrame"] th {
+    background-color: #f5f5f5 !important;
+    color: #c3002f !important;
+    font-weight: 600 !important;
+    border-bottom: 2px solid #c3002f !important;
+}
+[data-testid="stDataFrame"] tr:hover td {
+    background-color: #fff5f5 !important;
+}
+iframe[data-testid="stDataFrameResizable"] {
+    color-scheme: light !important;
 }
 .block-container { padding: 1.5rem 2rem !important; max-width: 100% !important; }
 /* Header */
@@ -254,41 +275,56 @@ st.markdown(f"""
 import pandas as pd
 
 if filtrados:
-    # Construir tabla limpia
-    filas_tabla = []
-    for d in reversed(filtrados):  # más recientes primero
+    # Tabla HTML — siempre legible sin importar el tema
+    SC_STYLES = {
+        "AZUL":     ("background:#eff8ff","color:#0369a1"),
+        "VERDE":    ("background:#f0fdf4","color:#166534"),
+        "AMARILLO": ("background:#fefce8","color:#854d0e"),
+        "NARANJA":  ("background:#fff7ed","color:#9a3412"),
+        "ROJO":     ("background:#fff5f5","color:#9f1239"),
+    }
+
+    headers = ["Fecha","Hora","Asesor","Cliente","Teléfono","Score",
+               "Prob %","Decisión","Cap. Pago","Mensualidad","Temperatura","Condiciones"]
+
+    rows_html = ""
+    for i, d in enumerate(reversed(filtrados)):
         sc = d.get("Score","")
-        badge = f'<span class="badge badge-{sc}">{sc}</span>' if sc else ""
-        filas_tabla.append({
-            "Fecha":      d.get("Fecha",""),
-            "Hora":       d.get("Hora",""),
-            "Asesor":     d.get("Asesor",""),
-            "Cliente":    d.get("Cliente",""),
-            "Teléfono":   d.get("Tel_Cliente",""),
-            "Score":      d.get("Score",""),
-            "Prob %":     d.get("Probabilidad",""),
-            "Decisión":   d.get("Decision",""),
-            "Cap. Pago":  f'${float(d.get("Capacidad_Pago",0) or 0):,.0f}',
-            "Mensualidad":f'${float(d.get("Mensualidad",0) or 0):,.0f}',
-            "Temperatura":d.get("Temp",""),
-            "Condiciones":d.get("Condicionamientos",""),
-        })
+        bg, tc = SC_STYLES.get(sc, ("background:#fff","color:#111"))
+        bg_row = "#ffffff" if i % 2 == 0 else "#fafafa"
+        try: cap = f'${float(d.get("Capacidad_Pago",0) or 0):,.0f}'
+        except: cap = "$0"
+        try: men = f'${float(d.get("Mensualidad",0) or 0):,.0f}'
+        except: men = "$0"
 
-    df = pd.DataFrame(filas_tabla)
+        score_badge = f'<span style="{bg};{tc};padding:2px 10px;border-radius:50px;font-size:0.72rem;font-weight:600;">{sc}</span>'
+        vals = [
+            d.get("Fecha",""), d.get("Hora",""), d.get("Asesor",""),
+            d.get("Cliente",""), d.get("Tel_Cliente",""), score_badge,
+            d.get("Probabilidad","") + "%", d.get("Decision",""),
+            cap, men, d.get("Temp",""), d.get("Condicionamientos","")
+        ]
+        tds = "".join([f'<td style="padding:8px 10px;border-bottom:1px solid #f0f0f0;color:#111;font-size:0.78rem;white-space:nowrap;">{v}</td>' for v in vals])
+        rows_html += f'<tr style="background:{bg_row};">{tds}</tr>'
 
-    # Colorear score en la tabla
-    def color_score(val):
-        colores = {
-            "AZUL":     "background-color:#eff8ff;color:#0369a1;font-weight:600",
-            "VERDE":    "background-color:#f0fdf4;color:#166534;font-weight:600",
-            "AMARILLO": "background-color:#fefce8;color:#854d0e;font-weight:600",
-            "NARANJA":  "background-color:#fff7ed;color:#9a3412;font-weight:600",
-            "ROJO":     "background-color:#fff5f5;color:#9f1239;font-weight:600",
-        }
-        return colores.get(val, "")
+    ths = "".join([f'<th style="padding:10px;background:#fff;color:#c3002f;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;border-bottom:2px solid #c3002f;white-space:nowrap;">{h}</th>' for h in headers])
 
-    styled = df.style.map(color_score, subset=["Score"])
-    st.dataframe(styled, use_container_width=True, height=480)
+    tabla_html = f"""
+    <div style="overflow-x:auto;border:1px solid #e5e5e5;border-radius:10px;margin-bottom:12px;">
+      <table style="width:100%;border-collapse:collapse;background:#fff;">
+        <thead><tr>{ths}</tr></thead>
+        <tbody>{rows_html}</tbody>
+      </table>
+    </div>
+    """
+    st.markdown(tabla_html, unsafe_allow_html=True)
+
+    df = pd.DataFrame([{
+        "Fecha": d.get("Fecha",""), "Hora": d.get("Hora",""),
+        "Asesor": d.get("Asesor",""), "Cliente": d.get("Cliente",""),
+        "Score": d.get("Score",""), "Probabilidad": d.get("Probabilidad",""),
+        "Decision": d.get("Decision",""),
+    } for d in filtrados])
 
     # ── DESCARGAR EXCEL ───────────────────────────────────────────
     st.markdown("<div style='margin-top:12px;'></div>", unsafe_allow_html=True)
