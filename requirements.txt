@@ -1,2 +1,6 @@
 streamlit
 reportlab
+google-auth
+google-api-python-client
+openpyxl
+pandas
