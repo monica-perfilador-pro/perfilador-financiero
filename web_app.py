@@ -1,5 +1,45 @@
 import streamlit as st
 from io import BytesIO
+
+# ── GOOGLE SHEETS ────────────────────────────────────────────────
+def guardar_perfil_sheets(datos: dict):
+    """Guarda perfil en Google Sheets. Silencioso si falla."""
+    try:
+        from google.oauth2.service_account import Credentials
+        from googleapiclient.discovery import build
+        import datetime
+
+        SHEET_ID   = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
+        SHEET_NAME = "AutoScore Perfiles"
+        scopes = ["https://www.googleapis.com/auth/spreadsheets",
+                  "https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]), scopes=scopes)
+        service = build("sheets", "v4", credentials=creds)
+
+        ahora = datetime.datetime.now()
+        fila = [
+            ahora.strftime("%d/%m/%Y"), ahora.strftime("%H:%M:%S"),
+            datos.get("asesor",""), datos.get("telefono_asesor",""),
+            datos.get("nombre",""), datos.get("telefono",""),
+            datos.get("sc",""), datos.get("prob",0),
+            datos.get("decision",""), datos.get("cap_pago",0),
+            datos.get("mensualidad",0),
+            round(float(datos.get("enganche_pct",0) or 0), 1),
+            datos.get("temp",""), datos.get("inv",""),
+            ", ".join(datos.get("condicionamientos",[])),
+            datos.get("plan",""),
+            datos.get("ingreso",0), datos.get("tipo_ingreso",""),
+        ]
+        service.spreadsheets().values().append(
+            spreadsheetId=SHEET_ID,
+            range=f"{SHEET_NAME}!A1",
+            valueInputOption="USER_ENTERED",
+            insertDataOption="INSERT_ROWS",
+            body={"values": [fila]}
+        ).execute()
+    except Exception:
+        pass  # No interrumpir el análisis si Sheets falla
 import base64
 import os
 
@@ -964,6 +1004,11 @@ if submitted:
     }
     st.session_state.cotitular_activo    = (plan=="COTITULAR")
     st.session_state.cotitular_resultado = None
+
+    # Guardar en Google Sheets automáticamente
+    guardar_perfil_sheets({**st.session_state.resultado,
+        "ingreso": ingreso, "tipo_ingreso": tipo_ingreso,
+        "enganche_pct": enganche_pct})
 
 # ╔══════════════════════════════════════╗
 # ║   DERECHA — RESULTADO REESTRUCTURADO ║
