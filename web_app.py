@@ -12,413 +12,335 @@ def get_logo_b64():
     return ""
 
 # ══════════════════════════════════════════
-# PDF CLIENTE — incluido directamente
-# ══════════════════════════════════════════
+# PDF CLIENTE — disenio minimalista premium
+# ════════════════════════════════════════════
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from reportlab.lib.colors import HexColor, white, black
-from reportlab.lib.units import mm
+from reportlab.lib.colors import HexColor
 from io import BytesIO
-
-# ── PALETA ────────────────────────────────────────────────────────
-AZUL_OSCURO   = HexColor("#050c1a")
-AZUL_MEDIO    = HexColor("#0a1628")
-AZUL_BORDE    = HexColor("#0e2040")
-CYAN          = HexColor("#38bdf8")
-CYAN_LIGHT    = HexColor("#7dd3fc")
-MORADO        = HexColor("#8b5cf6")
-VERDE         = HexColor("#22c55e")
-AMARILLO      = HexColor("#eab308")
-NARANJA       = HexColor("#f97316")
-ROJO          = HexColor("#ef4444")
-GRIS_TEXTO    = HexColor("#94a3b8")
-GRIS_CLARO    = HexColor("#cbd5e1")
-BLANCO        = HexColor("#f8fafc")
-DORADO        = HexColor("#fbbf24")
+import datetime
 
 W, H = letter  # 612 x 792 pts
+M    = 44      # margen lateral
+CW   = W - 2*M  # ancho contenido = 524 pts
 
-# ── HELPERS ───────────────────────────────────────────────────────
-def rect_fill(c, x, y, w, h, color):
-    c.setFillColor(color)
-    c.rect(x, y, w, h, fill=1, stroke=0)
+# ── PALETA ──────────────────────────────────────────────────────
+ROJO        = HexColor("#c3002f")
+NEGRO       = HexColor("#111111")
+GRIS_OSCURO = HexColor("#444444")
+GRIS_MEDIO  = HexColor("#888888")
+GRIS_CLARO  = HexColor("#e5e5e5")
+GRIS_FONDO  = HexColor("#f8f8f8")
+BLANCO      = HexColor("#ffffff")
 
-def rect_stroke(c, x, y, w, h, color, line_w=0.5):
-    c.setStrokeColor(color)
-    c.setLineWidth(line_w)
-    c.rect(x, y, w, h, fill=0, stroke=1)
+SC_COLOR  = {"AZUL":"#38bdf8","VERDE":"#22c55e","AMARILLO":"#eab308","NARANJA":"#f97316","ROJO":"#c3002f"}
+SC_BG     = {"AZUL":"#eff8ff","VERDE":"#f0fdf4","AMARILLO":"#fefce8","NARANJA":"#fff7ed","ROJO":"#fff5f5"}
+SC_TXT    = {"AZUL":"#0369a1","VERDE":"#166534","AMARILLO":"#854d0e","NARANJA":"#9a3412","ROJO":"#9f1239"}
+SC_BORDE  = {"AZUL":"#bfdbfe","VERDE":"#bbf7d0","AMARILLO":"#fde68a","NARANJA":"#fed7aa","ROJO":"#fecdd3"}
 
-def rounded_rect(c, x, y, w, h, r, fill_color=None, stroke_color=None, line_w=0.5):
-    if fill_color:
-        c.setFillColor(fill_color)
-    if stroke_color:
-        c.setStrokeColor(stroke_color)
-        c.setLineWidth(line_w)
-    c.roundRect(x, y, w, h, r,
-                fill=1 if fill_color else 0,
-                stroke=1 if stroke_color else 0)
-
-def line_h(c, x1, x2, y, color, w=0.5):
-    c.setStrokeColor(color)
-    c.setLineWidth(w)
-    c.line(x1, y, x2, y)
-
-def txt(c, text, x, y, font, size, color, align="left"):
-    c.setFont(font, size)
-    c.setFillColor(color)
-    if align == "center":
-        c.drawCentredString(x, y, text)
-    elif align == "right":
-        c.drawRightString(x, y, text)
-    else:
-        c.drawString(x, y, text)
-
-def txt_wrap(c, text, x, y, max_w, font, size, color, line_h_pt=14):
-    """Simple word-wrap."""
-    c.setFont(font, size)
-    c.setFillColor(color)
-    words = text.split()
-    line = ""
-    cy = y
-    for word in words:
-        test = (line + " " + word).strip()
-        if c.stringWidth(test, font, size) <= max_w:
-            line = test
-        else:
-            c.drawString(x, cy, line)
-            cy -= line_h_pt
-            line = word
-    if line:
-        c.drawString(x, cy, line)
-    return cy - line_h_pt  # y final
-
-# ── MENSAJES PSICOLÓGICOS POR SCORE ───────────────────────────────
-MENSAJES = {
+MSGS = {
     "AZUL": {
-        "titulo":   "Tu camino hacia tu auto est\u00e1 listo",
-        "subtitulo":"Perfil destacado",
-        "cuerpo": (
-            "Felicitaciones. Tu historial financiero refleja responsabilidad "
-            "y compromiso, exactamente lo que las instituciones buscan. "
-            "Eres un candidato prioritario para obtener las mejores condiciones "
-            "de financiamiento disponibles en el mercado."
-        ),
-        "accion":   "El siguiente paso es simplemente agendar tu cita de formalización.",
-        "urgencia": "Las unidades con mejores condiciones se apartan con anticipación.",
-        "color":    CYAN,
-        "icono":    "APROBADO",
+        "titulo":   "Tu camino hacia tu auto esta listo",
+        "cuerpo":   "Felicitaciones. Tu historial financiero refleja responsabilidad y compromiso, exactamente lo que las instituciones buscan. Eres candidato prioritario para obtener las mejores condiciones de financiamiento disponibles en el mercado.",
+        "plan_lbl": None, "plan": [],
+        "urgencia": "Las unidades con mejores condiciones se apartan con anticipacion. No dejes pasar esta oportunidad.",
+        "decision": "APROBADO — Perfil limpio, proceder directo",
+        "badge":    "SCORE AZUL",
     },
     "VERDE": {
-        "titulo":   "Tu financiamiento est\u00e1 al alcance",
-        "subtitulo":"Perfil favorable",
-        "cuerpo": (
-            "Tu situación financiera muestra solidez y buenos antecedentes. "
-            "Con el proceso correcto, tienes altas posibilidades de obtener "
-            "tu vehículo en las condiciones que necesitas. "
-            "Estamos listos para acompañarte en cada paso."
-        ),
-        "accion":   "Podemos avanzar hoy mismo con tu proceso de aprobación.",
-        "urgencia": "Asegurar tu unidad ahora te garantiza el precio y la disponibilidad.",
-        "color":    VERDE,
-        "icono":    "VIABLE",
+        "titulo":   "Tu financiamiento esta al alcance",
+        "cuerpo":   "Tu situacion financiera muestra solidez y buenos antecedentes crediticios. Con el proceso correcto tienes altas posibilidades de obtener tu vehiculo en las condiciones que necesitas. Estamos listos para acompanarte en cada paso del camino.",
+        "plan_lbl": None, "plan": [],
+        "urgencia": "Asegurar tu unidad ahora te garantiza el precio y la disponibilidad. El mercado cambia rapidamente.",
+        "decision": "APROBADO EN ANALISIS — Validaciones normales",
+        "badge":    "SCORE VERDE",
     },
     "AMARILLO": {
-        "titulo":   "Tu auto est\u00e1 m\u00e1s cerca de lo que crees",
-        "subtitulo":"Perfil en proceso",
-        "cuerpo": (
-            "Hemos analizado tu situación y tenemos buenas noticias: "
-            "existen caminos concretos para que puedas llevarte tu vehículo. "
-            "Con ajustes menores en tu solicitud, tu perfil puede fortalecerse "
-            "significativamente. Tu asesor tiene la estrategia perfecta para ti."
-        ),
-        "accion":   "Una conversación de 10 minutos con tu asesor puede cambiar el resultado.",
-        "urgencia": "Cada día de espera puede significar cambios en tasas y disponibilidad.",
-        "color":    AMARILLO,
-        "icono":    "EN PROCESO",
+        "titulo":   "Tu auto esta mas cerca de lo que crees",
+        "cuerpo":   "Hemos analizado tu situacion y tenemos buenas noticias: existen caminos concretos para que puedas llevarte tu vehiculo. Con ajustes menores en tu solicitud, tu perfil puede fortalecerse significativamente.",
+        "plan_lbl": "LO QUE PUEDE MEJORAR TU PERFIL:",
+        "plan":     ["Subir enganche al 25%+", "Validacion de ingresos", "Evitar consultas en buro", "Integrar cotitular de ser necesario"],
+        "urgencia": "Cada dia de espera puede significar cambios en tasas y disponibilidad de unidades.",
+        "decision": "APROBABLE CON AJUSTES — Validacion por financiera",
+        "badge":    "SCORE AMARILLO",
     },
     "NARANJA": {
-        "titulo":   "Encontramos la ruta para tu auto",
-        "subtitulo":"Perfil con oportunidad",
-        "cuerpo": (
-            "Tu situación tiene solución. Contamos con opciones de financiamiento "
-            "diseñadas específicamente para perfiles como el tuyo. "
-            "No es un no, es un 'todavía no con este camino' — y tenemos "
-            "el camino correcto para llevarte a donde quieres llegar."
-        ),
-        "accion":   "Tu asesor tiene alternativas específicas preparadas para ti.",
-        "urgencia": "El momento de actuar es ahora, antes de que cambien las condiciones.",
-        "color":    NARANJA,
-        "icono":    "CON OPCION",
+        "titulo":   "No es un no, es un 'todavia no'",
+        "cuerpo":   "Contamos con opciones de financiamiento disenadas especificamente para perfiles como el tuyo. No es un no, es un camino diferente — y tenemos ese camino trazado para llevarte a donde quieres llegar.",
+        "plan_lbl": "OPCIONES DISPONIBLES PARA TI:",
+        "plan":     ["Financiera alternativa flexible", "Cotitular linea directa", "Mayor enganche inicial", "Plazo extendido disponible"],
+        "urgencia": "El momento de actuar es ahora, antes de que cambien las condiciones del mercado.",
+        "decision": "PERFIL CON OPORTUNIDAD — Estrategia alternativa",
+        "badge":    "SCORE NARANJA",
     },
     "ROJO": {
-        "titulo":   "Tu soluci\u00f3n de movilidad existe",
-        "subtitulo":"Plan de acci\u00f3n personalizado",
-        "cuerpo": (
-            "Entendemos que cada situación financiera es única y tiene su historia. "
-            "Lo importante no es dónde estás hoy, sino hacia dónde vas. "
-            "Hemos diseñado un plan específico para ti que, paso a paso, "
-            "te acercará a tener el vehículo que necesitas."
-        ),
-        "accion":   "Tu asesor tiene un plan de acción personalizado listo para explicarte.",
-        "urgencia": "Dar el primer paso hoy te pone en ventaja para el momento correcto.",
-        "color":    ROJO,
-        "icono":    "PLAN ACTIVO",
+        "titulo":   "Encontramos la ruta para tu auto",
+        "cuerpo":   "Entendemos que cada situacion financiera es unica y tiene su historia. Lo importante no es donde estas hoy, sino hacia donde vas. Hemos disenado un plan especifico para ti que, paso a paso, te acercara a tener el vehiculo que necesitas.",
+        "plan_lbl": "TU PLAN DE ACCION CONCRETO:",
+        "plan":     ["Subir enganche al 20%+", "Integrar cotitular fuerte", "Evitar consultas en buro", "Hablar con tu asesor hoy mismo"],
+        "urgencia": "Dar el primer paso hoy te pone en ventaja para el momento correcto. Tu asesor esta listo.",
+        "decision": "PLAN DE ACCION PERSONALIZADO — Tu solucion existe",
+        "badge":    "PERFIL EN PROCESO",
     },
 }
 
-# ── GENERADOR PRINCIPAL ───────────────────────────────────────────
+# ── HELPERS ─────────────────────────────────────────────────────
+def frect(c, x, y, w, h, color, r=0):
+    c.setFillColor(color if isinstance(color, type(ROJO)) else HexColor(color))
+    if r: c.roundRect(x, y, w, h, r, fill=1, stroke=0)
+    else: c.rect(x, y, w, h, fill=1, stroke=0)
+
+def srect(c, x, y, w, h, color, lw=0.5, r=0):
+    c.setStrokeColor(color if isinstance(color, type(ROJO)) else HexColor(color))
+    c.setLineWidth(lw)
+    if r: c.roundRect(x, y, w, h, r, fill=0, stroke=1)
+    else: c.rect(x, y, w, h, fill=0, stroke=1)
+
+def txt(c, s, x, y, font, size, color, align="left"):
+    c.setFont(font, size)
+    c.setFillColor(color if isinstance(color, type(ROJO)) else HexColor(color))
+    if align=="center": c.drawCentredString(x, y, s)
+    elif align=="right": c.drawRightString(x, y, s)
+    else: c.drawString(x, y, s)
+
+def hline(c, x1, x2, y, color=None, lw=0.5):
+    c.setStrokeColor(color or GRIS_CLARO)
+    c.setLineWidth(lw)
+    c.line(x1, y, x2, y)
+
+def wrap_text(c, text, x, y, max_w, font, size, color, leading=13):
+    """Dibuja texto con word-wrap, retorna y final."""
+    c.setFont(font, size)
+    c.setFillColor(color if isinstance(color, type(ROJO)) else HexColor(color))
+    words = text.split()
+    line_buf = ""
+    cy = y
+    for w in words:
+        test = (line_buf + " " + w).strip()
+        if c.stringWidth(test, font, size) <= max_w:
+            line_buf = test
+        else:
+            c.drawString(x, cy, line_buf)
+            cy -= leading
+            line_buf = w
+    if line_buf:
+        c.drawString(x, cy, line_buf)
+    return cy - leading
+
+
+# ── GENERADOR PRINCIPAL ─────────────────────────────────────────
 def generar_pdf_cliente(datos: dict) -> BytesIO:
-    """
-    datos debe tener:
-      nombre, telefono, correo,
-      asesor, telefono_asesor, correo_asesor, rfc,
-      sc (AZUL/VERDE/AMARILLO/NARANJA/ROJO),
-      prob, cap_pago, mensualidad,
-      decision, condicionamientos (list),
-      docs (list), plan, temp
-    """
     buf = BytesIO()
-    c = canvas.Canvas(buf, pagesize=letter)
-    c.setTitle("Tu Análisis de Financiamiento — AutoScore AI")
+    cv  = canvas.Canvas(buf, pagesize=letter)
+    cv.setTitle("AutoScore AI — Analisis de Financiamiento")
 
-    sc        = datos.get("sc", "AMARILLO")
-    msg       = MENSAJES.get(sc, MENSAJES["AMARILLO"])
-    color_sc  = msg["color"]
-    nombre    = datos.get("nombre", "Cliente") or "Cliente"
-    prob      = datos.get("prob", 0)
-    cap_pago  = datos.get("cap_pago", 0)
-    mensual   = datos.get("mensualidad", 0)
-    asesor    = datos.get("asesor", "") or ""
-    tel_a     = datos.get("telefono_asesor", "") or ""
-    correo_a  = datos.get("correo_asesor", "") or ""
-    plan      = datos.get("plan", "")
-    docs      = datos.get("docs", [])
+    sc      = datos.get("sc", "AMARILLO")
+    msg     = MSGS.get(sc, MSGS["AMARILLO"])
+    col     = HexColor(SC_COLOR[sc])
+    nombre  = (datos.get("nombre") or "Cliente").upper()
+    prob    = datos.get("prob", 0)
+    cap     = datos.get("cap_pago", 0)
+    men     = datos.get("mensualidad", 0)
+    asesor  = datos.get("asesor", "") or ""
+    tel_a   = datos.get("telefono_asesor", "") or ""
+    correo_a= datos.get("correo_asesor", "") or ""
+    docs    = datos.get("docs", ["INE", "Comprobante de domicilio"])
+    fecha   = datetime.date.today().strftime("%d/%m/%Y")
 
-    # ══════════════════════════════════════════
-    # PÁGINA 1 — RESULTADO Y CIERRE EMOCIONAL
-    # ══════════════════════════════════════════
+    # ════════════════════════════════════════════════
+    # SECCIÓN 1 — HEADER  (y: 792 → 700)
+    # ════════════════════════════════════════════════
+    # Fondo blanco
+    frect(cv, 0, 0, W, H, BLANCO)
+    frect(cv, 0, 0, W, H, GRIS_FONDO)
 
-    # — Fondo oscuro total
-    rect_fill(c, 0, 0, W, H, AZUL_OSCURO)
+    # Franja header negra
+    frect(cv, 0, H-70, W, 70, NEGRO)
+    # Línea roja top
+    frect(cv, 0, H-3, W, 3, ROJO)
 
-    # — Franja superior degradada
-    rect_fill(c, 0, H-90, W, 90, AZUL_MEDIO)
+    # Logo texto en header
+    txt(cv, "AutoScore", M, H-32, "Helvetica-Bold", 20, BLANCO)
+    w_as = cv.stringWidth("AutoScore", "Helvetica-Bold", 20)
+    txt(cv, " AI", M+w_as, H-32, "Helvetica-Bold", 20, ROJO)
+    txt(cv, "APROBACION INTELIGENTE", M, H-48, "Helvetica", 8, HexColor("#888888"))
+    txt(cv, fecha, W-M, H-32, "Helvetica", 9, HexColor("#888888"), "right")
+    txt(cv, "Analisis de Financiamiento Automotriz", W-M, H-46, "Helvetica", 8, HexColor("#666666"), "right")
 
-    # — Línea top degradada (simulada con rectángulo delgado)
-    rect_fill(c, 0, H-2, W, 2, CYAN)
+    # ════════════════════════════════════════════════
+    # SECCIÓN 2 — NOMBRE + PROBABILIDAD  (y: 700 → 620)
+    # ════════════════════════════════════════════════
+    y = H - 90
 
-    # — LOGO área (texto si no hay imagen)
-    txt(c, "AutoScore AI", 40, H-38, "Helvetica-Bold", 16, CYAN)
-    txt(c, "Aprobacion Inteligente", 40, H-52, "Helvetica", 8, GRIS_TEXTO)
+    # Nombre cliente grande
+    txt(cv, nombre, M, y, "Helvetica-Bold", 18, NEGRO)
+    frect(cv, M, y-6, 50, 2, ROJO)
 
-    # — Línea separadora header
-    line_h(c, 40, W-40, H-65, HexColor("#0e2040"), 0.8)
+    # Círculo probabilidad — lado derecho
+    cx_c, cy_c, r_c = W-M-45, y-22, 34
+    frect(cv, cx_c-r_c-6, cy_c-r_c-6, (r_c+6)*2, (r_c+6)*2, BLANCO, r=r_c+6)
+    srect(cv, cx_c-r_c-6, cy_c-r_c-6, (r_c+6)*2, (r_c+6)*2, GRIS_CLARO, r=r_c+6)
+    # Arco fondo
+    cv.setStrokeColor(GRIS_CLARO); cv.setLineWidth(6)
+    cv.arc(cx_c-r_c, cy_c-r_c, cx_c+r_c, cy_c+r_c, startAng=0, extent=180)
+    # Arco progreso
+    cv.setStrokeColor(col); cv.setLineWidth(6)
+    cv.arc(cx_c-r_c, cy_c-r_c, cx_c+r_c, cy_c+r_c, startAng=0, extent=min(180, prob*1.8))
+    txt(cv, "PROB.", cx_c, cy_c+10, "Helvetica", 7, GRIS_MEDIO, "center")
+    txt(cv, f"{prob}%", cx_c, cy_c-8, "Helvetica-Bold", 18, NEGRO, "center")
 
-    # — Fecha y folio
-    import datetime
-    fecha = datetime.date.today().strftime("%d / %m / %Y")
-    txt(c, f"Fecha: {fecha}", W-40, H-38, "Helvetica", 8, GRIS_TEXTO, "right")
-    txt(c, "Analisis de Financiamiento Automotriz", W-40, H-52, "Helvetica", 7, HexColor("#334155"), "right")
+    y -= 22
+    txt(cv, "Estimado(a),", M, y, "Helvetica", 9, GRIS_MEDIO)
 
-    # — NOMBRE DEL CLIENTE grande
-    nombre_upper = nombre.upper()
-    txt(c, "Estimado(a),", 40, H-105, "Helvetica", 10, GRIS_TEXTO)
-    txt(c, nombre_upper, 40, H-125, "Helvetica-Bold", 22, BLANCO)
-    line_h(c, 40, 40 + c.stringWidth(nombre_upper, "Helvetica-Bold", 22), H-130, color_sc, 1.5)
+    # ════════════════════════════════════════════════
+    # SECCIÓN 3 — DECISIÓN BANNER  (y: ~640 → 600)
+    # ════════════════════════════════════════════════
+    y -= 24
+    frect(cv, M, y-28, CW, 32, HexColor(SC_BG[sc]), r=5)
+    srect(cv, M, y-28, CW, 32, HexColor(SC_BORDE[sc]), r=5)
+    frect(cv, M, y-28, 4, 32, col, r=2)
+    txt(cv, msg["decision"], M+14, y-8, "Helvetica-Bold", 10, HexColor(SC_TXT[sc]))
+    # Badge
+    bw = cv.stringWidth(msg["badge"], "Helvetica-Bold", 7) + 16
+    frect(cv, M+14, y-24, bw, 13, col, r=6)
+    txt(cv, msg["badge"], M+22, y-17, "Helvetica-Bold", 7, BLANCO)
 
-    # — BADGE DE RESULTADO
-    badge_x, badge_y, badge_w, badge_h = W-180, H-140, 140, 36
-    rounded_rect(c, badge_x, badge_y, badge_w, badge_h, 6,
-                 fill_color=HexColor("#0a1628"), stroke_color=color_sc, line_w=1)
-    txt(c, msg["icono"], badge_x + badge_w/2, badge_y + 22, "Helvetica-Bold", 9, color_sc, "center")
-    txt(c, msg["subtitulo"], badge_x + badge_w/2, badge_y + 9, "Helvetica", 7, GRIS_TEXTO, "center")
+    # ════════════════════════════════════════════════
+    # SECCIÓN 4 — MÉTRICAS 2 COLUMNAS  (y: ~570 → 520)
+    # ════════════════════════════════════════════════
+    y -= 46
+    hline(cv, M, W-M, y+8)
 
-    # ── SECCIÓN: TÍTULO EMOCIONAL ──────────────────────────────────
-    txt(c, msg["titulo"], 40, H-165, "Helvetica-Bold", 18, BLANCO)
-    line_h(c, 40, 260, H-172, color_sc, 2)
+    col_w = CW // 2 - 8
+    # Caja 1 — Capacidad de pago
+    frect(cv, M, y-42, col_w, 46, BLANCO, r=5)
+    srect(cv, M, y-42, col_w, 46, GRIS_CLARO, r=5)
+    frect(cv, M, y-42, col_w, 3, col, r=2)
+    txt(cv, "CAPACIDAD DE PAGO", M+10, y-12, "Helvetica", 7, GRIS_MEDIO)
+    txt(cv, f"${cap:,.0f}", M+10, y-30, "Helvetica-Bold", 16, NEGRO)
 
-    # ── CUERPO DEL MENSAJE ─────────────────────────────────────────
-    final_y = txt_wrap(c, msg["cuerpo"], 40, H-195,
-                       W-80, "Helvetica", 10, GRIS_CLARO, line_h_pt=16)
+    # Caja 2 — Mensualidad o meta enganche
+    x2 = M + col_w + 16
+    frect(cv, x2, y-42, col_w, 46, BLANCO, r=5)
+    srect(cv, x2, y-42, col_w, 46, GRIS_CLARO, r=5)
+    frect(cv, x2, y-42, col_w, 3, col, r=2)
+    if sc in ("ROJO","NARANJA"):
+        txt(cv, "META ENGANCHE", x2+10, y-12, "Helvetica", 7, GRIS_MEDIO)
+        txt(cv, "20-25% del precio", x2+10, y-30, "Helvetica-Bold", 11, col)
+    else:
+        txt(cv, "MENSUALIDAD ESTIMADA", x2+10, y-12, "Helvetica", 7, GRIS_MEDIO)
+        txt(cv, f"${men:,.0f}", x2+10, y-30, "Helvetica-Bold", 16, NEGRO)
 
-    # ── CITA DE ACCIÓN ─────────────────────────────────────────────
-    accion_y = final_y - 18
-    rounded_rect(c, 40, accion_y - 28, W-80, 42, 8,
-                 fill_color=HexColor("#0a1e38"),
-                 stroke_color=HexColor("#0e2a50"), line_w=0.8)
-    # borde izq de color
-    rect_fill(c, 40, accion_y - 28, 3, 42, color_sc)
-    txt_wrap(c, f"  {msg['accion']}", 50, accion_y - 4,
-             W-100, "Helvetica-Oblique", 10, CYAN_LIGHT, line_h_pt=14)
+    # ════════════════════════════════════════════════
+    # SECCIÓN 5 — MENSAJE EMOCIONAL  (y: ~470 → 380)
+    # ════════════════════════════════════════════════
+    y -= 60
+    hline(cv, M, W-M, y+6)
+    y -= 6
 
-    # ── MÉTRICAS PRINCIPALES ───────────────────────────────────────
-    met_y = accion_y - 72
-    txt(c, "Tu analisis personalizado", 40, met_y + 12, "Helvetica-Bold", 9, CYAN)
-    line_h(c, 40, W-40, met_y + 6, HexColor("#0e2040"), 0.5)
+    # Título emocional
+    txt(cv, msg["titulo"], M, y, "Helvetica-Bold", 13, NEGRO)
+    frect(cv, M, y-5, 42, 2, col)
+    y -= 20
 
-    # 3 cajas de métricas
-    box_w = (W - 80 - 20) / 3
-    boxes = [
-        ("Probabilidad de aprobacion", f"{prob}%", color_sc),
-        ("Capacidad de pago estimada", f"${cap_pago:,.0f}", CYAN_LIGHT),
-        ("Mensualidad estimada", f"${mensual:,.0f}", HexColor("#a5b4fc")),
-    ]
-    for i, (lbl, val, col) in enumerate(boxes):
-        bx = 40 + i * (box_w + 10)
-        by = met_y - 62
-        rounded_rect(c, bx, by, box_w, 55, 8,
-                     fill_color=HexColor("#080f20"),
-                     stroke_color=HexColor("#0e2040"), line_w=0.8)
-        # top accent line
-        rect_fill(c, bx, by + 53, box_w, 2, col)
-        txt(c, lbl, bx + box_w/2, by + 38, "Helvetica", 7, GRIS_TEXTO, "center")
-        txt(c, val, bx + box_w/2, by + 16, "Helvetica-Bold", 16, col, "center")
+    # Cuerpo del mensaje — word wrap en ancho completo
+    y = wrap_text(cv, msg["cuerpo"], M, y, CW, "Helvetica", 9.5, GRIS_OSCURO, leading=15)
+    y -= 10
 
-    # ── URGENCIA / LLAMADA A ACCIÓN ────────────────────────────────
-    urg_y = met_y - 90
-    rounded_rect(c, 40, urg_y - 32, W-80, 46, 8,
-                 fill_color=HexColor("#12071e"),
-                 stroke_color=MORADO, line_w=0.8)
-    txt(c, "⏰  " + msg["urgencia"], W/2, urg_y - 8,
-        "Helvetica-Bold", 9, DORADO, "center")
-    txt(c, "Habla hoy con tu asesor para asegurar tu unidad y condiciones",
-        W/2, urg_y - 22, "Helvetica", 8, GRIS_TEXTO, "center")
+    # ════════════════════════════════════════════════
+    # SECCIÓN 6 — PLAN DE ACCIÓN (si aplica)  (y: ~360 → 290)
+    # ════════════════════════════════════════════════
+    if msg["plan_lbl"] and msg["plan"]:
+        box_h = 16 + len(msg["plan"]) * 16 + 14
+        frect(cv, M, y-box_h, CW, box_h, HexColor(SC_BG[sc]), r=5)
+        srect(cv, M, y-box_h, CW, box_h, HexColor(SC_BORDE[sc]), r=5)
+        txt(cv, msg["plan_lbl"], M+12, y-14, "Helvetica-Bold", 8, HexColor(SC_TXT[sc]))
+        # Items en 2 columnas
+        items = msg["plan"]
+        half  = (len(items)+1)//2
+        for i, item in enumerate(items[:half]):
+            iy = y - 28 - i*16
+            txt(cv, f"+ {item}", M+12, iy, "Helvetica", 8.5, GRIS_OSCURO)
+        for i, item in enumerate(items[half:]):
+            iy = y - 28 - i*16
+            txt(cv, f"+ {item}", M+12+CW//2, iy, "Helvetica", 8.5, GRIS_OSCURO)
+        y -= box_h + 12
 
-    # ── DOCUMENTACIÓN RÁPIDA ───────────────────────────────────────
-    doc_y = urg_y - 58
-    txt(c, "Documentacion que necesitas tener lista:",
-        40, doc_y, "Helvetica-Bold", 9, CYAN)
-    doc_x = 40
-    doc_row_y = doc_y - 14
-    for i, doc in enumerate(docs[:6]):
-        col_offset = (i % 3) * (W/3)
-        row_offset = (i // 3) * 14
-        rounded_rect(c, 40 + col_offset, doc_row_y - row_offset - 12,
-                     (W-80)/3 - 8, 13, 3,
-                     fill_color=HexColor("#080f20"),
-                     stroke_color=HexColor("#0e2040"), line_w=0.5)
-        txt(c, f"  ✓  {doc}",
-            44 + col_offset, doc_row_y - row_offset - 3,
-            "Helvetica", 7.5, GRIS_CLARO)
+    # ════════════════════════════════════════════════
+    # SECCIÓN 7 — DOCUMENTOS  (y: ~280 → 240)
+    # ════════════════════════════════════════════════
+    txt(cv, "DOCUMENTACION REQUERIDA", M, y, "Helvetica-Bold", 8, ROJO)
+    y -= 12
+    chip_x = M
+    for doc in docs[:6]:
+        dw = cv.stringWidth(doc, "Helvetica", 8) + 18
+        if chip_x + dw > W-M:
+            chip_x = M; y -= 16
+        frect(cv, chip_x, y-12, dw, 14, HexColor(SC_BG[sc]), r=4)
+        srect(cv, chip_x, y-12, dw, 14, HexColor(SC_BORDE[sc]), r=4)
+        txt(cv, doc, chip_x+9, y-4, "Helvetica", 8, HexColor(SC_TXT[sc]))
+        chip_x += dw + 8
+    y -= 26
 
-    # ── SIGUIENTE PASO ─────────────────────────────────────────────
-    paso_y = doc_row_y - 46
-    anticipo = "Solicitar tu ENGANCHE COMPLETO" if plan == "DIRECTO" else "Apartar tu unidad con $5,000"
-    rounded_rect(c, 40, paso_y - 28, W-80, 42, 8,
-                 fill_color=HexColor("#0d1f0d"),
-                 stroke_color=VERDE, line_w=1)
-    txt(c, f"Siguiente paso:  {anticipo}",
-        W/2, paso_y - 5, "Helvetica-Bold", 10, VERDE, "center")
-    txt(c, "Cuenta BBVA  |  DAOSA SA DE CV  |  012320001250476847",
-        W/2, paso_y - 19, "Helvetica", 8, GRIS_TEXTO, "center")
+    # ════════════════════════════════════════════════
+    # SECCIÓN 8 — URGENCIA  (y: ~210 → 180)
+    # ════════════════════════════════════════════════
+    frect(cv, M, y-24, CW, 26, HexColor(SC_BG[sc]), r=5)
+    srect(cv, M, y-24, CW, 26, HexColor(SC_BORDE[sc]), r=5)
+    txt(cv, msg["urgencia"], M+CW//2, y-10, "Helvetica-Oblique", 8.5,
+        HexColor(SC_TXT[sc]), "center")
+    y -= 36
 
-    # ── FOOTER PÁGINA 1 ────────────────────────────────────────────
-    footer_y = 38
-    line_h(c, 40, W-40, footer_y + 18, HexColor("#0e2040"), 0.5)
-    txt(c, "Este documento es informativo. La aprobacion final depende de la evaluacion de la institucion financiera.",
-        W/2, footer_y + 5, "Helvetica", 6.5, HexColor("#1e3a4a"), "center")
-    txt(c, "AutoScore AI  —  Aprobacion Inteligente",
-        W/2, footer_y - 6, "Helvetica", 6.5, HexColor("#1e3a4a"), "center")
-    txt(c, "1", W-40, footer_y - 6, "Helvetica", 7, HexColor("#1e3a4a"), "right")
+    # ════════════════════════════════════════════════
+    # SECCIÓN 9 — CTA APARTAR UNIDAD (TODOS los scores)
+    # ════════════════════════════════════════════════
+    frect(cv, M, y-36, CW, 38, ROJO, r=6)
+    txt(cv, "ASEGURA TU UNIDAD HOY", M+CW//2, y-12,
+        "Helvetica-Bold", 11, BLANCO, "center")
+    txt(cv, "Solicita tu apartado con un deposito de $5,000", M+CW//2, y-24,
+        "Helvetica", 8.5, HexColor("#ffcccc"), "center")
+    txt(cv, "Las unidades disponibles se asignan por orden de llegada", M+CW//2, y-34,
+        "Helvetica", 7.5, HexColor("#ffaaaa"), "center")
+    y -= 48
 
-    c.showPage()
+    # ════════════════════════════════════════════════
+    # SECCIÓN 10 — CUENTA BBVA  (y: ~130 → 110)
+    # ════════════════════════════════════════════════
+    frect(cv, M, y-26, CW, 28, NEGRO, r=5)
+    txt(cv, "BBVA  |  DAOSA SA DE CV  |  012320001250476847",
+        M+CW//2, y-11, "Helvetica-Bold", 9, BLANCO, "center")
+    txt(cv, "Incluye en el concepto tu nombre completo y envia comprobante a tu asesor",
+        M+CW//2, y-21, "Helvetica", 7, HexColor("#888888"), "center")
+    y -= 38
 
-    # ══════════════════════════════════════════
-    # PÁGINA 2 — DATOS DE CONTACTO Y CIERRE
-    # ══════════════════════════════════════════
+    # ════════════════════════════════════════════════
+    # FOOTER — ASESOR + LEGAL  (y: ~70 → 20)
+    # ════════════════════════════════════════════════
+    hline(cv, M, W-M, y)
+    y -= 14
 
-    rect_fill(c, 0, 0, W, H, AZUL_OSCURO)
-    rect_fill(c, 0, H-60, W, 60, AZUL_MEDIO)
-    rect_fill(c, 0, H-2, W, 2, CYAN)
+    # Asesor izquierda
+    txt(cv, asesor or "Asesor AutoScore AI", M, y, "Helvetica-Bold", 9, NEGRO)
+    if tel_a:
+        txt(cv, f"Tel: {tel_a}", M, y-12, "Helvetica", 8, GRIS_MEDIO)
+    if correo_a:
+        txt(cv, correo_a, M+100, y-12, "Helvetica", 8, GRIS_MEDIO)
 
-    txt(c, "AutoScore AI", 40, H-28, "Helvetica-Bold", 13, CYAN)
-    txt(c, "Tu asesor de confianza", W-40, H-28, "Helvetica", 8, GRIS_TEXTO, "right")
-    line_h(c, 40, W-40, H-45, HexColor("#0e2040"), 0.5)
+    # Legal derecha
+    txt(cv, "Este documento es de caracter informativo.",
+        W-M, y, "Helvetica", 7, HexColor("#cccccc"), "right")
+    txt(cv, "La aprobacion final depende de la evaluacion de la institucion financiera.",
+        W-M, y-10, "Helvetica", 7, HexColor("#cccccc"), "right")
 
-    # ── DATOS DEL ASESOR ──────────────────────────────────────────
-    ase_y = H - 90
-    txt(c, "Tu Asesor Especializado", 40, ase_y, "Helvetica-Bold", 14, BLANCO)
-    line_h(c, 40, 220, ase_y - 6, CYAN, 1.5)
+    # Línea bottom roja
+    frect(cv, 0, 0, W, 4, ROJO)
 
-    # Card asesor
-    card_h = 100
-    rounded_rect(c, 40, ase_y - card_h - 12, W-80, card_h, 10,
-                 fill_color=HexColor("#080f20"),
-                 stroke_color=HexColor("#0e2040"), line_w=0.8)
-    rect_fill(c, 40, ase_y - 14, 3, card_h, CYAN)
-
-    iy = ase_y - 32
-    txt(c, asesor or "Asesor AutoScore", 60, iy, "Helvetica-Bold", 14, BLANCO)
-    txt(c, "Especialista en Financiamiento Automotriz", 60, iy - 14, "Helvetica", 8, CYAN_LIGHT)
-
-    # íconos de contacto
-    contactos = [
-        ("TEL:", tel_a or "—"),
-        ("EMAIL:", correo_a or "—"),
-        ("RFC:", datos.get("rfc","") or "—"),
-    ]
-    for j, (lbl, val) in enumerate(contactos):
-        cy2 = iy - 34 - j * 15
-        txt(c, lbl, 60, cy2, "Helvetica-Bold", 8, GRIS_TEXTO)
-        txt(c, val, 100, cy2, "Helvetica", 8, GRIS_CLARO)
-
-    # ── COMPROMISO DE SERVICIO ─────────────────────────────────────
-    comp_y = ase_y - card_h - 46
-    txt(c, "Nuestro Compromiso Contigo", 40, comp_y, "Helvetica-Bold", 12, BLANCO)
-    line_h(c, 40, 235, comp_y - 6, MORADO, 1.5)
-
-    compromisos = [
-        ("Transparencia total", "Te explicamos cada paso del proceso sin letra chica."),
-        ("Opciones reales",     "Trabajamos con multiples financieras para encontrar la mejor opcion."),
-        ("Acompanamiento",      "Tu asesor estara contigo desde la solicitud hasta la entrega."),
-        ("Velocidad",           "Procesos agiles para que tengas tu auto en el menor tiempo posible."),
-    ]
-    for k, (titulo, desc) in enumerate(compromisos):
-        ky = comp_y - 28 - k * 38
-        rounded_rect(c, 40, ky - 26, W-80, 34, 6,
-                     fill_color=HexColor("#070e1c"),
-                     stroke_color=HexColor("#0a1628"), line_w=0.5)
-        # bullet
-        c.setFillColor(CYAN)
-        c.circle(54, ky - 8, 3, fill=1, stroke=0)
-        txt(c, titulo, 64, ky - 4, "Helvetica-Bold", 9, BLANCO)
-        txt(c, desc, 64, ky - 16, "Helvetica", 8, GRIS_TEXTO)
-
-    # ── MENSAJE DE CIERRE FINAL ────────────────────────────────────
-    cierre_y = comp_y - 28 - 4 * 38 - 20
-
-    rounded_rect(c, 40, cierre_y - 52, W-80, 66, 10,
-                 fill_color=HexColor("#0d0719"),
-                 stroke_color=MORADO, line_w=1)
-    rect_fill(c, 40, cierre_y - 52, W-80, 2, MORADO)
-
-    cierres = {
-        "AZUL":     "Tu auto ideal te espera. Solo es cuestion de dar el siguiente paso.",
-        "VERDE":    "Tienes todo lo necesario. Hagamos realidad este proyecto juntos.",
-        "AMARILLO": "El camino esta trazado. Con el apoyo correcto, tu auto esta cerca.",
-        "NARANJA":  "Cada desafio tiene solucion. Trabajemos juntos para encontrar la tuya.",
-        "ROJO":     "El primer paso es el mas importante. Empieza hoy y cambia tu historia.",
-    }
-    txt(c, cierres.get(sc, cierres["AMARILLO"]),
-        W/2, cierre_y - 20, "Helvetica-BoldOblique", 11, BLANCO, "center")
-    txt(c, "— Tu equipo AutoScore AI",
-        W/2, cierre_y - 38, "Helvetica-Oblique", 9, CYAN_LIGHT, "center")
-
-    # ── FOOTER PÁGINA 2 ────────────────────────────────────────────
-    line_h(c, 40, W-40, 56, HexColor("#0e2040"), 0.5)
-    txt(c, "DAOSA SA DE CV  |  BBVA: 012320001250476847",
-        W/2, 42, "Helvetica", 7, GRIS_TEXTO, "center")
-    txt(c, "Este analisis es informativo. La aprobacion final depende de la evaluacion de la institucion financiera.",
-        W/2, 30, "Helvetica", 6.5, HexColor("#1e3a4a"), "center")
-    txt(c, "2", W-40, 30, "Helvetica", 7, HexColor("#1e3a4a"), "right")
-
-    c.showPage()
-    c.save()
+    cv.showPage()
+    cv.save()
     buf.seek(0)
     return buf
 
 
-# ══════════════════════════════════════════
 # APP PRINCIPAL
 # ══════════════════════════════════════════
 st.set_page_config(page_title="AutoScore AI", page_icon="🚗", layout="wide")
@@ -779,28 +701,9 @@ for k, v in {
     if k not in st.session_state:
         st.session_state[k] = v
 
-# ── TOPBAR ─────────────────────────────────────────────────────────
-_tb1, _tb2, _tb3 = st.columns([3, 5, 2])
-with _tb1:
-    st.image("AUTOSCOREIA.png", width=220)
-with _tb2:
-    st.markdown("""
-    <div style="height:72px;display:flex;align-items:center;justify-content:center;">
-      <span style="color:#888;font-size:0.72rem;letter-spacing:0.04em;">
-        Herramienta de Pre-Análisis de Crédito Automotriz
-      </span>
-    </div>""", unsafe_allow_html=True)
-with _tb3:
-    st.markdown("""
-    <div style="height:72px;display:flex;align-items:center;justify-content:flex-end;">
-      <span style="background:rgba(195,0,47,0.08);border:1px solid rgba(195,0,47,0.25);
-          border-radius:50px;padding:4px 14px;font-size:0.62rem;color:#c3002f;
-          letter-spacing:0.08em;text-transform:uppercase;font-weight:600;">
-          🔒 Datos protegidos
-      </span>
-    </div>""", unsafe_allow_html=True)
+# ── TOPBAR — solo línea roja, sin logo duplicado ───────────────────
 st.markdown("""
-<div style="height:2px;background:#c3002f;margin-bottom:18px;"></div>
+<div style="height:3px;background:#c3002f;margin-bottom:18px;"></div>
 """, unsafe_allow_html=True)
 
 # ── DOS COLUMNAS ───────────────────────────────────────────────────
