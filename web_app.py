@@ -1912,8 +1912,22 @@ with col_der:
             "NARANJA":  ("🟠","SCORE NARANJA", "#f97316","Perfil con áreas de oportunidad"),
             "ROJO":     ("🔴","SCORE ROJO",    "#ef4444","Perfil requiere estrategia alternativa"),
         }
-        if "sc" not in r or r.get("sc") not in {"AZUL","VERDE","AMARILLO","NARANJA","ROJO"}:
-            st.warning("Datos del análisis incompletos. Presiona 'Analizar Perfil Financiero' para regenerar.")
+        if r.get("modo_edicion") or "sc" not in r or r.get("sc") not in {"AZUL","VERDE","AMARILLO","NARANJA","ROJO"} or "prob_col" not in r:
+            st.markdown(f"""
+            <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:10px;
+                padding:20px;margin-top:120px;text-align:center;">
+              <div style="font-size:1.4rem;margin-bottom:8px;">✏️</div>
+              <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;
+                  color:#92400e;letter-spacing:0.06em;">MODO EDICION</div>
+              <div style="font-size:0.78rem;color:#78350f;margin-top:6px;">
+                  Folio: <b>{st.session_state.get("folio_actual","")}</b>
+              </div>
+              <div style="font-size:0.72rem;color:#a16207;margin-top:10px;line-height:1.5;">
+                  Edita los datos en el formulario de Solicitud abajo<br>
+                  y presiona "Actualizar Solicitud" cuando termines.
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
             st.stop()
         em, lbl, col_hex, dsc = SCORE_MAP[r["sc"]]
 
