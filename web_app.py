@@ -1482,28 +1482,61 @@ if True:  # bloque del buscador
         if st.button("🔍 Buscar", key="btn_buscar_global", use_container_width=True):
             if folio_global.strip():
                 folio_buscar = folio_global.strip().upper()
-                # Buscar en ambos lugares: análisis y solicitud
+                # Buscar en ambos lugares
                 datos_perfil_enc = buscar_perfil_por_folio(folio_buscar)
                 datos_sol_enc    = buscar_solicitud_por_folio(folio_buscar)
-                
+
                 if datos_perfil_enc or datos_sol_enc:
-                    # Combinar datos: solicitud + datos_form del análisis
+                    # Combinar datos: solicitud + análisis
                     datos_combinados = {}
                     if datos_sol_enc:
                         datos_combinados.update(datos_sol_enc)
-                    if datos_perfil_enc and datos_perfil_enc.get("datos_form"):
-                        # Datos del formulario para precargar
-                        st.session_state.datos_form_precargados = datos_perfil_enc["datos_form"]
                     
                     st.session_state.datos_precargados = datos_combinados
                     st.session_state.folio_actual = folio_buscar
                     st.session_state.folio_perfil_actual = folio_buscar
                     st.session_state.mostrar_solicitud = bool(datos_sol_enc)
                     
+                    # Si hay datos del análisis, precargar el formulario izquierdo
+                    if datos_perfil_enc and datos_perfil_enc.get("datos_form"):
+                        st.session_state.datos_form_precargados = datos_perfil_enc["datos_form"]
+                        # También reconstruir el resultado para que aparezca el panel derecho
+                        df = datos_perfil_enc["datos_form"]
+                        sc_v = datos_perfil_enc.get("Score","VERDE") or "VERDE"
+                        if sc_v not in ["AZUL","VERDE","AMARILLO","NARANJA","ROJO"]:
+                            sc_v = "VERDE"
+                        try:
+                            prob_v = int(float(datos_perfil_enc.get("Probabilidad",0) or 0))
+                        except:
+                            prob_v = 0
+                        sem_v = "verde" if "APROBADO" in datos_perfil_enc.get("Decision","").upper() else "amarillo"
+                        prob_col_v = "#4ade80" if prob_v>=70 else "#facc15" if prob_v>=50 else "#fb923c" if prob_v>=35 else "#f87171"
+                        st.session_state.resultado = {
+                            "sc": sc_v, "prob": prob_v, "prob_col": prob_col_v, "sem": sem_v,
+                            "temp": "🟡 TIBIO", "inv": "Cargado desde folio existente",
+                            "decision": datos_perfil_enc.get("Decision","APROBADO"),
+                            "plan": "AUTOMATICO",
+                            "msg_c": f"Datos cargados del folio {folio_buscar}",
+                            "msg_a": "Modo edición — modifica los campos y vuelve a analizar si necesitas recalcular",
+                            "condicionamientos": [],
+                            "alerta_cotitular": False, "alerta_ingresos": False,
+                            "alerta_investigacion": False,
+                            "financiera": "CrediNissan", "perfil": "MEDIO", "score": 0,
+                            "enganche_pct": (df.get("enganche",0)/df.get("precio",1)*100) if df.get("precio",0)>0 else 0,
+                            "nombre": df.get("nombre_cliente",""), "telefono": df.get("telefono",""),
+                            "correo": df.get("correo",""),
+                            "asesor": df.get("asesor",""), "telefono_asesor": df.get("telefono_asesor",""),
+                            "correo_asesor": df.get("correo_asesor",""), "rfc": df.get("rfc",""),
+                            "docs": ["INE","Comprobante de domicilio","Nómina","Estado de cuenta"],
+                            "mensualidad": 0, "cap_pago": df.get("ingreso",0)/2,
+                            "ingreso": df.get("ingreso",0),
+                            "tipo_ingreso": df.get("tipo_ingreso","Nómina"),
+                        }
+                    
                     if datos_perfil_enc and datos_sol_enc:
                         st.success(f"✅ Folio {folio_buscar} cargado — análisis + solicitud completos")
                     elif datos_perfil_enc:
-                        st.success(f"✅ Folio {folio_buscar} cargado — análisis encontrado (sin solicitud aún)")
+                        st.success(f"✅ Folio {folio_buscar} cargado — análisis encontrado")
                     else:
                         st.success(f"✅ Folio {folio_buscar} cargado — solicitud encontrada")
                     st.rerun()
@@ -1539,41 +1572,49 @@ with col_izq:
     with _fl2:
         st.image("AUTOSCOREIA.png", use_container_width=True)
     st.markdown("<div style='margin-bottom:8px;'></div>", unsafe_allow_html=True)
+    # Datos del formulario precargados desde un folio buscado
+    df_pre = st.session_state.get("datos_form_precargados", {}) or {}
 
     with st.form("formulario"):
 
         # ASESOR — ahora dentro del form para alineación consistente
         st.markdown('<div class="sec-label">👤 Datos del Asesor</div>', unsafe_allow_html=True)
         a1, a2 = st.columns(2)
-        with a1: asesor = st.text_input("Nombre asesor", placeholder="Nombre completo")
-        with a2: rfc    = st.text_input("RFC asesor", placeholder="XAXX010101000")
+        with a1: asesor = st.text_input("Nombre asesor", value=df_pre.get("asesor",""), placeholder="Nombre completo")
+        with a2: rfc    = st.text_input("RFC asesor", value=df_pre.get("rfc",""), placeholder="XAXX010101000")
         b1, b2 = st.columns(2)
-        with b1: telefono_asesor = st.text_input("Teléfono asesor", placeholder="55 1234 5678")
-        with b2: correo_asesor   = st.text_input("Correo asesor", placeholder="asesor@correo.com")
+        with b1: telefono_asesor = st.text_input("Teléfono asesor", value=df_pre.get("telefono_asesor",""), placeholder="55 1234 5678")
+        with b2: correo_asesor   = st.text_input("Correo asesor", value=df_pre.get("correo_asesor",""), placeholder="asesor@correo.com")
 
         # CLIENTE
         st.markdown('<div class="sec-label">👥 Datos del Cliente</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
-        with c1: nombre_cliente = st.text_input("Nombre cliente", placeholder="Nombre completo")
-        with c2: telefono       = st.text_input("Teléfono", placeholder="55 9876 5432")
-        correo = st.text_input("Correo cliente", placeholder="cliente@correo.com")
+        with c1: nombre_cliente = st.text_input("Nombre cliente", value=df_pre.get("nombre_cliente",""), placeholder="Nombre completo")
+        with c2: telefono       = st.text_input("Teléfono", value=df_pre.get("telefono",""), placeholder="55 9876 5432")
+        correo = st.text_input("Correo cliente", value=df_pre.get("correo",""), placeholder="cliente@correo.com")
 
         # PERFIL
         st.markdown('<div class="sec-label">📊 Perfil Financiero</div>', unsafe_allow_html=True)
         p1, p2, p3 = st.columns(3)
-        with p1: edad        = st.number_input("Edad", 18, 73, 18)
-        with p2: ingreso     = st.number_input("Ingreso mensual ($)", min_value=6500.0, value=6500.0, step=500.0, format="%.0f")
-        with p3: tipo_ingreso= st.selectbox("Tipo de ingreso", ["Nómina","Independiente","No comprueba"])
+        with p1: edad        = st.number_input("Edad", 18, 73, int(df_pre.get("edad",18)))
+        with p2: ingreso     = st.number_input("Ingreso mensual ($)", min_value=6500.0, value=float(df_pre.get("ingreso",6500.0) or 6500.0), step=500.0, format="%.0f")
+        tipos_ing = ["Nómina","Independiente","No comprueba"]
+        with p3: tipo_ingreso= st.selectbox("Tipo de ingreso", tipos_ing,
+            index=tipos_ing.index(df_pre.get("tipo_ingreso","Nómina")) if df_pre.get("tipo_ingreso","Nómina") in tipos_ing else 0)
 
         q1, q2, q3 = st.columns(3)
         with q1: negocio_casa  = st.selectbox(
-            "Negocio en domicilio (solo independientes)", [1,2,0],
-            index=2,
-            format_func=lambda x:"Sí" if x==1 else ("No" if x==2 else "— No aplica —"),
-            help="Aparece como 'No aplica' si el tipo de ingreso no es Independiente. Activa la alerta de investigación física cuando aplica."
+            "Negocio en domicilio (solo independientes)", [0,1,2],
+            index=[0,1,2].index(df_pre.get("negocio_casa",0)) if df_pre.get("negocio_casa",0) in [0,1,2] else 0,
+            format_func=lambda x:"— No aplica —" if x==0 else ("Sí" if x==1 else "No"),
+            help="Solo aplica para Independientes — activa la alerta de investigación física"
         )
-        with q2: domicilio     = st.selectbox("Antigüedad domicilio", [1,2,3], format_func=lambda x:["<1 año","1-3 años","+3 años"][x-1])
-        with q3: domicilio_buro= st.selectbox("Domicilio = ID", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
+        with q2: domicilio     = st.selectbox("Antigüedad domicilio", [1,2,3],
+            index=[1,2,3].index(df_pre.get("domicilio",1)) if df_pre.get("domicilio",1) in [1,2,3] else 0,
+            format_func=lambda x:["<1 año","1-3 años","+3 años"][x-1])
+        with q3: domicilio_buro= st.selectbox("Domicilio = ID", [1,2],
+            index=[1,2].index(df_pre.get("domicilio_buro",1)) if df_pre.get("domicilio_buro",1) in [1,2] else 0,
+            format_func=lambda x:"Sí" if x==1 else "No")
         if tipo_ingreso == "Independiente":
             st.caption("ℹ️ Para independientes: indica si el negocio está en su domicilio (activa investigación física)")
         else:
@@ -1582,33 +1623,52 @@ with col_izq:
         # VEHÍCULO
         st.markdown('<div class="sec-label">🚗 Datos del Vehículo</div>', unsafe_allow_html=True)
         v1, v2, v3, v4 = st.columns(4)
-        with v1: precio    = st.number_input("Precio ($)", min_value=0.0, format="%0.0f")
-        with v2: enganche  = st.number_input("Enganche ($)", min_value=0.0, format="%0.0f")
-        with v3: plazo     = st.selectbox("Plazo", [12,24,36,48,60,72])
-        with v4: consultas = st.number_input("Consultas buró", 0, 20)
+        with v1: precio    = st.number_input("Precio ($)", min_value=0.0, value=float(df_pre.get("precio",0.0)), format="%0.0f")
+        with v2: enganche  = st.number_input("Enganche ($)", min_value=0.0, value=float(df_pre.get("enganche",0.0)), format="%0.0f")
+        plazos_lst = [12,24,36,48,60,72]
+        with v3: plazo     = st.selectbox("Plazo", plazos_lst,
+            index=plazos_lst.index(df_pre.get("plazo",60)) if df_pre.get("plazo",60) in plazos_lst else 4)
+        with v4: consultas = st.number_input("Consultas buró", 0, 20, int(df_pre.get("consultas",0)))
 
         # HISTORIAL
         st.markdown('<div class="sec-label">🏦 Historial Crediticio</div>', unsafe_allow_html=True)
         h1, h2, h3 = st.columns(3)
-        with h1: auto        = st.selectbox("Crédito auto previo", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
-        with h2: credinissan = st.selectbox("CrediNissan", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
-        with h3: hipotecario = st.selectbox("Hipotecario", [1,2,3], format_func=lambda x:["Bancario","Infonavit","No tiene"][x-1])
+        with h1: auto        = st.selectbox("Crédito auto previo", [1,2],
+            index=[1,2].index(df_pre.get("auto",1)) if df_pre.get("auto",1) in [1,2] else 0,
+            format_func=lambda x:"Sí" if x==1 else "No")
+        with h2: credinissan = st.selectbox("CrediNissan", [1,2],
+            index=[1,2].index(df_pre.get("credinissan",1)) if df_pre.get("credinissan",1) in [1,2] else 0,
+            format_func=lambda x:"Sí" if x==1 else "No")
+        with h3: hipotecario = st.selectbox("Hipotecario", [1,2,3],
+            index=[1,2,3].index(df_pre.get("hipotecario",1)) if df_pre.get("hipotecario",1) in [1,2,3] else 0,
+            format_func=lambda x:["Bancario","Infonavit","No tiene"][x-1])
 
         i1, i2, i3 = st.columns(3)
-        with i1: tarjeta_alta = st.selectbox("Tarjetas >$100K", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
-        with i2: tarjeta_baja = st.selectbox("Tarjetas <$100K", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
-        with i3: atrasos      = st.selectbox("Atrasos en buró", [1,2,3], format_func=lambda x:["1-30d","31-60d","+61d"][x-1])
+        with i1: tarjeta_alta = st.selectbox("Tarjetas >$100K", [1,2],
+            index=[1,2].index(df_pre.get("tarjeta_alta",1)) if df_pre.get("tarjeta_alta",1) in [1,2] else 0,
+            format_func=lambda x:"Sí" if x==1 else "No")
+        with i2: tarjeta_baja = st.selectbox("Tarjetas <$100K", [1,2],
+            index=[1,2].index(df_pre.get("tarjeta_baja",1)) if df_pre.get("tarjeta_baja",1) in [1,2] else 0,
+            format_func=lambda x:"Sí" if x==1 else "No")
+        with i3: atrasos      = st.selectbox("Atrasos en buró", [1,2,3],
+            index=[1,2,3].index(df_pre.get("atrasos",1)) if df_pre.get("atrasos",1) in [1,2,3] else 0,
+            format_func=lambda x:["1-30d","31-60d","+61d"][x-1])
 
         # PERFIL COMPRA
         st.markdown('<div class="sec-label">🔥 Perfil de Compra</div>', unsafe_allow_html=True)
         k1, k2, k3 = st.columns(3)
-        with k1: enganche_disp = st.selectbox("¿Tiene enganche?", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
-        with k2: compra_mes    = st.selectbox("¿Compra este mes?", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
-        with k3: unidad        = st.selectbox("¿Hay unidad?", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
+        with k1: enganche_disp = st.selectbox("¿Tiene enganche?", [1,2],
+            index=[1,2].index(df_pre.get("enganche_disp",1)) if df_pre.get("enganche_disp",1) in [1,2] else 0,
+            format_func=lambda x:"Sí" if x==1 else "No")
+        with k2: compra_mes    = st.selectbox("¿Compra este mes?", [1,2],
+            index=[1,2].index(df_pre.get("compra_mes",1)) if df_pre.get("compra_mes",1) in [1,2] else 0,
+            format_func=lambda x:"Sí" if x==1 else "No")
+        with k3: unidad        = st.selectbox("¿Hay unidad?", [1,2],
+            index=[1,2].index(df_pre.get("unidad",1)) if df_pre.get("unidad",1) in [1,2] else 0,
+            format_func=lambda x:"Sí" if x==1 else "No")
 
         st.markdown("<div style='margin:4px 0'></div>", unsafe_allow_html=True)
-        submitted = st.form_submit_button("✦  ANALIZAR PERFIL FINANCIERO")
-
+        submitted = st.form_submit_button("✦  ANALIZAR PERFIL FINANCIERO")S
 # ── LÓGICA ─────────────────────────────────────────────────────────
 if submitted:
     st.session_state.ingreso = ingreso
