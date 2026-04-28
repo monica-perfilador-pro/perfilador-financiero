@@ -1408,6 +1408,20 @@ with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expa
     """, unsafe_allow_html=True)
     bg1, bg2, bg3 = st.columns([3,1,1])
     with bg1:
+        st.markdown("""
+        <style>
+        /* Input del folio en buscador global - texto blanco sobre fondo oscuro */
+        [data-testid="stExpander"] input[type="text"] {
+            background: #1a1a1a !important; 
+            color: #ffffff !important;
+            border: 1px solid #c3002f !important;
+        }
+        [data-testid="stExpander"] input[type="text"]::placeholder {
+           color: #888 !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)                                    
+
         folio_global = st.text_input("Folio de solicitud (ej: SOL-2026-0001)",
                                       value=st.session_state.folio_actual or "",
                                       key="folio_buscar_global",
@@ -1420,8 +1434,31 @@ with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expa
                 if datos_enc:
                     st.session_state.datos_precargados = datos_enc
                     st.session_state.folio_actual = folio_global.strip().upper()
+                    st.session_state.folio_perfil_actual = folio_global.strip().upper()
                     st.session_state.mostrar_solicitud = True
-                    st.success(f"✅ Solicitud {st.session_state.folio_actual} cargada")
+                    # Reconstruir el resultado del análisis para que aparezca el panel derecho
+                    st.session_state.resultado = {
+                        "asesor":      datos_enc.get("asesor",""),
+                        "telefono_asesor": "",
+                        "nombre":      datos_enc.get("nombre_completo",""),
+                        "telefono":    datos_enc.get("celular",""),
+                        "correo":      datos_enc.get("correo_cliente",""),
+                        "sc":          datos_enc.get("score_sc",""),
+                        "prob":        datos_enc.get("score_prob",0),
+                        "decision":    datos_enc.get("decision",""),
+                        "ingreso":     datos_enc.get("ingreso_fijo",0),
+                        "tipo_ingreso":"Nómina",
+                        "cap_pago":    0,
+                        "mensualidad": 0,
+                        "temp":        "",
+                        "inv":         "",
+                        "condicionamientos":[],
+                        "plan":        "",
+                        "msg_c":       "Datos cargados desde solicitud existente",
+                        "msg_a":       f"Editando folio {folio_global.strip().upper()}",
+                        "docs":        ["INE","Comprobante de domicilio"],
+                    }
+                    st.success(f"✅ Solicitud {st.session_state.folio_actual} cargada — los datos están en el formulario de solicitud abajo")
                     st.rerun()
                 else:
                     st.error(f"❌ Folio no encontrado: {folio_global}")
