@@ -1668,7 +1668,7 @@ with col_izq:
             format_func=lambda x:"Sí" if x==1 else "No")
 
         st.markdown("<div style='margin:4px 0'></div>", unsafe_allow_html=True)
-        submitted = st.form_submit_button("✦  ANALIZAR PERFIL FINANCIERO")S
+        submitted = st.form_submit_button("✦  ANALIZAR PERFIL FINANCIERO")
 # ── LÓGICA ─────────────────────────────────────────────────────────
 if submitted:
     st.session_state.ingreso = ingreso
