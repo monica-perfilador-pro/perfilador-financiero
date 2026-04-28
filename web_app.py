@@ -189,12 +189,12 @@ def generar_folio_perfil() -> str:
             range="\'AutoScore Perfiles\'!A2:A10000"
         ).execute()
         valores = result.get("values", [])
-        prefijo = f"PER-{año}-"
+        prefijo = f"AS-{año}-"
         contador = sum(1 for r in valores if r and r[0].startswith(prefijo))
         return f"{prefijo}{contador+1:04d}"
     except Exception:
         ts = datetime.datetime.now().strftime("%H%M%S")
-        return f"PER-{año}-{ts}"
+        return f"AS-{año}-{ts}"
 
 
 def buscar_perfil_duplicado(telefono: str, nombre: str) -> dict:
@@ -987,10 +987,7 @@ def generar_pdf_solicitud(d: dict) -> BytesIO:
         s_frect(cv, 30, ref_y-12, 14, 14, ROJO)
         s_txt(cv, str(i), 37, ref_y-3, "Helvetica-Bold", 8, white, "center")
         # Datos
-        s_field(cv, 46,  ref_y, 110, 14, "Apellido Paterno",  d.get(prefijo+"ap",""))
-        s_field(cv, 156, ref_y, 110, 14, "Apellido Materno",  d.get(prefijo+"am",""))
-        s_field(cv, 266, ref_y, 110, 14, "Primer Nombre",     d.get(prefijo+"nom",""))
-        s_field(cv, 376, ref_y, 110, 14, "Segundo Nombre",    d.get(prefijo+"nom2",""))
+        s_field(cv, 46,  ref_y, 440, 14, "Nombre Completo",  d.get(prefijo+"nombre_completo",""))
         s_field(cv, 486, ref_y, 96,  14, "Parentesco",        d.get(prefijo+"parentesco",""))
 
         ref_y -= 14
@@ -2171,12 +2168,10 @@ if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud
         st.markdown('<div class="sec-label">👥 Referencias Personales (3 obligatorias)</div>', unsafe_allow_html=True)
         refs = {}
         for i in range(1, 4):
-            st.markdown(f"<div style='font-size:0.72rem;color:#c3002f;font-weight:600;margin-top:8px;'>Referencia #{i}</div>", unsafe_allow_html=True)
-            r1, r2, r3, r4 = st.columns(4)
-            with r1: refs[f"ref{i}_ap"]   = st.text_input(f"Apellido paterno #{i}", value=p.get(f"ref{i}_ap",""), key=f"ref_ap_{i}")
-            with r2: refs[f"ref{i}_am"]   = st.text_input(f"Apellido materno #{i}", value=p.get(f"ref{i}_am",""), key=f"ref_am_{i}")
-            with r3: refs[f"ref{i}_nom"]  = st.text_input(f"Primer nombre #{i}",     value=p.get(f"ref{i}_nom",""), key=f"ref_nom_{i}")
-            with r4: refs[f"ref{i}_parentesco"] = st.text_input(f"Parentesco #{i}",  value=p.get(f"ref{i}_parentesco",""), key=f"ref_par_{i}")
+            st.markdown(f"<div style='font-size:0.78rem;color:#c3002f;font-weight:700;margin:18px 0 6px;padding-top:10px;border-top:1px solid #f0f0f0;'>👤 Referencia #{i}</div>", unsafe_allow_html=True)
+            r1, r2 = st.columns([3,1])
+            with r1: refs[f"ref{i}_nombre_completo"] = st.text_input(f"Nombre completo #{i}", value=p.get(f"ref{i}_nombre_completo",""), placeholder="Apellido paterno, materno y nombres", key=f"ref_nom_{i}")
+            with r2: refs[f"ref{i}_parentesco"]      = st.text_input(f"Parentesco #{i}",      value=p.get(f"ref{i}_parentesco",""), key=f"ref_par_{i}")
             t1, t2, t3 = st.columns(3)
             with t1: refs[f"ref{i}_tel_fijo"] = st.text_input(f"Tel fijo #{i}",     value=p.get(f"ref{i}_tel_fijo",""), key=f"ref_tf_{i}")
             with t2: refs[f"ref{i}_tel_cel"]  = st.text_input(f"Tel celular #{i}",   value=p.get(f"ref{i}_tel_cel",""), key=f"ref_tc_{i}")
