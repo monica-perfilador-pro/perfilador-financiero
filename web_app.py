@@ -38,7 +38,6 @@ def guardar_perfil_sheets(datos: dict, folio: str = None) -> str:
             ", ".join(datos.get("condicionamientos",[])),
             datos.get("plan",""),
             datos.get("ingreso",0), datos.get("tipo_ingreso",""),
-            __import__("json").dumps(datos.get("datos_form",{}), ensure_ascii=False),
         ]
         service.spreadsheets().values().append(
             spreadsheetId=SHEET_ID,
@@ -78,44 +77,7 @@ def generar_folio_unico() -> str:
         # Fallback: timestamp si falla Sheets
         ts = datetime.datetime.now().strftime("%H%M%S")
         return f"SOL-{año}-{ts}"
-def buscar_perfil_por_folio(folio: str) -> dict:
-    """Busca un perfil por folio en AutoScore Perfiles y retorna sus datos del formulario."""
-    import json
-    try:
-        from google.oauth2.service_account import Credentials
-        from googleapiclient.discovery import build
-        SHEET_ID  = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
-        scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
-        creds = Credentials.from_service_account_info(
-            dict(st.secrets["gcp_service_account"]), scopes=scopes)
-        service = build("sheets", "v4", credentials=creds)
-        result = service.spreadsheets().values().get(
-            spreadsheetId=SHEET_ID, range="'AutoScore Perfiles'!A1:T10000"
-        ).execute()
-        valores = result.get("values", [])
-        if len(valores) < 2:
-            return None
-        headers = valores[0]
-        for row in valores[1:]:
-            while len(row) < len(headers):
-                row.append("")
-            registro = dict(zip(headers, row))
-            if registro.get("Folio","").strip().upper() == folio.strip().upper():
-                try:
-                    datos_form = json.loads(registro.get("Datos_Form","{}"))
-                except Exception:
-                    datos_form = {}
-                return {
-                    "Folio":     registro.get("Folio",""),
-                    "Fecha":     registro.get("Fecha",""),
-                    "Score":     registro.get("Score",""),
-                    "Probabilidad": registro.get("Probabilidad",""),
-                    "Decision":  registro.get("Decision",""),
-                    "datos_form": datos_form,
-                }
-        return None
-    except Exception:
-        return None
+
 
 def buscar_solicitud_por_folio(folio: str) -> dict:
     """Busca una solicitud por folio y retorna los datos para precargar el form."""
@@ -227,12 +189,12 @@ def generar_folio_perfil() -> str:
             range="\'AutoScore Perfiles\'!A2:A10000"
         ).execute()
         valores = result.get("values", [])
-        prefijo = f"AS-{año}-"
+        prefijo = f"PER-{año}-"
         contador = sum(1 for r in valores if r and r[0].startswith(prefijo))
         return f"{prefijo}{contador+1:04d}"
     except Exception:
         ts = datetime.datetime.now().strftime("%H%M%S")
-        return f"AS-{año}-{ts}"
+        return f"PER-{año}-{ts}"
 
 
 def buscar_perfil_duplicado(telefono: str, nombre: str) -> dict:
@@ -795,7 +757,6 @@ def generar_pdf_solicitud(d: dict) -> BytesIO:
     cv.setTitle("Solicitud de Credito - AutoScore AI")
 
     fecha = datetime.date.today().strftime("%d / %m / %Y")
-    folio_pdf = d.get("folio", "")
 
     # ════════════════════════════════════════════════════════════
     # PAGINA 1
@@ -804,8 +765,6 @@ def generar_pdf_solicitud(d: dict) -> BytesIO:
     # ── HEADER ───────────────────────────────────────────────────
     s_txt(cv, "SOLICITUD DE CREDITO PERSONA FISICA", 30, H-30, "Helvetica-Bold", 12, NEGRO)
     s_txt(cv, f"Fecha: {fecha}", W-30, H-30, "Helvetica", 9, NEGRO, "right")
-    if folio_pdf:
-        s_txt(cv, f"Folio: {folio_pdf}", W-30, H-42, "Helvetica-Bold", 9, ROJO, "right")
     s_frect(cv, 30, H-36, 552, 1.5, ROJO)
 
     # ── DATOS DEL ASESOR Y FUENTE DE VENTA ────────────────────────
@@ -1028,9 +987,12 @@ def generar_pdf_solicitud(d: dict) -> BytesIO:
         s_frect(cv, 30, ref_y-12, 14, 14, ROJO)
         s_txt(cv, str(i), 37, ref_y-3, "Helvetica-Bold", 8, white, "center")
         # Datos
-        s_field(cv, 46,  ref_y, 440, 14, "Nombre Completo",  d.get(prefijo+"nombre_completo",""))
+        s_field(cv, 46,  ref_y, 110, 14, "Apellido Paterno",  d.get(prefijo+"ap",""))
+        s_field(cv, 156, ref_y, 110, 14, "Apellido Materno",  d.get(prefijo+"am",""))
+        s_field(cv, 266, ref_y, 110, 14, "Primer Nombre",     d.get(prefijo+"nom",""))
+        s_field(cv, 376, ref_y, 110, 14, "Segundo Nombre",    d.get(prefijo+"nom2",""))
         s_field(cv, 486, ref_y, 96,  14, "Parentesco",        d.get(prefijo+"parentesco",""))
-      
+
         ref_y -= 14
         s_field(cv, 46,  ref_y, 86, 14, "Tel. Fijo",         d.get(prefijo+"tel_fijo",""))
         s_field(cv, 132, ref_y, 86, 14, "Tel. Oficina",      d.get(prefijo+"tel_ofi",""))
@@ -1437,7 +1399,7 @@ if "datos_precargados" not in st.session_state:
 if "folio_actual" not in st.session_state:
     st.session_state.folio_actual = None
 
-with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expanded=True):
+with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expanded=False):
     st.markdown("""
     <div style="font-size:0.78rem;color:#92400e;margin-bottom:6px;">
       Si ya generaste una solicitud antes y solo necesitas modificar datos, ingresa el folio aquí.
@@ -1446,20 +1408,6 @@ with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expa
     """, unsafe_allow_html=True)
     bg1, bg2, bg3 = st.columns([3,1,1])
     with bg1:
-        st.markdown("""
-        <style>
-        /* Input del folio en buscador global - texto blanco sobre fondo oscuro */
-        [data-testid="stExpander"] input[type="text"] {
-            background: #1a1a1a !important; 
-            color: #ffffff !important;
-            border: 1px solid #c3002f !important;
-        }
-        [data-testid="stExpander"] input[type="text"]::placeholder {
-           color: #888 !important;
-        }
-        </style>
-        """, unsafe_allow_html=True)                                    
-
         folio_global = st.text_input("Folio de solicitud (ej: SOL-2026-0001)",
                                       value=st.session_state.folio_actual or "",
                                       key="folio_buscar_global",
@@ -1472,50 +1420,8 @@ with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expa
                 if datos_enc:
                     st.session_state.datos_precargados = datos_enc
                     st.session_state.folio_actual = folio_global.strip().upper()
-                    st.session_state.folio_perfil_actual = folio_global.strip().upper()
                     st.session_state.mostrar_solicitud = True
-                    # Cargar mínimo necesario para mostrar formulario de solicitud
-                    st.session_state.resultado = {
-                        "asesor":          datos_enc.get("asesor",""),
-                        "telefono_asesor": "",
-                        "correo_asesor":   "",
-                        "rfc":             datos_enc.get("rfc_asesor",""),
-                        "nombre":          datos_enc.get("nombre_completo",""),
-                        "telefono":        datos_enc.get("celular",""),
-                        "correo":          datos_enc.get("correo_cliente",""),
-                        "ingreso":         datos_enc.get("ingreso_fijo",0),
-                    }    
-                        # Cargar datos para modo edición
-                    sc_v = datos_enc.get("score_sc","VERDE") or "VERDE"
-                    if sc_v not in ["AZUL","VERDE","AMARILLO","NARANJA","ROJO"]:
-                        sc_v = "VERDE"
-                    st.session_state.resultado = {
-                        "asesor":          datos_enc.get("asesor",""),
-                        "telefono_asesor": "",
-                        "correo_asesor":   "",
-                        "rfc":             datos_enc.get("rfc_asesor",""),
-                        "nombre":          datos_enc.get("nombre_completo",""),
-                        "telefono":        datos_enc.get("celular",""),
-                        "correo":          datos_enc.get("correo_cliente",""),
-                        "ingreso":         datos_enc.get("ingreso_fijo",0),
-                        "tipo_ingreso":    "Nómina",
-                        "sc":              sc_v,
-                        "sem":             "verde",
-                        "prob":            int(float(datos_enc.get("score_prob",0) or 0)),
-                        "decision":        datos_enc.get("decision","APROBADO"),
-                        "cap_pago":        0,
-                        "mensualidad":     0,
-                        "temp":            "TIBIO",
-                        "inv":             "Sin alerta relevante",
-                        "condicionamientos":[],
-                        "plan":            "AUTOMATICO",
-                        "msg_c":           "Editando solicitud existente",
-                        "msg_a":           f"Modo edición — folio {folio_global.strip().upper()}",
-                        "docs":            ["INE","Comprobante de domicilio","Nómina"],
-                        "financiera":      "CrediNissan",
-                        "modo_edicion":    True,
-                    }   
-                    st.success(f"✅ Solicitud {st.session_state.folio_actual} cargada — los datos están en el formulario de solicitud abajo")
+                    st.success(f"✅ Solicitud {st.session_state.folio_actual} cargada")
                     st.rerun()
                 else:
                     st.error(f"❌ Folio no encontrado: {folio_global}")
@@ -1526,8 +1432,6 @@ with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expa
         if st.button("➕ Nueva", key="btn_nueva_global", use_container_width=True):
             st.session_state.datos_precargados = {}
             st.session_state.folio_actual = None
-            st.session_state.resultado = None
-            st.session_state.mostrar_solicitud = False
             st.rerun()
 
     if st.session_state.folio_actual:
@@ -1578,11 +1482,18 @@ with col_izq:
         with p3: tipo_ingreso= st.selectbox("Tipo de ingreso", ["Nómina","Independiente","No comprueba"])
 
         q1, q2, q3 = st.columns(3)
-        with q1: negocio_casa  = st.selectbox("Negocio en domicilio", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
+        with q1: negocio_casa  = st.selectbox(
+            "Negocio en domicilio (solo independientes)", [1,2,0],
+            index=2,
+            format_func=lambda x:"Sí" if x==1 else ("No" if x==2 else "— No aplica —"),
+            help="Aparece como 'No aplica' si el tipo de ingreso no es Independiente. Activa la alerta de investigación física cuando aplica."
+        )
         with q2: domicilio     = st.selectbox("Antigüedad domicilio", [1,2,3], format_func=lambda x:["<1 año","1-3 años","+3 años"][x-1])
         with q3: domicilio_buro= st.selectbox("Domicilio = ID", [1,2], format_func=lambda x:"Sí" if x==1 else "No")
         if tipo_ingreso == "Independiente":
-            st.caption("⚠️ Solo aplica para independientes")
+            st.caption("ℹ️ Para independientes: indica si el negocio está en su domicilio (activa investigación física)")
+        else:
+            st.caption("ℹ️ El campo 'Negocio en domicilio' solo aplica para tipo de ingreso Independiente — déjalo en 'No aplica'")
 
         # VEHÍCULO
         st.markdown('<div class="sec-label">🚗 Datos del Vehículo</div>', unsafe_allow_html=True)
@@ -1751,8 +1662,9 @@ if submitted:
     if tipo_ingreso!="Nómina" and prob<45:     inv="Validación adicional requerida"
     if domicilio_buro==2:                      inv="Validación de domicilio"
     if tipo_ingreso=="Independiente":          inv="Validación de ingresos"
+    # Investigación física solo si independiente Y tiene negocio en domicilio
     if tipo_ingreso=="Independiente" and negocio_casa==1:
-        prob=max(prob,80); inv="Requiere validación física"
+        prob=max(prob,80); inv="Requiere validación física (independiente con negocio en domicilio)"
 
     docs=["INE","Comprobante de domicilio"]
     if plan=="DIRECTO":          docs=["INE","Comprobante","Cotización"]
@@ -1794,25 +1706,24 @@ if submitted:
     st.session_state.cotitular_activo    = (plan=="COTITULAR")
     st.session_state.cotitular_resultado = None
 
-    # Limpiar flags de edición — esto es un análisis nuevo
-    if "modo_edicion" in st.session_state.resultado:
-        del st.session_state.resultado["modo_edicion"]
-    st.session_state.folio_actual = None
-    st.session_state.datos_precargados = {}
-
     # Recolectar todos los datos del formulario para poder editar después
     datos_form_completo = {
-        "edad": edad, "ingreso": ingreso, "tipo_ingreso": tipo_ingreso,
-        "negocio": negocio, "antiguedad": antiguedad, "domicilio_id": domicilio_id,
-        "precio": precio, "engan": engan, "plazo": plazo, "consultas": consultas,
-        "credi": credi, "auto": auto, "hipoteca": hipoteca,
-        "tarjetas_alta": tarjetas_alta, "tarjetas_baja": tarjetas_baja,
-        "atrasos": atrasos, "tiene_engan": tiene_engan,
-        "compra_mes": compra_mes, "tiene_unidad": tiene_unidad,
-        "asesor": asesor, "telefono_asesor": telefono_asesor,
-        "correo_asesor": correo_asesor, "rfc": rfc,
+        "asesor": asesor, "rfc": rfc,
+        "telefono_asesor": telefono_asesor, "correo_asesor": correo_asesor,
         "nombre_cliente": nombre_cliente, "telefono": telefono, "correo": correo,
+        "edad": int(edad), "ingreso": float(ingreso), "tipo_ingreso": tipo_ingreso,
+        "negocio_casa": int(negocio_casa), "domicilio": int(domicilio),
+        "domicilio_buro": int(domicilio_buro),
+        "precio": float(precio), "enganche": float(enganche),
+        "plazo": int(plazo), "consultas": int(consultas),
+        "auto": int(auto), "credinissan": int(credinissan),
+        "hipotecario": int(hipotecario),
+        "tarjeta_alta": int(tarjeta_alta), "tarjeta_baja": int(tarjeta_baja),
+        "atrasos": int(atrasos),
+        "enganche_disp": int(enganche_disp), "compra_mes": int(compra_mes),
+        "unidad": int(unidad),
     }
+    # Detectar perfil duplicado del mismo cliente en últimas 24h
     datos_perfil = {**st.session_state.resultado,
         "ingreso": ingreso, "tipo_ingreso": tipo_ingreso,
         "enganche_pct": enganche_pct,
@@ -1900,35 +1811,19 @@ if st.session_state.get("folio_perfil_actual"):
 # ╚══════════════════════════════════════╝
 with col_der:
     # Spacer alineado con logo del panel izquierdo
-    if (st.session_state.get("resultado") or {}).get("modo_edicion"):
-        st.markdown(f"""
-        <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:10px;
-            padding:20px;margin-top:120px;text-align:center;">
-          <div style="font-size:1.4rem;margin-bottom:8px;">✏️</div>
-          <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;
-              color:#92400e;letter-spacing:0.06em;">MODO EDICION</div>
-          <div style="font-size:0.78rem;color:#78350f;margin-top:6px;">
-              Folio: <b>{st.session_state.folio_actual}</b>
-          </div>
-          <div style="font-size:0.72rem;color:#a16207;margin-top:10px;line-height:1.5;">
-              Edita los datos en el formulario de Solicitud abajo<br>
-              y presiona "Actualizar Solicitud" cuando termines.
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
-    elif not st.session_state.resultado:
+    if not st.session_state.resultado:
         st.markdown("""
         <div style="height:120px;display:flex;align-items:center;
             justify-content:center;border-bottom:1px solid #1a1a1a;margin-bottom:4px;">
           <div style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;color:#333;
               text-transform:uppercase;letter-spacing:0.12em;">
-            AutoScore AI - Panel de Resultados
+              AutoScore AI — Panel de Resultados
           </div>
         </div>
         """, unsafe_allow_html=True)
     else:
         st.markdown("""
-        
+        <div style="height:120px;display:flex;align-items:center;
             padding-left:4px;border-bottom:1px solid #1a1a1a;margin-bottom:8px;">
           <div style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;color:#444;
               text-transform:uppercase;letter-spacing:0.12em;">
@@ -1963,23 +1858,6 @@ with col_der:
             "NARANJA":  ("🟠","SCORE NARANJA", "#f97316","Perfil con áreas de oportunidad"),
             "ROJO":     ("🔴","SCORE ROJO",    "#ef4444","Perfil requiere estrategia alternativa"),
         }
-        if r.get("modo_edicion") or "sc" not in r or r.get("sc") not in {"AZUL","VERDE","AMARILLO","NARANJA","ROJO"} or "prob_col" not in r:
-            st.markdown(f"""
-            <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:10px;
-                padding:20px;margin-top:120px;text-align:center;">
-              <div style="font-size:1.4rem;margin-bottom:8px;">✏️</div>
-              <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;
-                  color:#92400e;letter-spacing:0.06em;">MODO EDICION</div>
-              <div style="font-size:0.78rem;color:#78350f;margin-top:6px;">
-                  Folio: <b>{st.session_state.get("folio_actual","")}</b>
-              </div>
-              <div style="font-size:0.72rem;color:#a16207;margin-top:10px;line-height:1.5;">
-                  Edita los datos en el formulario de Solicitud abajo<br>
-                  y presiona "Actualizar Solicitud" cuando termines.
-              </div>
-            </div>
-            """, unsafe_allow_html=True)
-            st.stop()
         em, lbl, col_hex, dsc = SCORE_MAP[r["sc"]]
 
         # ── 1. DECISIÓN — lo primero y más grande ─────────────
@@ -2293,11 +2171,12 @@ if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud
         st.markdown('<div class="sec-label">👥 Referencias Personales (3 obligatorias)</div>', unsafe_allow_html=True)
         refs = {}
         for i in range(1, 4):
-            st.markdown(f"<div style='font-size:0.78rem;color:#c3002f;font-weight:700;margin:18px 0 6px;padding-top:10px;border-top:1px solid #f0f0f0;'>👤 Referencia #{i}</div>", unsafe_allow_html=True)
-            r1, r2 = st.columns([3,1])
-            with r1: refs[f"ref{i}_nombre_completo"] = st.text_input(f"Nombre completo #{i}", value=p.get(f"ref{i}_nombre_completo",""), placeholder="Apellido paterno, materno y nombres", key=f"ref_nom_{i}")
-            with r2: refs[f"ref{i}_parentesco"]      = st.text_input(f"Parentesco #{i}",      value=p.get(f"ref{i}_parentesco",""), key=f"ref_par_{i}")
-                  
+            st.markdown(f"<div style='font-size:0.72rem;color:#c3002f;font-weight:600;margin-top:8px;'>Referencia #{i}</div>", unsafe_allow_html=True)
+            r1, r2, r3, r4 = st.columns(4)
+            with r1: refs[f"ref{i}_ap"]   = st.text_input(f"Apellido paterno #{i}", value=p.get(f"ref{i}_ap",""), key=f"ref_ap_{i}")
+            with r2: refs[f"ref{i}_am"]   = st.text_input(f"Apellido materno #{i}", value=p.get(f"ref{i}_am",""), key=f"ref_am_{i}")
+            with r3: refs[f"ref{i}_nom"]  = st.text_input(f"Primer nombre #{i}",     value=p.get(f"ref{i}_nom",""), key=f"ref_nom_{i}")
+            with r4: refs[f"ref{i}_parentesco"] = st.text_input(f"Parentesco #{i}",  value=p.get(f"ref{i}_parentesco",""), key=f"ref_par_{i}")
             t1, t2, t3 = st.columns(3)
             with t1: refs[f"ref{i}_tel_fijo"] = st.text_input(f"Tel fijo #{i}",     value=p.get(f"ref{i}_tel_fijo",""), key=f"ref_tf_{i}")
             with t2: refs[f"ref{i}_tel_cel"]  = st.text_input(f"Tel celular #{i}",   value=p.get(f"ref{i}_tel_cel",""), key=f"ref_tc_{i}")
@@ -2337,7 +2216,6 @@ if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud
                 "score_sc": r.get("sc",""), "score_prob": r.get("prob",0),
                 "decision": r.get("decision",""),
             }
-            datos_sol["folio"] = st.session_state.get("folio_perfil_actual") or st.session_state.get("folio_actual","")
             buf_sol = generar_pdf_solicitud(datos_sol)
             st.session_state.pdf_solicitud_buf = buf_sol.getvalue()
 
@@ -2354,9 +2232,8 @@ if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud
                         st.session_state.folio_actual = folio_nuevo
                         st.session_state.pdf_solicitud_nombre = f"solicitud_{folio_nuevo}.pdf"
             else:
-                # Crear nueva solicitud — usa el folio del análisis si existe
-                folio_existente = st.session_state.get("folio_perfil_actual")
-                folio_nuevo = guardar_solicitud_sheets(datos_sol, folio=folio_existente)
+                # Crear nueva solicitud
+                folio_nuevo = guardar_solicitud_sheets(datos_sol)
                 if folio_nuevo:
                     st.session_state.folio_actual = folio_nuevo
                     st.session_state.pdf_solicitud_nombre = f"solicitud_{folio_nuevo}.pdf"
