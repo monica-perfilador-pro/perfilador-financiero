@@ -1446,6 +1446,7 @@ with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expa
                         "telefono":        datos_enc.get("celular",""),
                         "correo":          datos_enc.get("correo_cliente",""),
                         "ingreso":         datos_enc.get("ingreso_fijo",0),
+                    }    
                         # Cargar datos para modo edición
                     sc_v = datos_enc.get("score_sc","VERDE") or "VERDE"
                     if sc_v not in ["AZUL","VERDE","AMARILLO","NARANJA","ROJO"]:
