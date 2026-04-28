@@ -1429,22 +1429,7 @@ if True:  # bloque del buscador
     """, unsafe_allow_html=True)
     bg1, bg2, bg3 = st.columns([3,1,1])
     with bg1:
-        st.markdown("""
-        <style>
-        /* Input del folio - texto blanco sobre fondo oscuro */
-        input[aria-label*="Folio de solicitud"] {
-            background: #1a1a1a !important;
-            color: #ffffff !important;
-            border: 1px solid #c3002f !important;
-            font-family: 'Rajdhani', sans-serif !important;
-            font-weight: 700 !important;
-            letter-spacing: 0.08em !important;
-        }
-        input[aria-label*="Folio de solicitud"]::placeholder {
-            color: #888 !important;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+        
         folio_global = st.text_input("Folio de solicitud (ej: AS-2026-0001)",
                                       value=st.session_state.folio_actual or "",
                                       key="folio_buscar_global",
@@ -1453,15 +1438,34 @@ if True:  # bloque del buscador
         st.markdown("<div style='margin-top:22px'></div>", unsafe_allow_html=True)
         if st.button("🔍 Buscar", key="btn_buscar_global", use_container_width=True):
             if folio_global.strip():
-                datos_enc = buscar_solicitud_por_folio(folio_global.strip())
-                if datos_enc:
-                    st.session_state.datos_precargados = datos_enc
-                    st.session_state.folio_actual = folio_global.strip().upper()
-                    st.session_state.mostrar_solicitud = True
-                    st.success(f"✅ Solicitud {st.session_state.folio_actual} cargada")
+                folio_buscar = folio_global.strip().upper()
+                # Buscar en ambos lugares: análisis y solicitud
+                datos_perfil_enc = buscar_perfil_por_folio(folio_buscar)
+                datos_sol_enc    = buscar_solicitud_por_folio(folio_buscar)
+                
+                if datos_perfil_enc or datos_sol_enc:
+                    # Combinar datos: solicitud + datos_form del análisis
+                    datos_combinados = {}
+                    if datos_sol_enc:
+                        datos_combinados.update(datos_sol_enc)
+                    if datos_perfil_enc and datos_perfil_enc.get("datos_form"):
+                        # Datos del formulario para precargar
+                        st.session_state.datos_form_precargados = datos_perfil_enc["datos_form"]
+                    
+                    st.session_state.datos_precargados = datos_combinados
+                    st.session_state.folio_actual = folio_buscar
+                    st.session_state.folio_perfil_actual = folio_buscar
+                    st.session_state.mostrar_solicitud = bool(datos_sol_enc)
+                    
+                    if datos_perfil_enc and datos_sol_enc:
+                        st.success(f"✅ Folio {folio_buscar} cargado — análisis + solicitud completos")
+                    elif datos_perfil_enc:
+                        st.success(f"✅ Folio {folio_buscar} cargado — análisis encontrado (sin solicitud aún)")
+                    else:
+                        st.success(f"✅ Folio {folio_buscar} cargado — solicitud encontrada")
                     st.rerun()
                 else:
-                    st.error(f"❌ Folio no encontrado: {folio_global}")
+                    st.error(f"❌ Folio no encontrado: {folio_buscar}")
             else:
                 st.warning("Ingresa un folio")
     with bg3:
