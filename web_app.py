@@ -1488,6 +1488,8 @@ with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expa
         if st.button("➕ Nueva", key="btn_nueva_global", use_container_width=True):
             st.session_state.datos_precargados = {}
             st.session_state.folio_actual = None
+            st.session_state.resultado = None
+            st.session_state.mostrar_solicitud = False
             st.rerun()
 
     if st.session_state.folio_actual:
@@ -1753,6 +1755,12 @@ if submitted:
     }
     st.session_state.cotitular_activo    = (plan=="COTITULAR")
     st.session_state.cotitular_resultado = None
+
+    # Limpiar flags de edición — esto es un análisis nuevo
+    if "modo_edicion" in st.session_state.resultado:
+        del st.session_state.resultado["modo_edicion"]
+    st.session_state.folio_actual = None
+    st.session_state.datos_precargados = {}
 
     # Detectar perfil duplicado del mismo cliente en últimas 24h
     datos_perfil = {**st.session_state.resultado,
