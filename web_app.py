@@ -77,7 +77,44 @@ def generar_folio_unico() -> str:
         # Fallback: timestamp si falla Sheets
         ts = datetime.datetime.now().strftime("%H%M%S")
         return f"SOL-{año}-{ts}"
-
+def buscar_perfil_por_folio(folio: str) -> dict:
+    """Busca un perfil por folio en AutoScore Perfiles."""
+    import json
+    try:
+        from google.oauth2.service_account import Credentials
+        from googleapiclient.discovery import build
+        SHEET_ID  = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
+        scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]), scopes=scopes)
+        service = build("sheets", "v4", credentials=creds)
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID, range="'AutoScore Perfiles'!A1:T10000"
+        ).execute()
+        valores = result.get("values", [])
+        if len(valores) < 2:
+            return None
+        headers = valores[0]
+        for row in valores[1:]:
+            while len(row) < len(headers):
+                row.append("")
+            registro = dict(zip(headers, row))
+            if registro.get("Folio","").strip().upper() == folio.strip().upper():
+                try:
+                    datos_form = json.loads(registro.get("Datos_Form","{}"))
+                except Exception:
+                    datos_form = {}
+                return {
+                    "Folio":     registro.get("Folio",""),
+                    "Fecha":     registro.get("Fecha",""),
+                    "Score":     registro.get("Score",""),
+                    "Probabilidad": registro.get("Probabilidad",""),
+                    "Decision":  registro.get("Decision",""),
+                    "datos_form": datos_form,
+                }
+        return None
+    except Exception:
+        return None
 
 def buscar_solicitud_por_folio(folio: str) -> dict:
     """Busca una solicitud por folio y retorna los datos para precargar el form."""
@@ -314,6 +351,12 @@ def guardar_solicitud_sheets(datos: dict, folio: str = None):
             dict(st.secrets["gcp_service_account"]), scopes=scopes)
         service = build("sheets", "v4", credentials=creds)
 
+        if not folio:
+            # Reusar el folio del análisis si existe en session_state
+            try:
+                folio = st.session_state.get("folio_perfil_actual")
+            except Exception:
+                folio = None
         if not folio:
             folio = generar_folio_unico()
 
@@ -2266,13 +2309,15 @@ if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud
                     st.success(f"✅ Solicitud {st.session_state.folio_actual} ACTUALIZADA correctamente")
                 else:
                     st.warning("⚠️ No se pudo actualizar — se creará una nueva solicitud")
-                    folio_nuevo = guardar_solicitud_sheets(datos_sol)
+                    folio_existente = st.session_state.get("folio_perfil_actual")
+                    folio_nuevo = guardar_solicitud_sheets(datos_sol, folio=folio_existente)
                     if folio_nuevo:
                         st.session_state.folio_actual = folio_nuevo
                         st.session_state.pdf_solicitud_nombre = f"solicitud_{folio_nuevo}.pdf"
             else:
-                # Crear nueva solicitud
-                folio_nuevo = guardar_solicitud_sheets(datos_sol)
+                # Crear nueva solicitud — reusar folio del análisis si existe
+                folio_existente = st.session_state.get("folio_perfil_actual")
+                folio_nuevo = guardar_solicitud_sheets(datos_sol, folio=folio_existente)
                 if folio_nuevo:
                     st.session_state.folio_actual = folio_nuevo
                     st.session_state.pdf_solicitud_nombre = f"solicitud_{folio_nuevo}.pdf"
