@@ -1446,8 +1446,36 @@ with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expa
                         "telefono":        datos_enc.get("celular",""),
                         "correo":          datos_enc.get("correo_cliente",""),
                         "ingreso":         datos_enc.get("ingreso_fijo",0),
-                        "modo_edicion":    True,  # bandera especial
-                    }
+                        # Cargar datos para modo edición
+                    sc_v = datos_enc.get("score_sc","VERDE") or "VERDE"
+                    if sc_v not in ["AZUL","VERDE","AMARILLO","NARANJA","ROJO"]:
+                        sc_v = "VERDE"
+                    st.session_state.resultado = {
+                        "asesor":          datos_enc.get("asesor",""),
+                        "telefono_asesor": "",
+                        "correo_asesor":   "",
+                        "rfc":             datos_enc.get("rfc_asesor",""),
+                        "nombre":          datos_enc.get("nombre_completo",""),
+                        "telefono":        datos_enc.get("celular",""),
+                        "correo":          datos_enc.get("correo_cliente",""),
+                        "ingreso":         datos_enc.get("ingreso_fijo",0),
+                        "tipo_ingreso":    "Nómina",
+                        "sc":              sc_v,
+                        "sem":             "verde",
+                        "prob":            int(float(datos_enc.get("score_prob",0) or 0)),
+                        "decision":        datos_enc.get("decision","APROBADO"),
+                        "cap_pago":        0,
+                        "mensualidad":     0,
+                        "temp":            "TIBIO",
+                        "inv":             "Sin alerta relevante",
+                        "condicionamientos":[],
+                        "plan":            "AUTOMATICO",
+                        "msg_c":           "Editando solicitud existente",
+                        "msg_a":           f"Modo edición — folio {folio_global.strip().upper()}",
+                        "docs":            ["INE","Comprobante de domicilio","Nómina"],
+                        "financiera":      "CrediNissan",
+                        "modo_edicion":    True,
+                    }   
                     st.success(f"✅ Solicitud {st.session_state.folio_actual} cargada — los datos están en el formulario de solicitud abajo")
                     st.rerun()
                 else:
@@ -1875,6 +1903,9 @@ with col_der:
             "NARANJA":  ("🟠","SCORE NARANJA", "#f97316","Perfil con áreas de oportunidad"),
             "ROJO":     ("🔴","SCORE ROJO",    "#ef4444","Perfil requiere estrategia alternativa"),
         }
+        if "sc" not in r or r.get("sc") not in {"AZUL","VERDE","AMARILLO","NARANJA","ROJO"}:
+            st.warning("Datos del análisis incompletos. Presiona 'Analizar Perfil Financiero' para regenerar.")
+            st.stop()
         em, lbl, col_hex, dsc = SCORE_MAP[r["sc"]]
 
         # ── 1. DECISIÓN — lo primero y más grande ─────────────
