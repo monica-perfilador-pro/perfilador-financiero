@@ -1436,62 +1436,17 @@ with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expa
                     st.session_state.folio_actual = folio_global.strip().upper()
                     st.session_state.folio_perfil_actual = folio_global.strip().upper()
                     st.session_state.mostrar_solicitud = True
-                    # Reconstruir el resultado del análisis con TODOS los campos
-                    sc_color_map = {"AZUL":"verde","VERDE":"verde","AMARILLO":"amarillo","NARANJA":"naranja","ROJO":"rojo"}
-                    sc_v = datos_enc.get("score_sc","VERDE")
+                    # Cargar mínimo necesario para mostrar formulario de solicitud
                     st.session_state.resultado = {
-                        "asesor":      datos_enc.get("asesor",""),
+                        "asesor":          datos_enc.get("asesor",""),
                         "telefono_asesor": "",
                         "correo_asesor":   "",
                         "rfc":             datos_enc.get("rfc_asesor",""),
-                        "nombre":      datos_enc.get("nombre_completo",""),
-                        "telefono":    datos_enc.get("celular",""),
-                        "correo":      datos_enc.get("correo_cliente",""),
-                        "sc":          sc_v,
-                        "sem":         sc_color_map.get(sc_v,"verde"),
-                        "prob":        datos_enc.get("score_prob",0),
-                        "decision":    datos_enc.get("decision","APROBADO"),
-                        "ingreso":     datos_enc.get("ingreso_fijo",0),
-                        "tipo_ingreso":"Nómina",
-                        "cap_pago":    0,
-                        "mensualidad": 0,
-                        "temp":        "TIBIO",
-                        "inv":         "Sin alerta relevante",
-                        "condicionamientos":[],
-                        "plan":        "AUTOMATICO",
-                        "msg_c":       "Datos cargados desde solicitud existente",
-                        "msg_a":       f"Editando folio {folio_global.strip().upper()}",
-                        "docs":        ["INE","Comprobante de domicilio","Nómina","Estado de cuenta"],
-                        "score_color": "#0d9488",
-                        "score_label": "SCORE " + sc_v,
-                        "financiera":  "CrediNissan",
-                        "enganche_pct": 0,
-                        "consultas":   0,
-                        "atrasos":     "Sin atrasos",
-                        "edad":        0,
-                        "credi":       "No",
-                        "auto":        "No",
-                        "hipoteca":    "No",
-                        "tarjetas_alta":"No",
-                        "tarjetas_baja":"No",
-                        "negocio":     "No",
-                        "antiguedad":  "N/A",
-                        "domicilio_id":"Sí",
-                        "engan":       0,
-                        "precio":      0,
-                        "plazo":       60,
-                        "tiene_engan": "No",
-                        "compra_mes":  "No",
-                        "tiene_unidad":"No",
-                        "prob_col":    "#22c55e",
-                        "score_pts":   0,
-                        "perfil_int":  "MEDIO",
-                        "score_color_text": "VERDE",
-                        "msg_pdf":     "",
-                        "siguiente_paso": "Solicitar apartado",
-                        "monto_apartado": 5000,
-                        "cuenta_bbva": "012320001250476847",
-                        "empresa":     "DAOSA SA DE CV",
+                        "nombre":          datos_enc.get("nombre_completo",""),
+                        "telefono":        datos_enc.get("celular",""),
+                        "correo":          datos_enc.get("correo_cliente",""),
+                        "ingreso":         datos_enc.get("ingreso_fijo",0),
+                        "modo_edicion":    True,  # bandera especial
                     }
                     st.success(f"✅ Solicitud {st.session_state.folio_actual} cargada — los datos están en el formulario de solicitud abajo")
                     st.rerun()
@@ -1857,19 +1812,35 @@ if st.session_state.get("folio_perfil_actual"):
 # ╚══════════════════════════════════════╝
 with col_der:
     # Spacer alineado con logo del panel izquierdo
-    if not st.session_state.resultado:
+    if st.session_state.get("resultado",{}).get("modo_edicion"):
+        st.markdown(f"""
+        <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:10px;
+            padding:20px;margin-top:120px;text-align:center;">
+          <div style="font-size:1.4rem;margin-bottom:8px;">✏️</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;
+              color:#92400e;letter-spacing:0.06em;">MODO EDICION</div>
+          <div style="font-size:0.78rem;color:#78350f;margin-top:6px;">
+              Folio: <b>{st.session_state.folio_actual}</b>
+          </div>
+          <div style="font-size:0.72rem;color:#a16207;margin-top:10px;line-height:1.5;">
+              Edita los datos en el formulario de Solicitud abajo<br>
+              y presiona "Actualizar Solicitud" cuando termines.
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+    elif not st.session_state.resultado:
         st.markdown("""
         <div style="height:120px;display:flex;align-items:center;
             justify-content:center;border-bottom:1px solid #1a1a1a;margin-bottom:4px;">
           <div style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;color:#333;
               text-transform:uppercase;letter-spacing:0.12em;">
-              AutoScore AI — Panel de Resultados
+            AutoScore AI - Panel de Resultados
           </div>
         </div>
         """, unsafe_allow_html=True)
     else:
         st.markdown("""
-        <div style="height:120px;display:flex;align-items:center;
+        
             padding-left:4px;border-bottom:1px solid #1a1a1a;margin-bottom:8px;">
           <div style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;color:#444;
               text-transform:uppercase;letter-spacing:0.12em;">
