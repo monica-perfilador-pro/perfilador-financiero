@@ -1841,7 +1841,7 @@ if st.session_state.get("folio_perfil_actual"):
 # ╚══════════════════════════════════════╝
 with col_der:
     # Spacer alineado con logo del panel izquierdo
-    if st.session_state.get("resultado",{}).get("modo_edicion"):
+    if (st.session_state.get("resultado") or {}).get("modo_edicion"):
         st.markdown(f"""
         <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:10px;
             padding:20px;margin-top:120px;text-align:center;">
