@@ -1436,27 +1436,34 @@ with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expa
                     st.session_state.folio_actual = folio_global.strip().upper()
                     st.session_state.folio_perfil_actual = folio_global.strip().upper()
                     st.session_state.mostrar_solicitud = True
-                    # Reconstruir el resultado del análisis para que aparezca el panel derecho
+                    # Reconstruir el resultado del análisis con TODOS los campos
+                    sc_color_map = {"AZUL":"verde","VERDE":"verde","AMARILLO":"amarillo","NARANJA":"naranja","ROJO":"rojo"}
+                    sc_v = datos_enc.get("score_sc","VERDE")
                     st.session_state.resultado = {
                         "asesor":      datos_enc.get("asesor",""),
                         "telefono_asesor": "",
+                        "correo_asesor":   "",
+                        "rfc":             datos_enc.get("rfc_asesor",""),
                         "nombre":      datos_enc.get("nombre_completo",""),
                         "telefono":    datos_enc.get("celular",""),
                         "correo":      datos_enc.get("correo_cliente",""),
-                        "sc":          datos_enc.get("score_sc",""),
+                        "sc":          sc_v,
+                        "sem":         sc_color_map.get(sc_v,"verde"),
                         "prob":        datos_enc.get("score_prob",0),
-                        "decision":    datos_enc.get("decision",""),
+                        "decision":    datos_enc.get("decision","APROBADO"),
                         "ingreso":     datos_enc.get("ingreso_fijo",0),
                         "tipo_ingreso":"Nómina",
                         "cap_pago":    0,
                         "mensualidad": 0,
-                        "temp":        "",
-                        "inv":         "",
+                        "temp":        "TIBIO",
+                        "inv":         "Sin alerta relevante",
                         "condicionamientos":[],
-                        "plan":        "",
+                        "plan":        "AUTOMATICO",
                         "msg_c":       "Datos cargados desde solicitud existente",
                         "msg_a":       f"Editando folio {folio_global.strip().upper()}",
-                        "docs":        ["INE","Comprobante de domicilio"],
+                        "docs":        ["INE","Comprobante de domicilio","Nómina","Estado de cuenta"],
+                        "score_color": "#0d9488",
+                        "score_label": "SCORE " + sc_v,
                     }
                     st.success(f"✅ Solicitud {st.session_state.folio_actual} cargada — los datos están en el formulario de solicitud abajo")
                     st.rerun()
