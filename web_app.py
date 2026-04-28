@@ -189,12 +189,12 @@ def generar_folio_perfil() -> str:
             range="\'AutoScore Perfiles\'!A2:A10000"
         ).execute()
         valores = result.get("values", [])
-        prefijo = f"PER-{año}-"
+        prefijo = f"AS-{año}-"
         contador = sum(1 for r in valores if r and r[0].startswith(prefijo))
         return f"{prefijo}{contador+1:04d}"
     except Exception:
         ts = datetime.datetime.now().strftime("%H%M%S")
-        return f"PER-{año}-{ts}"
+        return f"AS-{año}-{ts}"
 
 
 def buscar_perfil_duplicado(telefono: str, nombre: str) -> dict:
@@ -757,6 +757,7 @@ def generar_pdf_solicitud(d: dict) -> BytesIO:
     cv.setTitle("Solicitud de Credito - AutoScore AI")
 
     fecha = datetime.date.today().strftime("%d / %m / %Y")
+    folio_pdf = d.get("folio", "")
 
     # ════════════════════════════════════════════════════════════
     # PAGINA 1
@@ -765,6 +766,8 @@ def generar_pdf_solicitud(d: dict) -> BytesIO:
     # ── HEADER ───────────────────────────────────────────────────
     s_txt(cv, "SOLICITUD DE CREDITO PERSONA FISICA", 30, H-30, "Helvetica-Bold", 12, NEGRO)
     s_txt(cv, f"Fecha: {fecha}", W-30, H-30, "Helvetica", 9, NEGRO, "right")
+    if folio_pdf:
+        s_txt(cv, f"Folio: {folio_pdf}", W-30, H-42, "Helvetica-Bold", 9, ROJO, "right")
     s_frect(cv, 30, H-36, 552, 1.5, ROJO)
 
     # ── DATOS DEL ASESOR Y FUENTE DE VENTA ────────────────────────
@@ -2190,6 +2193,7 @@ if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud
                 "score_sc": r.get("sc",""), "score_prob": r.get("prob",0),
                 "decision": r.get("decision",""),
             }
+            datos_sol["folio"] = st.session_state.get("folio_perfil_actual") or st.session_state.get("folio_actual","")
             buf_sol = generar_pdf_solicitud(datos_sol)
             st.session_state.pdf_solicitud_buf = buf_sol.getvalue()
 
@@ -2206,8 +2210,9 @@ if st.session_state.get("resultado") and st.session_state.get("mostrar_solicitud
                         st.session_state.folio_actual = folio_nuevo
                         st.session_state.pdf_solicitud_nombre = f"solicitud_{folio_nuevo}.pdf"
             else:
-                # Crear nueva solicitud
-                folio_nuevo = guardar_solicitud_sheets(datos_sol)
+                # Crear nueva solicitud — usa el folio del análisis si existe
+                folio_existente = st.session_state.get("folio_perfil_actual")
+                folio_nuevo = guardar_solicitud_sheets(datos_sol, folio=folio_existente)
                 if folio_nuevo:
                     st.session_state.folio_actual = folio_nuevo
                     st.session_state.pdf_solicitud_nombre = f"solicitud_{folio_nuevo}.pdf"
