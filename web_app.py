@@ -1396,19 +1396,59 @@ if "datos_precargados" not in st.session_state:
 if "folio_actual" not in st.session_state:
     st.session_state.folio_actual = None
 
-with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expanded=False):
+# Buscador siempre visible (no expander) — siempre arriba
+st.markdown("""
+<div style="background:#000;border:2px solid #c3002f;border-radius:10px;
+    padding:14px 18px;margin:0 0 16px;">
+  <div style="font-family:'Rajdhani',sans-serif;font-size:0.85rem;font-weight:700;
+      color:#fff;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:4px;">
+      🔍 Editar Solicitud Existente
+  </div>
+  <div style="font-size:0.74rem;color:#aaa;">
+      Si ya generaste una solicitud antes, ingresa el folio para cargar los datos del cliente y solo modificar lo necesario.
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+if True:  # bloque del buscador
     st.markdown("""
-    <div style="font-size:0.78rem;color:#92400e;margin-bottom:6px;">
-      Si ya generaste una solicitud antes y solo necesitas modificar datos, ingresa el folio aquí.
-      Los datos del cliente se cargarán automáticamente.
-    </div>
+    <style>
+    /* Input del folio - texto blanco sobre fondo oscuro */
+    input[aria-label*="Folio de solicitud"] {
+        background: #1a1a1a !important;
+        color: #ffffff !important;
+        border: 1px solid #c3002f !important;
+        font-family: 'Rajdhani', sans-serif !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.08em !important;
+    }
+    input[aria-label*="Folio de solicitud"]::placeholder {
+        color: #888 !important;
+    }
+    </style>
     """, unsafe_allow_html=True)
     bg1, bg2, bg3 = st.columns([3,1,1])
     with bg1:
-        folio_global = st.text_input("Folio de solicitud (ej: SOL-2026-0001)",
+        st.markdown("""
+        <style>
+        /* Input del folio - texto blanco sobre fondo oscuro */
+        input[aria-label*="Folio de solicitud"] {
+            background: #1a1a1a !important;
+            color: #ffffff !important;
+            border: 1px solid #c3002f !important;
+            font-family: 'Rajdhani', sans-serif !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.08em !important;
+        }
+        input[aria-label*="Folio de solicitud"]::placeholder {
+            color: #888 !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        folio_global = st.text_input("Folio de solicitud (ej: AS-2026-0001)",
                                       value=st.session_state.folio_actual or "",
                                       key="folio_buscar_global",
-                                      placeholder="SOL-2026-0001")
+                                      placeholder="AS-2026-0001")
     with bg2:
         st.markdown("<div style='margin-top:22px'></div>", unsafe_allow_html=True)
         if st.button("🔍 Buscar", key="btn_buscar_global", use_container_width=True):
