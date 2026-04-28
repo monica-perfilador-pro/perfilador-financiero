@@ -38,6 +38,7 @@ def guardar_perfil_sheets(datos: dict, folio: str = None) -> str:
             ", ".join(datos.get("condicionamientos",[])),
             datos.get("plan",""),
             datos.get("ingreso",0), datos.get("tipo_ingreso",""),
+            __import__("json").dumps(datos.get("datos_form",{}), ensure_ascii=False),
         ]
         service.spreadsheets().values().append(
             spreadsheetId=SHEET_ID,
@@ -77,7 +78,44 @@ def generar_folio_unico() -> str:
         # Fallback: timestamp si falla Sheets
         ts = datetime.datetime.now().strftime("%H%M%S")
         return f"SOL-{año}-{ts}"
-
+def buscar_perfil_por_folio(folio: str) -> dict:
+    """Busca un perfil por folio en AutoScore Perfiles y retorna sus datos del formulario."""
+    import json
+    try:
+        from google.oauth2.service_account import Credentials
+        from googleapiclient.discovery import build
+        SHEET_ID  = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
+        scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]), scopes=scopes)
+        service = build("sheets", "v4", credentials=creds)
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID, range="'AutoScore Perfiles'!A1:T10000"
+        ).execute()
+        valores = result.get("values", [])
+        if len(valores) < 2:
+            return None
+        headers = valores[0]
+        for row in valores[1:]:
+            while len(row) < len(headers):
+                row.append("")
+            registro = dict(zip(headers, row))
+            if registro.get("Folio","").strip().upper() == folio.strip().upper():
+                try:
+                    datos_form = json.loads(registro.get("Datos_Form","{}"))
+                except Exception:
+                    datos_form = {}
+                return {
+                    "Folio":     registro.get("Folio",""),
+                    "Fecha":     registro.get("Fecha",""),
+                    "Score":     registro.get("Score",""),
+                    "Probabilidad": registro.get("Probabilidad",""),
+                    "Decision":  registro.get("Decision",""),
+                    "datos_form": datos_form,
+                }
+        return None
+    except Exception:
+        return None
 
 def buscar_solicitud_por_folio(folio: str) -> dict:
     """Busca una solicitud por folio y retorna los datos para precargar el form."""
@@ -1762,10 +1800,23 @@ if submitted:
     st.session_state.folio_actual = None
     st.session_state.datos_precargados = {}
 
-    # Detectar perfil duplicado del mismo cliente en últimas 24h
+    # Recolectar todos los datos del formulario para poder editar después
+    datos_form_completo = {
+        "edad": edad, "ingreso": ingreso, "tipo_ingreso": tipo_ingreso,
+        "negocio": negocio, "antiguedad": antiguedad, "domicilio_id": domicilio_id,
+        "precio": precio, "engan": engan, "plazo": plazo, "consultas": consultas,
+        "credi": credi, "auto": auto, "hipoteca": hipoteca,
+        "tarjetas_alta": tarjetas_alta, "tarjetas_baja": tarjetas_baja,
+        "atrasos": atrasos, "tiene_engan": tiene_engan,
+        "compra_mes": compra_mes, "tiene_unidad": tiene_unidad,
+        "asesor": asesor, "telefono_asesor": telefono_asesor,
+        "correo_asesor": correo_asesor, "rfc": rfc,
+        "nombre_cliente": nombre_cliente, "telefono": telefono, "correo": correo,
+    }
     datos_perfil = {**st.session_state.resultado,
         "ingreso": ingreso, "tipo_ingreso": tipo_ingreso,
-        "enganche_pct": enganche_pct}
+        "enganche_pct": enganche_pct,
+        "datos_form": datos_form_completo}
 
     perfil_dup = buscar_perfil_duplicado(telefono, nombre_cliente)
     if perfil_dup and not st.session_state.get("decision_duplicado_tomada"):
