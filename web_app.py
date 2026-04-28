@@ -1483,6 +1483,15 @@ with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expa
                         "tiene_engan": "No",
                         "compra_mes":  "No",
                         "tiene_unidad":"No",
+                        "prob_col":    "#22c55e",
+                        "score_pts":   0,
+                        "perfil_int":  "MEDIO",
+                        "score_color_text": "VERDE",
+                        "msg_pdf":     "",
+                        "siguiente_paso": "Solicitar apartado",
+                        "monto_apartado": 5000,
+                        "cuenta_bbva": "012320001250476847",
+                        "empresa":     "DAOSA SA DE CV",
                     }
                     st.success(f"✅ Solicitud {st.session_state.folio_actual} cargada — los datos están en el formulario de solicitud abajo")
                     st.rerun()
