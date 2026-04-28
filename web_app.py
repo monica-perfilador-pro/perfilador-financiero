@@ -2,12 +2,19 @@ import streamlit as st
 from io import BytesIO
 
 # ── GOOGLE SHEETS ────────────────────────────────────────────────
-def guardar_perfil_sheets(datos: dict):
-    """Guarda perfil en Google Sheets. Silencioso si falla."""
+def guardar_perfil_sheets(datos: dict, folio: str = None) -> str:
+    """Guarda perfil en Google Sheets con folio unico. Retorna el folio."""
+    import datetime
+    if not folio:
+        try:
+            folio = generar_folio_perfil()
+        except Exception:
+            folio = None
+    if not folio:
+        folio = f"PER-{datetime.datetime.now().year}-{datetime.datetime.now().strftime('%H%M%S')}"
     try:
         from google.oauth2.service_account import Credentials
         from googleapiclient.discovery import build
-        import datetime
 
         SHEET_ID   = "1f0oXowVTkuZdtlzw3Cdx5IIJRc9XIU6n0zM-EaXlyAA"
         SHEET_NAME = "AutoScore Perfiles"
@@ -19,6 +26,7 @@ def guardar_perfil_sheets(datos: dict):
 
         ahora = datetime.datetime.now()
         fila = [
+            folio,
             ahora.strftime("%d/%m/%Y"), ahora.strftime("%H:%M:%S"),
             datos.get("asesor",""), datos.get("telefono_asesor",""),
             datos.get("nombre",""), datos.get("telefono",""),
@@ -38,8 +46,9 @@ def guardar_perfil_sheets(datos: dict):
             insertDataOption="INSERT_ROWS",
             body={"values": [fila]}
         ).execute()
+        return folio
     except Exception:
-        pass  # No interrumpir el análisis si Sheets falla
+        return folio  # Devuelve el folio aunque falle Sheets
 
 
 def generar_folio_unico() -> str:
@@ -1390,7 +1399,7 @@ if "datos_precargados" not in st.session_state:
 if "folio_actual" not in st.session_state:
     st.session_state.folio_actual = None
 
-with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expanded=False):
+with st.expander("🔍 ¿Editar una solicitud existente? Buscar por folio", expanded=True):
     st.markdown("""
     <div style="font-size:0.78rem;color:#92400e;margin-bottom:6px;">
       Si ya generaste una solicitud antes y solo necesitas modificar datos, ingresa el folio aquí.
